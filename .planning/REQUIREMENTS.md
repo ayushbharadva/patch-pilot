@@ -90,40 +90,38 @@ Deferred beyond the hackathon.
 
 ## Traceability
 
-Populated during roadmap creation (Phase column filled by gsd-roadmapper).
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INGEST-01 | TBD | Pending |
-| INGEST-02 | TBD | Pending |
-| INGEST-03 | TBD | Pending |
-| RECALL-01 | TBD | Pending |
-| RECALL-02 | TBD | Pending |
-| RECALL-03 | TBD | Pending |
-| FEEDBACK-01 | TBD | Pending |
-| FEEDBACK-02 | TBD | Pending |
-| GRAPH-01 | TBD | Pending |
-| RELEASE-01 | TBD | Pending |
-| DRIFT-01 | TBD | Pending |
-| DRIFT-02 | TBD | Pending |
-| DRIFT-03 | TBD | Pending |
-| FORGET-01 | TBD | Pending |
-| FORGET-02 | TBD | Pending |
-| DEMO-01 | TBD | Pending |
-| DEMO-02 | TBD | Pending |
-| DEMO-03 | TBD | Pending |
-| PLAT-01 | TBD | Pending |
-| PLAT-02 | TBD | Pending |
-| STRETCH-01 | TBD | Pending |
-| STRETCH-02 | TBD | Pending |
-| STRETCH-03 | TBD | Pending |
-| STRETCH-04 | TBD | Pending |
+| INGEST-01 | Phase 2 | Pending |
+| INGEST-02 | Phase 1 | Pending |
+| INGEST-03 | Phase 1 | Pending |
+| RECALL-01 | Phase 2 | Pending |
+| RECALL-02 | Phase 2 | Pending |
+| RECALL-03 | Phase 2 | Pending |
+| FEEDBACK-01 | Phase 2 | Pending |
+| FEEDBACK-02 | Phase 2 | Pending |
+| GRAPH-01 | Phase 4 | Pending |
+| RELEASE-01 | Phase 2 | Pending |
+| DRIFT-01 | Phase 3 | Pending |
+| DRIFT-02 | Phase 3 | Pending |
+| DRIFT-03 | Phase 3 | Pending |
+| FORGET-01 | Phase 3 | Pending |
+| FORGET-02 | Phase 3 | Pending |
+| DEMO-01 | Phase 4 | Pending |
+| DEMO-02 | Phase 1 | Pending |
+| DEMO-03 | Phase 4 | Pending |
+| PLAT-01 | Phase 1 | Pending |
+| PLAT-02 | Phase 1 | Pending |
+| STRETCH-01 | Phase 4 | Pending |
+| STRETCH-02 | Phase 4 | Pending |
+| STRETCH-03 | Phase 4 | Pending |
+| STRETCH-04 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 24 total (20 core + 4 stretch)
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 24 ⚠️ (filled by roadmap)
+- Mapped to phases: 24 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-30*
-*Last updated: 2026-06-30 after initial definition*
+*Last updated: 2026-06-30 — traceability filled by roadmapper*
