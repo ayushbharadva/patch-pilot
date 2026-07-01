@@ -1,0 +1,1 @@
+{"content":"cognee.prune.prune_data() wipes raw data files only. cognee.prune.prune_system(graph=True, vector=True, metadata=False, cache=True) wipes DB stores selectively; metadata defaults False. Both async.","source":"web","provider":"webfetch","confidence":"MEDIUM","fetched_at":"2026-07-01T12:58:38.504Z","ttl":86400000,"kind":"docs"}

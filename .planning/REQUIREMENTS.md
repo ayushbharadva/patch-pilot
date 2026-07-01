@@ -10,8 +10,8 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 ### Ingest & Remember
 
 - [ ] **INGEST-01**: User can upload incident / chat / changelog files (and load bundled sample datasets) to feed memory
-- [ ] **INGEST-02**: Uploaded content is ingested via Cognee `add()` + `cognify()` into the knowledge graph (remember)
-- [ ] **INGEST-03**: Durable incidents and per-release workarounds are stored in separate datasets (`incidents` vs `workarounds_v{N}`) so `forget()` can be surgical
+- [x] **INGEST-02**: Uploaded content is ingested via Cognee `add()` + `cognify()` into the knowledge graph (remember)
+- [x] **INGEST-03**: Durable incidents and per-release workarounds are stored in separate datasets (`incidents` vs `workarounds_v{N}`) so `forget()` can be surgical
 
 ### Recall & Diagnosis
 
@@ -48,13 +48,13 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 ### Demo & Reset
 
 - [ ] **DEMO-01**: User can reset / reseed memory (`prune_data()` + `prune_system()`) to a clean demo state
-- [ ] **DEMO-02**: Bundled seed datasets tell a clear before/after story — isolated entity names so forget visibly flips recall (mitigates Cognee #1023 cross-dataset leak)
+- [x] **DEMO-02**: Bundled seed datasets tell a clear before/after story — isolated entity names so forget visibly flips recall (mitigates Cognee #1023 cross-dataset leak)
 - [ ] **DEMO-03**: The full search → drift → forget → re-search loop completes in under 60 seconds
 
 ### Platform
 
-- [ ] **PLAT-01**: A `/health/cognee` smoke test confirms add + cognify + search works in < 30s on a small fixture (Phase 1 exit gate)
-- [ ] **PLAT-02**: Memory persists across server restart / redeploy (persistent storage, not ephemeral filesystem)
+- [x] **PLAT-01**: A `/health/cognee` smoke test confirms add + cognify + search works in < 30s on a small fixture (Phase 1 exit gate)
+- [x] **PLAT-02**: Memory persists across server restart / redeploy (persistent storage, not ephemeral filesystem)
 
 ### Stretch (v1 if time — cut first if schedule slips)
 
@@ -93,8 +93,8 @@ Deferred beyond the hackathon.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INGEST-01 | Phase 2 | Pending |
-| INGEST-02 | Phase 1 | Pending |
-| INGEST-03 | Phase 1 | Pending |
+| INGEST-02 | Phase 1 | Complete |
+| INGEST-03 | Phase 1 | Complete |
 | RECALL-01 | Phase 2 | Pending |
 | RECALL-02 | Phase 2 | Pending |
 | RECALL-03 | Phase 2 | Pending |
@@ -108,16 +108,17 @@ Deferred beyond the hackathon.
 | FORGET-01 | Phase 3 | Pending |
 | FORGET-02 | Phase 3 | Pending |
 | DEMO-01 | Phase 4 | Pending |
-| DEMO-02 | Phase 1 | Pending |
+| DEMO-02 | Phase 1 | Complete |
 | DEMO-03 | Phase 4 | Pending |
-| PLAT-01 | Phase 1 | Pending |
-| PLAT-02 | Phase 1 | Pending |
+| PLAT-01 | Phase 1 | Complete |
+| PLAT-02 | Phase 1 | Complete |
 | STRETCH-01 | Phase 4 | Pending |
 | STRETCH-02 | Phase 4 | Pending |
 | STRETCH-03 | Phase 4 | Pending |
 | STRETCH-04 | Phase 4 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 24 total (20 core + 4 stretch)
 - Mapped to phases: 24 ✓
 - Unmapped: 0
