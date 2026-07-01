@@ -10,7 +10,10 @@ cognified, demo-ready state for $0 instead of re-cognifying.
 
 This module is pure filesystem tar work — it deliberately does NOT import
 `cognee` or `backend.cognee_config`, since a tarball save/restore never
-needs to resolve Cognee's LLM/embedding provider.
+needs to resolve Cognee's LLM/embedding provider. It does, however, need to
+resolve the same storage-root override convention `backend/cognee_config.py`
+uses (`SYSTEM_ROOT_DIRECTORY` in `.env`), so it re-reads that one env var
+directly instead of hardcoding the default path.
 
 The resulting `*.snapshot.tar` is gitignored (Plan 01) — it may contain
 cognified seed content and must never be committed (see 01-04-PLAN.md
@@ -22,13 +25,19 @@ Usage:
 """
 
 import argparse
+import os
 import shutil
 import sys
 import tarfile
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Resolve the same SYSTEM_ROOT_DIRECTORY override backend/cognee_config.py
+# supports, without importing cognee itself (see module docstring).
+load_dotenv()
 REPO_ROOT = Path(__file__).resolve().parent.parent
-MEMORY_ROOT = REPO_ROOT / ".patchpilot_memory"
+MEMORY_ROOT = Path(os.environ.get("SYSTEM_ROOT_DIRECTORY", str(REPO_ROOT / ".patchpilot_memory")))
 SNAPSHOT_PATH = REPO_ROOT / "patchpilot_memory.snapshot.tar"
 
 
