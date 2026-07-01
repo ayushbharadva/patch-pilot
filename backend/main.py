@@ -21,6 +21,7 @@ so the package-qualified imports resolve correctly even when uvicorn is run
 with `backend/` as the working directory.
 """
 
+import logging  # noqa: E402
 import sys  # noqa: E402
 import uuid  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -40,6 +41,7 @@ from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 Mistr
 from backend.datasets import HEALTHCHECK  # noqa: E402
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
 HEALTH_FIXTURE = "PatchPilot health canary: widget X fails on retry."
 HEALTH_QUERY = "widget X"
@@ -67,8 +69,9 @@ async def health_cognee():
             datasets=[dataset_name],
         )
         return JSONResponse({"status": "ok", "results": len(results)})
-    except Exception as e:  # noqa: BLE001 - health check must never raise
-        return JSONResponse({"status": "unhealthy", "error": str(e)}, status_code=503)
+    except Exception:  # noqa: BLE001 - health check must never raise
+        logger.exception("Cognee health check failed")
+        return JSONResponse({"status": "unhealthy"}, status_code=503)
     finally:
         # Clean up the throwaway fixture unconditionally so it never
         # pollutes real datasets, even if the round-trip above failed.
