@@ -56,6 +56,7 @@ rate limiting, exception classification) is preserved unchanged from the
 original method.
 """
 
+import asyncio
 import logging
 
 import litellm as _litellm
@@ -87,6 +88,7 @@ _observe = get_observe()
         (
             _litellm.exceptions.NotFoundError,
             _litellm.exceptions.AuthenticationError,
+            asyncio.CancelledError,
         )
     ),
     before_sleep=before_sleep_log(_logger, logging.WARNING),
