@@ -78,4 +78,8 @@ async def health_cognee():
         try:
             await cognee.forget(dataset=dataset_name)
         except Exception:  # noqa: BLE001 - best-effort cleanup only
-            pass
+            logger.warning(
+                "Failed to forget healthcheck dataset %s; may leak into memory",
+                dataset_name,
+                exc_info=True,
+            )
