@@ -3,3 +3,5 @@ fastapi==0.138.2
 uvicorn[standard]>=0.49
 python-dotenv==1.0.1
 python-multipart>=0.0.32
+mistralai==1.12.4
+mistral-common==1.11.5

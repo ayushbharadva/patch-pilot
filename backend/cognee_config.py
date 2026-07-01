@@ -37,3 +37,17 @@ os.environ.setdefault("DATA_ROOT_DIRECTORY", str(MEMORY_ROOT / "data"))
 # provider (e.g. the Gemini free-tier fallback) is configured.
 os.environ.setdefault("LLM_MODEL", "openai/gpt-4o-mini")
 os.environ.setdefault("LLM_PROVIDER", "openai")
+# Disable Cognee's session/auto-feedback layer (on by default in 1.2.2).
+# When enabled, `search(query_type=GRAPH_COMPLETION)` runs every query
+# through `prepare_session_turn()` first, which classifies repeat/no-new-
+# info queries within the same (user, session) as a "continuing turn" and
+# short-circuits with a canned `"Got it."` instead of actually answering —
+# discovered empirically: re-running the exact same GRAPH_COMPLETION query
+# against a dataset that already had one prior QA turn recorded returned
+# "Got it." instead of the real grounded answer. That is fatal for
+# PatchPilot's core loop (search -> drift-detected -> forget -> re-search
+# must return real content on every step, including the final re-search of
+# an already-asked question). Session memory / reinforcement is a distinct,
+# deliberately deferred feature (see FEEDBACK-01/02, planned for Phase 2)
+# and must not be silently active during Phase 1's exit-gate checks.
+os.environ.setdefault("CACHING", "false")
