@@ -83,12 +83,68 @@ async def seed() -> None:
     print("SEED OK")
 
 
+def _answer_text(results) -> str:
+    return " ".join(str(r) for r in results).strip()
+
+
 async def flip() -> bool:
     """Search -> forget(workarounds_v1_8) -> re-search; print an unambiguous diff.
 
-    Implemented in Task 2 of Plan 01-04.
+    Proves DEMO-02 / ROADMAP SC3: the same GRAPH_COMPLETION query returns a
+    DIFFERENT answer before vs after the surgical forget, and the durable
+    incidents dataset still returns results afterward (INGEST-03 isolation).
     """
-    raise NotImplementedError("flip() is completed in Task 2 of Plan 01-04")
+    print("=" * 72)
+    print(f"BEFORE forget(dataset={WORKAROUNDS_V1_8!r}) -- query: {FLIP_QUERY!r}")
+    print("=" * 72)
+    before_results = await cognee.search(query_text=FLIP_QUERY, query_type=SearchType.GRAPH_COMPLETION)
+    before_answer = _answer_text(before_results)
+    print(before_answer)
+
+    print()
+    print(f"Calling forget(dataset={WORKAROUNDS_V1_8!r}) ...")
+    forget_result = await cognee.forget(dataset=WORKAROUNDS_V1_8)
+    print(f"forget() returned: {forget_result}")
+
+    print()
+    print("=" * 72)
+    print(f"AFTER forget(dataset={WORKAROUNDS_V1_8!r}) -- query: {FLIP_QUERY!r}")
+    print("=" * 72)
+    after_results = await cognee.search(query_text=FLIP_QUERY, query_type=SearchType.GRAPH_COMPLETION)
+    after_answer = _answer_text(after_results)
+    print(after_answer)
+
+    print()
+    print("-" * 72)
+    print("SIDE-BY-SIDE (BEFORE vs AFTER)")
+    print("-" * 72)
+    print(f"BEFORE: {before_answer}")
+    print(f"AFTER:  {after_answer}")
+    print("-" * 72)
+
+    flip_ok = before_answer != after_answer
+    if flip_ok:
+        print("FLIP OK")
+    else:
+        print("FLIP FAILED - BEFORE and AFTER answers are identical")
+
+    # Surgical isolation check (INGEST-03): the durable incidents dataset
+    # must still return results after forget(workarounds_v1_8) — the forget
+    # must not have leaked into or wiped an unrelated dataset.
+    incidents_results = await cognee.search(
+        query_text=INCIDENTS_QUERY,
+        query_type=SearchType.GRAPH_COMPLETION,
+        datasets=[INCIDENTS],
+    )
+    incidents_answer = _answer_text(incidents_results)
+    incidents_survived = bool(incidents_answer)
+    if incidents_survived:
+        print("INCIDENTS SURVIVED")
+        print(f"  incidents answer: {incidents_answer}")
+    else:
+        print("INCIDENTS CHECK FAILED - incidents dataset returned nothing after forget")
+
+    return flip_ok and incidents_survived
 
 
 async def reset() -> None:
