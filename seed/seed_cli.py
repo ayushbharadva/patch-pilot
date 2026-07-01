@@ -150,9 +150,23 @@ async def flip() -> bool:
 async def reset() -> None:
     """Restore from a tar snapshot if one exists, else prune + reseed.
 
-    Wired to scripts/snapshot_memory.py in Task 3 of Plan 01-04.
+    Restoring a snapshot is $0 (see scripts/snapshot_memory.py's module
+    docstring -- only cognify() bills). Falling back to prune + reseed only
+    happens the first time, before any snapshot has been saved.
     """
-    raise NotImplementedError("reset() is wired to scripts/snapshot_memory.py in Task 3 of Plan 01-04")
+    from scripts import snapshot_memory
+
+    if snapshot_memory.snapshot_exists():
+        print("Snapshot found -- restoring instead of re-seeding (zero-cost reset).")
+        snapshot_memory.restore()
+        return
+
+    print("No snapshot found -- pruning and re-seeding from scratch (Pitfall 4: this bills cognify()).")
+    from cognee import prune
+
+    await prune.prune_data()
+    await prune.prune_system()
+    await seed()
 
 
 async def _run(do_seed: bool, do_flip: bool) -> int:
