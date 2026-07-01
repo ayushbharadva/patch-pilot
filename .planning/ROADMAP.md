@@ -29,7 +29,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. A canary incident stored before server restart is retrievable after restart — persistent storage confirmed, ephemeral FS risk retired
   3. Running the seed CLI script produces a different `search(GRAPH_COMPLETION)` answer before vs after `forget()` on the seed workaround dataset — before/after demo flip verified in isolation, Cognee #1023 leakage mitigated by isolated entity names
   4. Dataset naming convention locked in code and seed files: durable incidents in `"incidents"`, per-release workarounds in `"workarounds_v{N}"` — verified by inspecting Cognee storage after seeding
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 01-01-PLAN.md — Environment + Wave-0 Cognee spike (venv, deps, API-key checkpoint, forget-flip + persistence proven in miniature) [wave 1]
+- [ ] 01-02-PLAN.md — Persistence config keystone + dataset naming + /health/cognee + canary (PLAT-01, PLAT-02, INGEST-02/03) [wave 2]
+- [ ] 01-03-PLAN.md — 8-doc seed corpus with isolated entity names (Stripe before/after arc, DEMO-02) [wave 2]
+- [ ] 01-04-PLAN.md — Seed CLI before/after forget flip + zero-cost snapshot (DEMO-02, INGEST-02/03) [wave 3]
 
 ### Phase 2: Core Recall
 **Goal**: Users can ingest incident data, search it, and receive evidence-grounded recommendations in the browser — the diagnosis card works end-to-end with feedback reinforcement and release upload.
@@ -77,7 +81,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/4 | Not started | - |
 | 2. Core Recall | 0/TBD | Not started | - |
 | 3. Drift + Forget | 0/TBD | Not started | - |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |
