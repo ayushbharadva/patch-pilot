@@ -60,8 +60,24 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Engineer clicks Accept on a recommendation — the fix is reinforced via improve() and a second search on the same query returns the accepted fix with higher priority
   4. User uploads a release note and sees it stored as a versioned workaround dataset (workarounds_v{N}), visible in the dataset list in the UI
 
-**Plans**: TBD
+**Plans**: 4 plans
 **UI hint**: yes
+
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Backend keystone (CACHING/AUTO_FEEDBACK flip) + CORS + Wave-0 smoke + fused GRAPH_COMPLETION+CHUNKS /search (RECALL-01/02) [wave 1]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 02-02-PLAN.md — Next.js scaffold + fonts/shadcn/react-query + Search UI slice: diagnosis card (RECALL-01/02/03) [wave 2]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 02-03-PLAN.md — Ingest slice: typed multi-file upload + background cognify + status rows + Load Sample + release routing (INGEST-01, RELEASE-01) [wave 3]
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [ ] 02-04-PLAN.md — Feedback reinforcement (Accept → improve → re-search proof) + dataset list (FEEDBACK-01/02, RELEASE-01) [wave 4]
 
 ### Phase 3: Drift + Forget
 
@@ -103,6 +119,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
-| 2. Core Recall | 0/TBD | Not started | - |
+| 2. Core Recall | 0/4 | Not started | - |
 | 3. Drift + Forget | 0/TBD | Not started | - |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |
