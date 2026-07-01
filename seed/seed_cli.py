@@ -191,6 +191,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    if args.reset and (args.seed or args.flip):
+        parser.error("--reset cannot be combined with --seed/--flip")
+
     if args.reset:
         asyncio.run(reset())
         return 0
