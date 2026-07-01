@@ -22,6 +22,7 @@ with `backend/` as the working directory.
 """
 
 import sys  # noqa: E402
+import uuid  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -49,16 +50,21 @@ async def health_cognee():
     """Exercise a real add -> cognify -> search -> forget round-trip.
 
     Proves the Cognee lifecycle works end-to-end in <30s (PLAT-01) using a
-    single throwaway fixture in the HEALTHCHECK dataset, then forgets it so
-    it never accumulates in real memory.
+    single throwaway fixture in a per-request HEALTHCHECK dataset, then
+    forgets it so it never accumulates in real memory. The dataset name is
+    suffixed with a per-request unique id so concurrent health checks never
+    collide on the same underlying dataset -- without this, one request's
+    `forget()` in `finally` could delete the dataset while another
+    concurrent request's add/cognify/search is still in flight.
     """
+    dataset_name = f"{HEALTHCHECK}_{uuid.uuid4().hex}"
     try:
-        await cognee.add(HEALTH_FIXTURE, dataset_name=HEALTHCHECK)
-        await cognee.cognify(datasets=[HEALTHCHECK])
+        await cognee.add(HEALTH_FIXTURE, dataset_name=dataset_name)
+        await cognee.cognify(datasets=[dataset_name])
         results = await cognee.search(
             query_text=HEALTH_QUERY,
             query_type=SearchType.GRAPH_COMPLETION,
-            datasets=[HEALTHCHECK],
+            datasets=[dataset_name],
         )
         return JSONResponse({"status": "ok", "results": len(results)})
     except Exception as e:  # noqa: BLE001 - health check must never raise
@@ -67,6 +73,6 @@ async def health_cognee():
         # Clean up the throwaway fixture unconditionally so it never
         # pollutes real datasets, even if the round-trip above failed.
         try:
-            await cognee.forget(dataset=HEALTHCHECK)
+            await cognee.forget(dataset=dataset_name)
         except Exception:  # noqa: BLE001 - best-effort cleanup only
             pass
