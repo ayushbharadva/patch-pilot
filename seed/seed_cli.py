@@ -137,7 +137,13 @@ async def flip() -> bool:
         datasets=[INCIDENTS],
     )
     incidents_answer = _answer_text(incidents_results)
-    incidents_survived = bool(incidents_answer)
+    # Assert on canonical content (mirrors the substring-match pattern used
+    # by backend/persistence_check.py's durability check), not just
+    # non-emptiness -- a non-empty but generic/off-topic/hallucinated
+    # answer would otherwise pass this isolation check by mistake.
+    incidents_survived = (
+        "double-charged" in incidents_answer.lower() or "stripe" in incidents_answer.lower()
+    )
     if incidents_survived:
         print("INCIDENTS SURVIVED")
         print(f"  incidents answer: {incidents_answer}")
