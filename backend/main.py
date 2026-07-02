@@ -1,13 +1,12 @@
-"""PatchPilot FastAPI backend — Phase 1 exit-gate: GET /health/cognee.
+"""PatchPilot FastAPI backend — GET /health/cognee, POST /search.
 
 Run with (single worker — Kuzu is file-locked; bind to localhost only):
 
     cd backend && ../.venv/bin/uvicorn main:app --workers 1 --host 127.0.0.1
 
-No CORS middleware is added in Phase 1 (no browser origin exists yet — the
-Next.js frontend lands in Phase 2). If CORS is ever added, never allow a
-wildcard origin (breaks `allow_credentials=True` and is a real security
-risk); pin an explicit origin list instead.
+CORS is enabled for the Next.js dev origin only (Phase 2 — first phase with
+a browser origin). The origin list is always explicit — never a wildcard
+(a wildcard breaks `allow_credentials=True` and is a real security risk).
 
 Note on import style: this module deliberately imports its sibling modules
 as `backend.cognee_config` / `backend.datasets` (package-qualified) rather
@@ -35,12 +34,24 @@ from backend import cognee_config  # noqa: F401,E402  (must run before Cognee is
 import cognee  # noqa: E402
 from cognee import SearchType  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import HEALTHCHECK  # noqa: E402
 
 app = FastAPI()
+
+# Explicit single-origin allowlist — never a wildcard (T-02-01). Next.js dev
+# server only; add the deployed frontend origin here when one exists.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
 logger = logging.getLogger(__name__)
 
 HEALTH_FIXTURE = "PatchPilot health canary: widget X fails on retry."

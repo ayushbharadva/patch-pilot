@@ -37,17 +37,36 @@ os.environ.setdefault("DATA_ROOT_DIRECTORY", str(MEMORY_ROOT / "data"))
 # provider (e.g. the Gemini free-tier fallback) is configured.
 os.environ.setdefault("LLM_MODEL", "openai/gpt-4o-mini")
 os.environ.setdefault("LLM_PROVIDER", "openai")
-# Disable Cognee's session/auto-feedback layer (on by default in 1.2.2).
-# When enabled, `search(query_type=GRAPH_COMPLETION)` runs every query
-# through `prepare_session_turn()` first, which classifies repeat/no-new-
-# info queries within the same (user, session) as a "continuing turn" and
+# Session/feedback config keystone (FEEDBACK-01/02, Phase 2).
+#
+# Phase 1 set CACHING=false wholesale to dodge a real bug: with caching on,
+# `search(query_type=GRAPH_COMPLETION)` runs every query through
+# `prepare_session_turn()` first, which classifies repeat/no-new-info
+# queries within the same (user, session) as a "continuing turn" and
 # short-circuits with a canned `"Got it."` instead of actually answering —
-# discovered empirically: re-running the exact same GRAPH_COMPLETION query
-# against a dataset that already had one prior QA turn recorded returned
-# "Got it." instead of the real grounded answer. That is fatal for
-# PatchPilot's core loop (search -> drift-detected -> forget -> re-search
-# must return real content on every step, including the final re-search of
-# an already-asked question). Session memory / reinforcement is a distinct,
-# deliberately deferred feature (see FEEDBACK-01/02, planned for Phase 2)
-# and must not be silently active during Phase 1's exit-gate checks.
-os.environ.setdefault("CACHING", "false")
+# discovered empirically when re-running the exact same GRAPH_COMPLETION
+# query against a dataset that already had one prior QA turn recorded. That
+# is fatal for PatchPilot's core loop (search -> drift-detected -> forget ->
+# re-search must return real content on every step, including the final
+# re-search of an already-asked question).
+#
+# But CACHING=false also disables Cognee's *entire* session cache, which
+# silently no-ops `add_feedback()`, `get_session()`, and
+# `improve(session_ids=...)` — the only real feedback mechanism in cognee
+# 1.2.2 (there is no `SearchType.FEEDBACK`). Phase 2 needs that mechanism
+# working, so a single CACHING flag can no longer serve both goals.
+#
+# The fix is two independent flags, not one: `CacheConfig` exposes `caching`
+# (gates whether Q&A history is recorded at all) and `auto_feedback` (gates
+# only the LLM turn-continuation classifier that produces "Got it."),
+# checked separately in `session_manager.py`'s `is_auto_feedback_enabled()`.
+# Setting CACHING=true keeps Q&A history recording active (required so
+# add_feedback()/improve(session_ids=...) have data to bridge), while
+# AUTO_FEEDBACK=false disables only the turn-continuation classifier that
+# produced the canned "Got it." acknowledgment in Phase 1 — the "Got it."
+# short-circuit can never fire this way, regardless of how many times the
+# same or a related query runs. See .planning/phases/02-core-recall/
+# 02-RESEARCH.md "Feedback API Resolution" §3-§5 for the full trace through
+# the installed package source.
+os.environ.setdefault("CACHING", "true")
+os.environ.setdefault("AUTO_FEEDBACK", "false")

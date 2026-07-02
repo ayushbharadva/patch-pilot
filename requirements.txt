@@ -5,3 +5,7 @@ python-dotenv==1.0.1
 python-multipart>=0.0.32
 mistralai==1.12.4
 mistral-common==1.11.5
+
+# Test infrastructure (Phase 2 — Wave-0 smoke tests + unit tests)
+pytest>=9.1
+pytest-asyncio>=1.4
