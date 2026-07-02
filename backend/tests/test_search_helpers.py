@@ -11,6 +11,7 @@ if str(_REPO_ROOT) not in sys.path:
 from backend.search import (  # noqa: E402
     _active_search_datasets,
     _flatten_and_truncate,
+    _is_ungrounded_answer,
     _pick_primary_result,
 )
 from backend.datasets import INCIDENTS  # noqa: E402
@@ -89,6 +90,27 @@ def test_flatten_and_truncate_skips_empty_chunks():
     evidence = _flatten_and_truncate(results, limit=3)
     assert len(evidence) == 1
     assert evidence[0]["full_text"] == "real content"
+
+
+def test_is_ungrounded_answer_flags_generic_no_info_replies():
+    # Exact phrases the LLM emits for an off-corpus query (observed live).
+    assert _is_ungrounded_answer("No relevant information.")
+    assert _is_ungrounded_answer("No information available.")
+    assert _is_ungrounded_answer(
+        "I cannot answer how to bake a cake as the provided context is unrelated."
+    )
+    # Empty / whitespace is also ungrounded.
+    assert _is_ungrounded_answer("")
+    assert _is_ungrounded_answer("   ")
+
+
+def test_is_ungrounded_answer_accepts_real_grounded_diagnosis():
+    real = (
+        "The issue of customers being double-charged was fixed in v1.9 with the "
+        "introduction of `idempotency_guard`, which prevents duplicate orders by "
+        "keying Stripe webhook events."
+    )
+    assert not _is_ungrounded_answer(real)
 
 
 async def test_active_search_datasets_returns_incidents_and_workarounds_only(monkeypatch):

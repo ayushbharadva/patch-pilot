@@ -7,8 +7,21 @@ Three self-contained, runtime-behavior assertions (never source greps):
     retires the Phase 1 "Got it." bug (see backend/cognee_config.py's
     docstring and .planning/phases/02-core-recall/02-RESEARCH.md "Feedback
     API Resolution" §3-§5, Common Pitfalls Pitfall 1).
-(b) BinaryIO check — proves cognee.add() accepts an UploadFile-style BinaryIO
-    directly with no temp-file write (RESEARCH.md Assumption A2).
+(b) Upload-ingest check — proves the exact object Plan 02's ingest.py will
+    hand cognee.add() (a FastAPI/Starlette ``UploadFile``) ingests with no
+    temp-file write.
+
+    IMPORTANT — RESEARCH.md Assumption A2 was FALSIFIED by this test: a bare
+    ``BinaryIO`` (e.g. ``open(path, "rb")`` -> ``_io.BufferedReader``, or an
+    ``UploadFile.file`` SpooledTemporaryFile) is NOT accepted by cognee
+    1.2.2 — ``save_data_item_to_storage`` raises
+    ``IngestionError: Data type not supported`` for it. What cognee 1.2.2
+    accepts is the ``UploadFile`` object *itself*, because
+    ``save_data_item_to_storage`` special-cases ``hasattr(data_item,
+    "file")`` and pulls ``data_item.file`` + ``data_item.filename`` off it.
+    So Plan 02's ingest.py must pass the whole ``UploadFile`` to
+    ``cognee.add(...)`` — NOT ``upload.file`` as RESEARCH.md Pattern 1's
+    example showed. This test now proves the corrected, real path.
 (c) Latency check — times one fused GRAPH_COMPLETION + CHUNKS search and
     prints the elapsed seconds, so Plan 02's skeleton-card minimum-display
     time (D-20/B-02) can be tuned. The measured number is also recorded in
@@ -25,6 +38,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+from starlette.datastructures import UploadFile
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_REPO_ROOT) not in sys.path:
@@ -93,17 +107,26 @@ async def test_continuation_regression_retired():
 
 
 @pytest.mark.asyncio
-async def test_binaryio_add_no_temp_file():
-    """cognee.add() must accept a raw BinaryIO (no temp-file write, no
-    prior .read()) exactly as an UploadFile.file would arrive (RESEARCH A2).
+async def test_uploadfile_add_no_temp_file():
+    """cognee.add() must accept a FastAPI/Starlette ``UploadFile`` directly
+    (no temp-file write, no prior .read()) — the exact object Plan 02's
+    ingest.py will receive from FastAPI.
+
+    NOTE: a *bare* ``BinaryIO`` (``open(path, "rb")`` or
+    ``upload.file``) is deliberately NOT used here — cognee 1.2.2 rejects it
+    with ``IngestionError: Data type not supported`` (falsifies RESEARCH A2;
+    see this module's docstring). The whole ``UploadFile`` works because
+    ``save_data_item_to_storage`` special-cases ``hasattr(data_item,
+    "file")``.
     """
-    dataset_name = f"phase2_smoke_binaryio_{uuid.uuid4().hex}"
+    dataset_name = f"phase2_smoke_uploadfile_{uuid.uuid4().hex}"
     try:
         with open(SEED_FILE, "rb") as file_obj:
-            # Pass the raw BinaryIO straight to add() — no .read(), no
-            # NamedTemporaryFile, matching how FastAPI's UploadFile.file
-            # will be handed to add() in backend/ingest.py (future plan).
-            await cognee.add(file_obj, dataset_name=dataset_name)
+            upload = UploadFile(filename=SEED_FILE.name, file=file_obj)
+            # Pass the whole UploadFile straight to add() — no .read(), no
+            # NamedTemporaryFile, exactly as backend/ingest.py (Plan 02)
+            # must do it.
+            await cognee.add(upload, dataset_name=dataset_name)
         await cognee.cognify(datasets=[dataset_name])
 
         # A follow-up search must complete without raising.
@@ -128,7 +151,8 @@ async def test_search_latency(capsys):
     dataset_name = f"phase2_smoke_latency_{uuid.uuid4().hex}"
     try:
         with open(SEED_FILE, "rb") as file_obj:
-            await cognee.add(file_obj, dataset_name=dataset_name)
+            upload = UploadFile(filename=SEED_FILE.name, file=file_obj)
+            await cognee.add(upload, dataset_name=dataset_name)
         await cognee.cognify(datasets=[dataset_name])
 
         start = time.perf_counter()

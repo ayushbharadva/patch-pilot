@@ -38,6 +38,40 @@ EXCERPT_LENGTH = 200
 
 _WORKAROUNDS_VERSION_RE = re.compile(r"^workarounds_v(\d+)(?:_(\d+))?$")
 
+# Explainable no-grounding markers (D-21). GRAPH_COMPLETION does not raise or
+# return empty text for an off-corpus query — the LLM instead emits a generic
+# "I have no relevant context" style answer (the default answer prompt is just
+# "Answer the question using the provided context"). Surfacing that generic
+# reply as a diagnosis would be exactly the "ungrounded generic LLM answer"
+# D-21 forbids, so we detect it and return no_results instead. These are
+# substring markers matched against the normalized (lowercased) answer; the
+# real seed answers (e.g. the idempotency_guard fix) never contain them.
+_UNGROUNDED_ANSWER_MARKERS = (
+    "no relevant information",
+    "no relevant data",
+    "no relevant context",
+    "no information available",
+    "no information is available",
+    "cannot answer",
+    "can't answer",
+    "unable to answer",
+    "context is unrelated",
+    "context provided is unrelated",
+    "not enough information",
+    "no context is provided",
+    "i don't have",
+    "i do not have",
+)
+
+
+def _is_ungrounded_answer(text: str) -> bool:
+    """True when a GRAPH_COMPLETION answer is a generic no-grounding reply
+    rather than a real, evidence-backed diagnosis (D-21)."""
+    normalized = " ".join(text.lower().split()) if text else ""
+    if not normalized:
+        return True
+    return any(marker in normalized for marker in _UNGROUNDED_ANSWER_MARKERS)
+
 
 class SearchRequest(BaseModel):
     query: str = Field(..., min_length=1)
@@ -144,8 +178,15 @@ async def search(request: SearchRequest):
     primary = _pick_primary_result(root_cause_results)
     evidence = _flatten_and_truncate(evidence_results, limit=EVIDENCE_LIMIT)
 
-    if not primary and not evidence:
-        return {"status": "no_results"}  # D-21 — never fabricate an ungrounded answer
+    root_cause = _result_text(primary.get("search_result")) if primary else ""
+
+    # D-21 — never fabricate an ungrounded answer. Against a loaded corpus,
+    # CHUNKS vector search always returns nearest-neighbor chunks (evidence is
+    # never empty) and GRAPH_COMPLETION returns a generic "no relevant
+    # information" reply rather than empty text, so a bare emptiness check is
+    # insufficient: gate on whether the root cause is actually grounded.
+    if not root_cause or _is_ungrounded_answer(root_cause):
+        return {"status": "no_results"}
 
     qa_id = None
     try:
@@ -157,7 +198,7 @@ async def search(request: SearchRequest):
 
     return {
         "status": "ok",
-        "root_cause": _result_text(primary.get("search_result")) if primary else "",
+        "root_cause": root_cause,
         "evidence": evidence,
         "source_dataset": primary.get("dataset_name") if primary else None,
         "session_id": session_id,
