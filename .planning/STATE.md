@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v1.9
 milestone_name: milestone
-current_phase: 2
-current_phase_name: Core Recall
+current_phase: 02
+current_phase_name: core-recall
 status: executing
 stopped_at: Phase 02 UI-SPEC approved
-last_updated: "2026-07-01T22:33:09.004Z"
-last_activity: 2026-07-01
-last_activity_desc: Phase 01 complete, transitioned to Phase 2
+last_updated: "2026-07-02T05:10:39.687Z"
+last_activity: 2026-07-02
+last_activity_desc: Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 4
+  total_plans: 8
   completed_plans: 4
   percent: 25
 ---
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-30)
 
 **Core value:** search → drift-detected → forget → re-search loop works visibly in under 60 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle
-**Current focus:** Phase 01 — foundation
+**Current focus:** Phase 02 — core-recall
 
 ## Current Position
 
-Phase: 2 — Core Recall
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-07-01 — Phase 01 complete, transitioned to Phase 2
+Phase: 02 (core-recall) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 02
+Last activity: 2026-07-02 — Phase 02 execution started
 
 Progress: [██████████] 100% (Phase 01 plans) — 25% of milestone (1 of 4 phases)
 
@@ -88,6 +88,7 @@ None yet.
 - **Cognee #1023**: `forget(dataset=...)` leaks across datasets in vector layer; seed data must use strictly isolated entity names (Phase 1 exit gate includes before/after CLI assertion)
 - **Cognify budget**: Seed corpus is 8 files (per D-03/01-03-PLAN), each 172-220 words, well under the ~300-word budget; provider is now Mistral free tier (not OpenAI, see Decisions), so per-token cost risk is lower than originally assumed. Still cache cognified state as tar snapshot for zero-cost reseeds.
 - **RESOLVED** — Gemini free-tier daily quota (20 req/day, gemini-2.5-flash) exhausted mid-Task-3 verification (backend/persistence_check.py --store); cognify() retries never succeeded. User pivoted to Mistral's free tier instead of waiting for reset or paying for OpenAI (see Decisions).
+- Phase 2 Plan 1 blocked: Wave-0 smoke test needs LLM_API_KEY via .env (Mistral free tier or OpenAI); none exists on this fresh Windows checkout. Config flip + CORS + POST /search + sessions.py implemented and committed; grep criteria and unit tests pass; live smoke assertions blocked pending credentials.
 
 ## Deferred Items
 
