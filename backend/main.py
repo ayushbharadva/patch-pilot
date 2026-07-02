@@ -1,4 +1,5 @@
-"""PatchPilot FastAPI backend — GET /health/cognee, POST /search.
+"""PatchPilot FastAPI backend — GET /health/cognee, POST /search,
+POST /ingest, GET /ingest/status, POST /sample/load.
 
 Run with (single worker — Kuzu is file-locked; bind to localhost only):
 
@@ -39,6 +40,7 @@ from fastapi.responses import JSONResponse  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import HEALTHCHECK  # noqa: E402
+from backend.ingest import router as ingest_router  # noqa: E402
 from backend.search import router as search_router  # noqa: E402
 
 app = FastAPI()
@@ -98,3 +100,4 @@ async def health_cognee():
 
 
 app.include_router(search_router)
+app.include_router(ingest_router)
