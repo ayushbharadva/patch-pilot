@@ -8,9 +8,20 @@ must receive the whole FastAPI/Starlette ``UploadFile`` object, never
 test_uploadfile_add_no_temp_file) that a bare BinaryIO raises
 ``IngestionError: Data type not supported`` on cognee==1.2.2 --
 ``save_data_item_to_storage`` special-cases ``hasattr(data_item, "file")``
-and reads ``.file`` + ``.filename`` off the UploadFile itself. Every add()
-call in this module passes the whole UploadFile (or a freshly constructed
-one wrapping a BytesIO, for /sample/load's on-disk seed files).
+and reads ``.file`` + ``.filename`` off the UploadFile itself.
+
+SECOND DEVIATION (found live-testing this plan, Rule 1 bug): even when
+wrapped in an UploadFile, cognee's ``classify()`` further restricts the
+underlying ``.file`` object to exactly ``BufferedReader`` or
+``SpooledTemporaryFile`` -- a plain ``io.BytesIO`` (an initially-tempting
+choice for /sample/load's on-disk seed docs, since no real upload stream
+exists) raises the same ``IngestionError`` for a different reason:
+"Type of data sent to classify(...) not supported ... <class
+'_io.BytesIO'>". /sample/load therefore passes seed doc text as a plain
+``str`` to cognee.add() instead -- the exact, already-proven path
+seed/seed_cli.py's seed() uses. Real browser uploads (POST /ingest) still
+pass the whole UploadFile (its ``.file`` is a genuine SpooledTemporaryFile
+from FastAPI's multipart parser, which classify() does accept).
 
 Import order follows the config-before-import keystone (see
 backend/cognee_config.py's module docstring): backend.cognee_config, then
@@ -20,7 +31,6 @@ cognee, then backend.cognee_patches, before anything else touches Cognee.
 import logging
 import re
 import sys
-from io import BytesIO
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -126,8 +136,10 @@ def _file_size_bytes(file: UploadFile) -> int:
 async def _ingest_one(file_obj, filename: str, dataset_name: str) -> None:
     """Background task: add() + cognify() one item into its routed dataset.
 
-    file_obj must be the whole UploadFile object -- see this module's
-    docstring. Failures are logged and NOT re-raised: they surface to the
+    file_obj must be either the whole UploadFile object (real browser
+    uploads) or a plain str (on-disk seed docs via /sample/load) -- see this
+    module's docstring for why a bare BytesIO/BinaryIO does not work for
+    either path. Failures are logged and NOT re-raised: they surface to the
     client only via /ingest/status polling as "failed" (D-23), never as an
     unhandled 500 (D-24).
     """
@@ -206,12 +218,14 @@ async def ingest_status(dataset: str):
 async def load_sample(background_tasks: BackgroundTasks):
     """D-03/D-04: ingest the bundled 8-doc Stripe arc through the identical
     _ingest_one pipeline as a real upload -- never pre-baked, never merging
-    folders into one dataset (seed/README.md isolation rule)."""
+    folders into one dataset (seed/README.md isolation rule). Seed doc text
+    is read and passed as a plain str (matching seed/seed_cli.py's proven
+    seed() path) -- see this module's docstring for why BytesIO fails
+    cognee's classify()."""
     datasets_touched = []
     for dataset_name, folder in SAMPLE_DATASET_FOLDERS.items():
         for doc_path in sorted(folder.glob("*.md")):
-            data = doc_path.read_bytes()
-            upload = UploadFile(filename=doc_path.name, file=BytesIO(data))
-            background_tasks.add_task(_ingest_one, upload, doc_path.name, dataset_name)
+            text = doc_path.read_text()
+            background_tasks.add_task(_ingest_one, text, doc_path.name, dataset_name)
         datasets_touched.append(dataset_name)
     return {"status": "accepted", "datasets": datasets_touched}
