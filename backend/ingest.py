@@ -174,13 +174,22 @@ MAX_BATCH = 20  # per-request file count cap
 # dataset, healthcheck, canary, or inject path/name characters.
 _RELEASE_VERSION_RE = re.compile(r"^[0-9]+(_[0-9]+)*$")
 
-# Cognee's own PipelineRun states (RESEARCH.md Pattern 2) mapped onto the
-# D-05/D-22 badge states -- no custom status table needed.
+# Cognee's own PipelineRunStatus enum (cognee 1.2.2:
+# cognee.modules.pipelines.models.PipelineRun.PipelineRunStatus) mapped onto
+# the D-05/D-22 badge states. EIGHTH DEVIATION (found live-testing the 02-04
+# checkpoint): RESEARCH.md Pattern 2 assumed string values
+# "PipelineRunStarted"/"PipelineRunCompleted"/"PipelineRunAlreadyCompleted"/
+# "PipelineRunErrored", but cognee 1.2.2's actual enum members are
+# DATASET_PROCESSING_INITIATED/_STARTED/_COMPLETED/_ERRORED. Since
+# PipelineRunStatus is a plain Enum (not a str subclass), comparing the raw
+# member object against these string keys never matched anything, so every
+# dataset silently fell through to the "processing" default forever -- the
+# status badge never advanced to "ready" even for a fully-cognified dataset.
 STATUS_MAP = {
-    "PipelineRunStarted": "processing",
-    "PipelineRunCompleted": "ready",
-    "PipelineRunAlreadyCompleted": "ready",
-    "PipelineRunErrored": "failed",
+    "DATASET_PROCESSING_INITIATED": "processing",
+    "DATASET_PROCESSING_STARTED": "processing",
+    "DATASET_PROCESSING_COMPLETED": "ready",
+    "DATASET_PROCESSING_ERRORED": "failed",
 }
 
 # D-24 short human messages -- never raw exception/validation detail.
@@ -330,8 +339,11 @@ async def ingest_status(dataset: str):
             # yet. Read as "still processing", not an error.
             return {"dataset": dataset, "status": "processing"}
         status = await cognee.datasets.get_status([ds.id])
-        raw = status.get(str(ds.id), "PipelineRunStarted")
-        return {"dataset": dataset, "status": STATUS_MAP.get(raw, "processing")}
+        raw = status.get(str(ds.id), "DATASET_PROCESSING_STARTED")
+        # raw is a PipelineRunStatus enum member (not a str subclass) --
+        # extract .value before mapping (EIGHTH DEVIATION above).
+        raw_value = raw.value if hasattr(raw, "value") else raw
+        return {"dataset": dataset, "status": STATUS_MAP.get(raw_value, "processing")}
     except Exception:  # noqa: BLE001 - D-24
         logger.exception("status lookup failed for dataset=%s", dataset)
         return {"dataset": dataset, "status": "processing"}

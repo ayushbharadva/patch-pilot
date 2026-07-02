@@ -18,8 +18,9 @@ from backend.datasets import INCIDENTS  # noqa: E402
 
 
 class _FakeDataset:
-    def __init__(self, name: str):
+    def __init__(self, name: str, id: str | None = None):
         self.name = name
+        self.id = id or name
 
 
 def test_pick_primary_result_prefers_non_empty_text():
@@ -125,9 +126,42 @@ async def test_active_search_datasets_returns_incidents_and_workarounds_only(mon
     async def _fake_list_datasets():
         return fake_datasets
 
+    async def _fake_list_data(dataset_id):
+        # Every candidate dataset has at least one document in this test.
+        return ["doc"]
+
     import cognee
 
     monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+    monkeypatch.setattr(cognee.datasets, "list_data", _fake_list_data)
 
     active = await _active_search_datasets()
     assert active == [INCIDENTS, "workarounds_v1_8", "workarounds_v1_9"]
+
+
+async def test_active_search_datasets_excludes_empty_datasets(monkeypatch):
+    """NINTH DEVIATION regression lock: a dataset with a "completed" pipeline
+    status but ZERO documents (e.g. an upload whose add() never landed) must
+    be excluded, or Cognee's CHUNKS retriever raises NoDataError for it and
+    fails the entire fused search via asyncio.gather (search.py 02-04
+    checkpoint bug)."""
+    fake_datasets = [
+        _FakeDataset(INCIDENTS, id="incidents-id"),
+        _FakeDataset("workarounds_v1_9", id="v1_9-id"),
+        _FakeDataset("workarounds_v2_0", id="v2_0-id"),  # exists but empty
+    ]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    async def _fake_list_data(dataset_id):
+        return [] if dataset_id == "v2_0-id" else ["doc"]
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+    monkeypatch.setattr(cognee.datasets, "list_data", _fake_list_data)
+
+    active = await _active_search_datasets()
+    assert active == [INCIDENTS, "workarounds_v1_9"]
+    assert "workarounds_v2_0" not in active

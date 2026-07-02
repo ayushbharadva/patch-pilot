@@ -78,11 +78,35 @@ class SearchRequest(BaseModel):
 
 
 async def _active_search_datasets() -> list[str]:
-    """Durable incidents plus every currently-live workaround version,
-    discovered dynamically so this works both before and after a release
-    upload (D-16)."""
+    """Durable incidents plus every currently-live workaround version that
+    actually holds documents, discovered dynamically so this works both
+    before and after a release upload (D-16).
+
+    NINTH DEVIATION (found live-testing the 02-04 checkpoint, Rule 1 bug):
+    a dataset can exist and report a "completed" pipeline status while still
+    holding ZERO documents -- e.g. an upload whose add() never actually
+    landed a doc, or a release version created but never populated. Cognee's
+    CHUNKS retriever raises NoDataError for a genuinely empty dataset
+    (`ChunksRetriever.get_retrieved_objects` -> `CollectionNotFoundError:
+    Collection 'DocumentChunk_text' not found`), and
+    `search_in_datasets_context` fans out one retrieval task per dataset via
+    `asyncio.gather(*tasks)` WITHOUT `return_exceptions=True` -- so a single
+    empty dataset raises and cancels the ENTIRE fused search across every
+    OTHER (perfectly healthy) dataset too, not just itself. Filtering on
+    pipeline status alone does not catch this (an empty dataset's cognify()
+    still reports DATASET_PROCESSING_COMPLETED, since there was nothing to
+    process) -- doc_count is the only reliable signal, so this reuses the
+    same list_data()-length check datasets_router.py already uses for the
+    dataset list's doc counts.
+    """
     all_datasets = await cognee.datasets.list_datasets()
-    return [INCIDENTS] + [d.name for d in all_datasets if d.name.startswith("workarounds_v")]
+    candidates = [d for d in all_datasets if d.name == INCIDENTS or d.name.startswith("workarounds_v")]
+    ready = []
+    for d in candidates:
+        doc_count = len(await cognee.datasets.list_data(d.id))
+        if doc_count > 0:
+            ready.append(d.name)
+    return ready
 
 
 def _result_text(raw) -> str:
@@ -151,6 +175,11 @@ async def search(request: SearchRequest):
         return {"status": "no_results"}
 
     datasets = await _active_search_datasets()
+    if not datasets:
+        # Nothing has finished ingesting yet (D-21) -- never hand an empty
+        # dataset list to cognee.search(), which has no defined behavior
+        # for it.
+        return {"status": "no_results"}
     session_id = new_session_id()
 
     try:
