@@ -39,6 +39,7 @@ from fastapi.responses import JSONResponse  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import HEALTHCHECK  # noqa: E402
+from backend.search import router as search_router  # noqa: E402
 
 app = FastAPI()
 
@@ -94,3 +95,6 @@ async def health_cognee():
                 dataset_name,
                 exc_info=True,
             )
+
+
+app.include_router(search_router)
