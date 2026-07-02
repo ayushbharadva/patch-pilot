@@ -202,3 +202,13 @@ None - no external service configuration required. (LLM/embedding provider is al
 ---
 *Phase: 03-drift-forget*
 *Completed: 2026-07-02*
+
+## Self-Check: PASSED
+
+- FOUND: backend/drift.py
+- FOUND: backend/tests/test_drift_forget.py
+- FOUND: .planning/phases/03-drift-forget/03-01-SUMMARY.md
+- FOUND: d520343 (test commit)
+- FOUND: 9ba4ef0 (feat commit — backend)
+- FOUND: 27a6c8e (feat commit — frontend)
+- FOUND: 378d82a (docs commit — this summary)
