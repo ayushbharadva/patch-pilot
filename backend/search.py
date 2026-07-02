@@ -117,6 +117,18 @@ async def _active_search_datasets() -> list[str]:
     return ready
 
 
+async def _all_workaround_dataset_names() -> list[str]:
+    """Every live `incidents`/`workarounds_v{N}` name, regardless of
+    doc_count -- used ONLY for drift classification so `/search` and
+    `/datasets` never disagree (CR-01). Unlike `_active_search_datasets()`,
+    this intentionally includes a just-uploaded `workarounds_v{N+1}` that
+    hasn't finished `cognify()` yet (doc_count still 0), since
+    `compute_drift_states` needs to see it to correctly demote the prior
+    highest version to "drifting" during that transient window."""
+    all_datasets = await cognee.datasets.list_datasets()
+    return [d.name for d in all_datasets if d.name == INCIDENTS or d.name.startswith("workarounds_v")]
+
+
 def _result_text(raw) -> str:
     """Normalize a Cognee completion value (str, list[str]/list[dict], or
     None) into flat display text."""
@@ -228,7 +240,14 @@ async def search(request: SearchRequest):
     # can't be a top-level import (circular with backend.drift).
     from backend.drift import compute_drift_states
 
-    drift_states = compute_drift_states(datasets)
+    # CR-01: classify drift over the FULL candidate list (every live
+    # incidents/workarounds_v{N} name), not the doc_count-filtered
+    # `datasets` list used for the actual search calls -- otherwise a
+    # just-uploaded, still-cognifying workarounds_v{N+1} is invisible here
+    # while GET /datasets already sees it, and the two endpoints disagree
+    # about which dataset is drifting during that transient window.
+    all_names = await _all_workaround_dataset_names()
+    drift_states = compute_drift_states(all_names)
     primary = _pick_primary_result(root_cause_results, drift_states)
     evidence = _flatten_and_truncate(evidence_results, limit=EVIDENCE_LIMIT)
 
