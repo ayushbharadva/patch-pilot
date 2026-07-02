@@ -137,8 +137,31 @@ async def test_is_forgettable_workaround_rejects_healthcheck_and_canary(monkeypa
     assert not await _is_forgettable_workaround("canary")
 
 
-async def test_is_forgettable_workaround_accepts_live_workaround(monkeypatch):
-    """A live workarounds_v{N} present in list_datasets() is forgettable."""
+async def test_is_forgettable_workaround_accepts_live_drifting_workaround(monkeypatch):
+    """A live workarounds_v{N} present in list_datasets() AND classified
+    "drifting" (i.e. NOT the current highest version) is forgettable
+    (CR-02)."""
+    fake_datasets = [
+        _FakeDataset(INCIDENTS),
+        _FakeDataset("workarounds_v1_8"),
+        _FakeDataset("workarounds_v1_9"),
+        _FakeDataset("workarounds_v1_10"),
+    ]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+
+    assert await _is_forgettable_workaround("workarounds_v1_9")
+
+
+async def test_is_forgettable_workaround_rejects_current_highest_version(monkeypatch):
+    """CR-02: the current, non-drifting, highest-version workaround must
+    never be forgettable server-side, even though it is present in the live
+    dataset list -- this is the exact data-loss path CR-02 closes."""
     fake_datasets = [
         _FakeDataset(INCIDENTS),
         _FakeDataset("workarounds_v1_8"),
@@ -152,7 +175,7 @@ async def test_is_forgettable_workaround_accepts_live_workaround(monkeypatch):
 
     monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
 
-    assert await _is_forgettable_workaround("workarounds_v1_9")
+    assert not await _is_forgettable_workaround("workarounds_v1_9")
 
 
 async def test_is_forgettable_workaround_rejects_forged_name(monkeypatch):

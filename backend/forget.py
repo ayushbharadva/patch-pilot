@@ -44,12 +44,21 @@ async def _is_forgettable_workaround(name: str) -> bool:
     `workarounds_v{N}` name (this rejects `healthcheck`/`canary`/any forged
     string too, closing Pitfall 2 before any Cognee call) can never be
     forgotten through this route. Only a name that is BOTH shaped like a
-    workaround version AND present in the live dataset list is
-    forgettable."""
+    workaround version, present in the live dataset list, AND classified
+    `"drifting"` by the same shared `compute_drift_states` classifier
+    `/search` and `/datasets` use is forgettable (CR-02) -- the current,
+    non-drifting, highest-version workaround is the one actually in active
+    use and must never be forgettable server-side, regardless of what the
+    frontend chooses to render."""
     if name == INCIDENTS or not _WORKAROUNDS_VERSION_RE.match(name):
         return False
     all_datasets = await cognee.datasets.list_datasets()
-    return any(ds.name == name for ds in all_datasets)
+    names = [ds.name for ds in all_datasets if ds.name == INCIDENTS or ds.name.startswith("workarounds_v")]
+    if name not in names:
+        return False
+    from backend.drift import compute_drift_states
+
+    return compute_drift_states(names).get(name) == "drifting"
 
 
 @router.post("/forget")
