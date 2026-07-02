@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/providers";
+import { Toaster } from "@/components/ui/sonner";
 
 // Locked typefaces (CLAUDE.md / PROJECT.md / 02-UI-SPEC.md "Typography"):
 // Space Grotesk (display/headings), Inter (body/UI), IBM Plex Mono
@@ -41,6 +42,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   );

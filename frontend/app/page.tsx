@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
+import { UploadPanel } from "@/components/UploadPanel";
 import type { SearchResponse } from "@/lib/api";
 
 /**
@@ -34,6 +35,10 @@ export default function Home() {
         ) : (
           <EmptyState />
         )}
+      </section>
+
+      <section aria-label="Upload incident memory">
+        <UploadPanel />
       </section>
     </main>
   );
