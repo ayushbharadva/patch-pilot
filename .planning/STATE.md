@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
 status: executing
-stopped_at: Phase 02 UI-SPEC approved
-last_updated: "2026-07-02T05:10:39.687Z"
+stopped_at: Completed 02-01-PLAN.md (fused /search + config keystone)
+last_updated: "2026-07-02T06:49:57.081Z"
 last_activity: 2026-07-02
 last_activity_desc: Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 4
+  completed_plans: 5
   percent: 25
 ---
 
@@ -29,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 ## Current Position
 
 Phase: 02 (core-recall) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 02
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-07-02 — Phase 02 execution started
 
 Progress: [██████████] 100% (Phase 01 plans) — 25% of milestone (1 of 4 phases)
@@ -58,6 +58,7 @@ Progress: [██████████] 100% (Phase 01 plans) — 25% of mile
 | Phase 01 P02 | 70min | 3 tasks | 6 files |
 | Phase 01 P03 | 15min | 3 tasks | 9 files |
 | Phase 01 P04 | 35min | 3 tasks | 2 files |
+| Phase 02 P01 | 95min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 01-03]: Canonical demo query term locked: customers double-charged (Stripe arc only, absent from decoys)
 - [Phase 01-04]: flip() search() is deliberately unscoped (matches 01-RESEARCH.md Pattern 3), which surfaces harmless leftover spike/healthcheck datasets in the printed demo diff -- cosmetic only, both FLIP OK and INCIDENTS SURVIVED assertions passed
 - [Phase 01-04]: scripts/snapshot_memory.py is pure filesystem tar work with no cognee import -- verified restore-then-search round trip with zero add()/cognify() calls
+- [Phase 02-01]: CACHING=true + AUTO_FEEDBACK=false: two independent flags keep Q&A history recording (for feedback) while permanently disabling the LLM turn-continuation classifier that caused the Phase 1 'Got it.' regression. Verified live. Unblocks FEEDBACK-01/02 (B-01 resolved).
+- [Phase 02-01]: cognee 1.2.2 ingestion: cognee.add() must be passed the whole FastAPI/Starlette UploadFile (reads .file+.filename), NOT upload.file/bare BinaryIO (raises IngestionError). Falsifies RESEARCH Assumption A2; Plan 02 ingest.py must pass the UploadFile object.
+- [Phase 02-01]: Fused-search latency measured ~7.1s (Mistral free tier, seed corpus), above RESEARCH's ~5s assumption. Plan 02 must size the D-20 skeleton-card minimum-display time accordingly.
 
 ### Pending Todos
 
@@ -88,7 +92,6 @@ None yet.
 - **Cognee #1023**: `forget(dataset=...)` leaks across datasets in vector layer; seed data must use strictly isolated entity names (Phase 1 exit gate includes before/after CLI assertion)
 - **Cognify budget**: Seed corpus is 8 files (per D-03/01-03-PLAN), each 172-220 words, well under the ~300-word budget; provider is now Mistral free tier (not OpenAI, see Decisions), so per-token cost risk is lower than originally assumed. Still cache cognified state as tar snapshot for zero-cost reseeds.
 - **RESOLVED** — Gemini free-tier daily quota (20 req/day, gemini-2.5-flash) exhausted mid-Task-3 verification (backend/persistence_check.py --store); cognify() retries never succeeded. User pivoted to Mistral's free tier instead of waiting for reset or paying for OpenAI (see Decisions).
-- Phase 2 Plan 1 blocked: Wave-0 smoke test needs LLM_API_KEY via .env (Mistral free tier or OpenAI); none exists on this fresh Windows checkout. Config flip + CORS + POST /search + sessions.py implemented and committed; grep criteria and unit tests pass; live smoke assertions blocked pending credentials.
 
 ## Deferred Items
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-01T22:08:08.885Z
-Stopped at: Phase 02 UI-SPEC approved
-Resume file: .planning/phases/02-core-recall/02-UI-SPEC.md
+Last session: 2026-07-02T06:49:57.069Z
+Stopped at: Completed 02-01-PLAN.md (fused /search + config keystone)
+Resume file: None

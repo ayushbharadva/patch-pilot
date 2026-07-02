@@ -60,12 +60,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Engineer clicks Accept on a recommendation — the fix is reinforced via improve() and a second search on the same query returns the accepted fix with higher priority
   4. User uploads a release note and sees it stored as a versioned workaround dataset (workarounds_v{N}), visible in the dataset list in the UI
 
-**Plans**: 4 plans
+**Plans**: 1/4 plans executed
 **UI hint**: yes
 
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Backend keystone (CACHING/AUTO_FEEDBACK flip) + CORS + Wave-0 smoke + fused GRAPH_COMPLETION+CHUNKS /search (RECALL-01/02) [wave 1]
+- [x] 02-01-PLAN.md — Backend keystone (CACHING/AUTO_FEEDBACK flip) + CORS + Wave-0 smoke + fused GRAPH_COMPLETION+CHUNKS /search (RECALL-01/02) [wave 1]
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -119,6 +119,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
-| 2. Core Recall | 0/4 | Not started | - |
+| 2. Core Recall | 1/4 | In Progress|  |
 | 3. Drift + Forget | 0/TBD | Not started | - |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |

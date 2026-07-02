@@ -15,8 +15,8 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Recall & Diagnosis
 
-- [ ] **RECALL-01**: User can search a bug and get a root-cause recommendation via `search(GRAPH_COMPLETION)`
-- [ ] **RECALL-02**: The recommendation shows the exact prior incidents it rests on via `search(CHUNKS)`, fused into one response
+- [x] **RECALL-01**: User can search a bug and get a root-cause recommendation via `search(GRAPH_COMPLETION)`
+- [x] **RECALL-02**: The recommendation shows the exact prior incidents it rests on via `search(CHUNKS)`, fused into one response
 - [ ] **RECALL-03**: Results render in a diagnosis card — root cause beside the evidence incidents it was reconstructed from
 
 ### Feedback & Reinforcement
@@ -95,8 +95,8 @@ Deferred beyond the hackathon.
 | INGEST-01 | Phase 2 | Pending |
 | INGEST-02 | Phase 1 | Complete |
 | INGEST-03 | Phase 1 | Complete |
-| RECALL-01 | Phase 2 | Pending |
-| RECALL-02 | Phase 2 | Pending |
+| RECALL-01 | Phase 2 | Complete |
+| RECALL-02 | Phase 2 | Complete |
 | RECALL-03 | Phase 2 | Pending |
 | FEEDBACK-01 | Phase 2 | Pending |
 | FEEDBACK-02 | Phase 2 | Pending |
