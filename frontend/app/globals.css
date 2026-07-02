@@ -57,7 +57,7 @@
 
   /* Phase 3 drift-badge palette (03-UI-SPEC.md "Implementation note") --
      registers the already-declared :root/.dark values below so Tailwind v4
-     generates bg-drift-*/text-drift-*/border-drift-* utilities. */
+     generates bg-drift-, text-drift-, and border-drift- state utilities. */
   --color-drift-stable: var(--color-drift-stable);
   --color-drift-aging: var(--color-drift-aging);
   --color-drift-drifting: var(--color-drift-drifting);
