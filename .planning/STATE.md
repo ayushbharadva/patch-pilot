@@ -6,9 +6,9 @@ current_phase: 02
 current_phase_name: core-recall
 status: complete
 stopped_at: Phase 3 context gathered
-last_updated: "2026-07-02T14:24:05.689Z"
+last_updated: "2026-07-02T14:26:09.927Z"
 last_activity: 2026-07-02
-last_activity_desc: Phase 02 complete, STATE reconciled with ROADMAP
+last_activity_desc: "Completed quick task 260702-ros: widen demo-loop timing constraint 60s -> 120s"
 progress:
   total_phases: 4
   completed_phases: 2
@@ -23,7 +23,7 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-06-30)
 
-**Core value:** search → drift-detected → forget → re-search loop works visibly in under 60 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle
+**Core value:** search → drift-detected → forget → re-search loop works visibly in under 120 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle
 **Current focus:** Phase 02 — core-recall
 
 ## Current Position
@@ -101,6 +101,12 @@ None yet.
 - **Cognee #1023**: `forget(dataset=...)` leaks across datasets in vector layer; seed data must use strictly isolated entity names (Phase 1 exit gate includes before/after CLI assertion)
 - **Cognify budget**: Seed corpus is 8 files (per D-03/01-03-PLAN), each 172-220 words, well under the ~300-word budget; provider is now Mistral free tier (not OpenAI, see Decisions), so per-token cost risk is lower than originally assumed. Still cache cognified state as tar snapshot for zero-cost reseeds.
 - **RESOLVED** — Gemini free-tier daily quota (20 req/day, gemini-2.5-flash) exhausted mid-Task-3 verification (backend/persistence_check.py --store); cognify() retries never succeeded. User pivoted to Mistral's free tier instead of waiting for reset or paying for OpenAI (see Decisions).
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260702-ros | Widen demo-loop timing constraint 60s → 120s across 14 planning docs (PROJECT.md, CLAUDE.md, REQUIREMENTS.md DEMO-03, ROADMAP.md Phase 4, research corpus, phase context docs) | 2026-07-02 | 1c42254, 3e313c2 | [260702-ros-change-the-demo-video-loop-timing-constr](./quick/260702-ros-change-the-demo-video-loop-timing-constr/) |
 
 ## Deferred Items
 
