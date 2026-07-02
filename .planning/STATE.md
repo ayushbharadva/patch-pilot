@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
 status: executing
-stopped_at: "Completed 02-02-PLAN.md (search slice frontend: dashboard + SearchBar + DiagnosisCard)"
-last_updated: "2026-07-02T07:19:27.023Z"
+stopped_at: "Completed 02-03-PLAN.md (ingest vertical slice: upload panel + background-cognify endpoint)"
+last_updated: "2026-07-02T11:14:27.898Z"
 last_activity: 2026-07-02
 last_activity_desc: Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 25
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 ## Current Position
 
 Phase: 02 (core-recall) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-07-02 — Phase 02 execution started
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100% (Phase 01 plans) — 25% of mile
 | Phase 01 P04 | 35min | 3 tasks | 2 files |
 | Phase 02 P01 | 95min | 2 tasks | 9 files |
 | Phase 02 P02 | 70min | 3 tasks | 31 files |
+| Phase 02 P03 | 180min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 02-02]: UI-SPEC indigo brand accent mapped to shadcn's primary token (CTA fills, focus rings, active chip); shadcn's own accent token left as a neutral hover color to avoid terminology collision.
 - [Phase 02-02]: shadcn v4 CLI replaced --base-color with --base <radix|base> + -p <preset>; used 'shadcn init --template next --base radix --css-variables -p nova -y' (neutral base carried by components.json baseColor:neutral) — same six blocks + CSS-variable theming landed.
 - [Phase 02-02]: DiagnosisCardSkeleton shows a shape-matched card + "Searching memory…" label (not a bare spinner) because Plan 01 measured ~7.1s fused-search latency, above the ~5s bare-skeleton threshold (D-20/B-02).
+- [Phase 02-03]: asyncio.create_task() replaces FastAPI BackgroundTasks for all cognee background work in this project -- BackgroundTasks reliably hangs cognify() in the live uvicorn process (A/B-verified); every future background cognee call must reuse this pattern
+- [Phase 02-03]: cognee.add() always receives decoded UTF-8 text (str), never the UploadFile object, across every ingest path in this project -- sidesteps a real cognee bug (BinaryData.get_metadata->run_sync RuntimeError under asyncio.create_task) and a closed-file-handle bug
+- [Phase 02-03]: Every background-scheduled batch (multi-file upload, multi-dataset sample load) processes items SEQUENTIALLY inside one task, never as concurrent asyncio.create_task() calls -- concurrent cognify() calls stall in this environment
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-02T07:19:27.007Z
-Stopped at: Completed 02-02-PLAN.md (search slice frontend: dashboard + SearchBar + DiagnosisCard)
+Last session: 2026-07-02T11:14:27.883Z
+Stopped at: Completed 02-03-PLAN.md (ingest vertical slice: upload panel + background-cognify endpoint)
 Resume file: None

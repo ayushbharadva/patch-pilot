@@ -9,7 +9,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Ingest & Remember
 
-- [ ] **INGEST-01**: User can upload incident / chat / changelog files (and load bundled sample datasets) to feed memory
+- [x] **INGEST-01**: User can upload incident / chat / changelog files (and load bundled sample datasets) to feed memory
 - [x] **INGEST-02**: Uploaded content is ingested via Cognee `add()` + `cognify()` into the knowledge graph (remember)
 - [x] **INGEST-03**: Durable incidents and per-release workarounds are stored in separate datasets (`incidents` vs `workarounds_v{N}`) so `forget()` can be surgical
 
@@ -32,7 +32,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Release Ingestion
 
-- [ ] **RELEASE-01**: User can upload a release note, ingested into a per-release dataset (`workarounds_v{N}`)
+- [x] **RELEASE-01**: User can upload a release note, ingested into a per-release dataset (`workarounds_v{N}`)
 
 ### Memory Drift
 
@@ -92,7 +92,7 @@ Deferred beyond the hackathon.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INGEST-01 | Phase 2 | Pending |
+| INGEST-01 | Phase 2 | Complete |
 | INGEST-02 | Phase 1 | Complete |
 | INGEST-03 | Phase 1 | Complete |
 | RECALL-01 | Phase 2 | Complete |
@@ -101,7 +101,7 @@ Deferred beyond the hackathon.
 | FEEDBACK-01 | Phase 2 | Pending |
 | FEEDBACK-02 | Phase 2 | Pending |
 | GRAPH-01 | Phase 4 | Pending |
-| RELEASE-01 | Phase 2 | Pending |
+| RELEASE-01 | Phase 2 | Complete |
 | DRIFT-01 | Phase 3 | Pending |
 | DRIFT-02 | Phase 3 | Pending |
 | DRIFT-03 | Phase 3 | Pending |

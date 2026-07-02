@@ -60,7 +60,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Engineer clicks Accept on a recommendation — the fix is reinforced via improve() and a second search on the same query returns the accepted fix with higher priority
   4. User uploads a release note and sees it stored as a versioned workaround dataset (workarounds_v{N}), visible in the dataset list in the UI
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 **UI hint**: yes
 
 **Wave 1**
@@ -73,7 +73,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 02-03-PLAN.md — Ingest slice: typed multi-file upload + background cognify + status rows + Load Sample + release routing (INGEST-01, RELEASE-01) [wave 3]
+- [x] 02-03-PLAN.md — Ingest slice: typed multi-file upload + background cognify + status rows + Load Sample + release routing (INGEST-01, RELEASE-01) [wave 3]
 
 **Wave 4** *(blocked on Wave 3)*
 
@@ -119,6 +119,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
-| 2. Core Recall | 2/4 | In Progress|  |
+| 2. Core Recall | 3/4 | In Progress|  |
 | 3. Drift + Forget | 0/TBD | Not started | - |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |
