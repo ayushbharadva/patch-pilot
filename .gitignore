@@ -1,6 +1,6 @@
 # Secrets
 .env
-
+.claude
 # Cognee persistent memory (binary, machine-specific, rebuildable via seed)
 .patchpilot_memory/
 

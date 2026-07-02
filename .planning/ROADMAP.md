@@ -14,7 +14,7 @@ PatchPilot is built in 4 phases, ordered by the hardest risks first. Phase 1 ret
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Cognee verified, data persists, seed data produces a CLI before/after flip — all blocking risks retired before UI work begins (completed 2026-07-01)
-- [ ] **Phase 2: Core Recall** - Full-stack ingest, evidence-grounded diagnosis card, feedback reinforcement, and release upload — the core product experience in the browser
+- [x] **Phase 2: Core Recall** - Full-stack ingest, evidence-grounded diagnosis card, feedback reinforcement, and release upload — the core product experience in the browser (completed 2026-07-02)
 - [ ] **Phase 3: Drift + Forget** - Drift detection with human-readable badges, surgical forget, and visible before/after proof — the scoring differentiator
 - [ ] **Phase 4: Demo Loop + Stretch** - 60-second loop verified on deployed instance, one-button demo reset, memory graph view, and stretch features gated behind a working loop
 
@@ -60,7 +60,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Engineer clicks Accept on a recommendation — the fix is reinforced via improve() and a second search on the same query returns the accepted fix with higher priority
   4. User uploads a release note and sees it stored as a versioned workaround dataset (workarounds_v{N}), visible in the dataset list in the UI
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans complete
 **UI hint**: yes
 
 **Wave 1**
@@ -77,7 +77,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 4** *(blocked on Wave 3)*
 
-- [ ] 02-04-PLAN.md — Feedback reinforcement (Accept → improve → re-search proof) + dataset list (FEEDBACK-01/02, RELEASE-01) [wave 4]
+- [x] 02-04-PLAN.md — Feedback reinforcement (Accept → improve → re-search proof) + dataset list (FEEDBACK-01/02, RELEASE-01) [wave 4]
 
 ### Phase 3: Drift + Forget
 
@@ -119,6 +119,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
-| 2. Core Recall | 3/4 | In Progress|  |
+| 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
 | 3. Drift + Forget | 0/TBD | Not started | - |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |
