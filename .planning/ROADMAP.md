@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Cognee verified, data persists, seed data produces a CLI before/after flip — all blocking risks retired before UI work begins (completed 2026-07-01)
 - [x] **Phase 2: Core Recall** - Full-stack ingest, evidence-grounded diagnosis card, feedback reinforcement, and release upload — the core product experience in the browser (completed 2026-07-02)
-- [ ] **Phase 3: Drift + Forget** - Drift detection with human-readable badges, surgical forget, and visible before/after proof — the scoring differentiator
+- [x] **Phase 3: Drift + Forget** - Drift detection with human-readable badges, surgical forget, and visible before/after proof — the scoring differentiator (completed 2026-07-02)
 - [ ] **Phase 4: Demo Loop + Stretch** - 120-second loop verified on deployed instance, one-button demo reset, memory graph view, and stretch features gated behind a working loop
 
 ## Phase Details
@@ -92,7 +92,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The drift view identifies which specific datasets to forget; clicking Forget on a 🔴 dataset surgically removes it via `forget(dataset="workarounds_v{N}")` — the `incidents` dataset remains intact and still returns results
   4. Re-searching the same query after forget returns the new correct fix, not the old stale workaround — the before/after flip is visible and unambiguous in the browser
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 **UI hint**: yes
 
 **Wave 1**
@@ -101,7 +101,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 03-02-PLAN.md — Surgical Forget endpoint (durable-dataset guard) + two-step-confirm ForgetButton + auto-re-search proof (FORGET-01/02) [wave 2]
+- [x] 03-02-PLAN.md — Surgical Forget endpoint (durable-dataset guard) + two-step-confirm ForgetButton + auto-re-search proof (FORGET-01/02) [wave 2]
 
 ### Phase 4: Demo Loop + Stretch
 
@@ -128,5 +128,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
 | 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
-| 3. Drift + Forget | 1/2 | In Progress|  |
+| 3. Drift + Forget | 2/2 | Complete   | 2026-07-02 |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |

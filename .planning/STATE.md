@@ -4,17 +4,17 @@ milestone: v1.9
 milestone_name: milestone
 current_phase: 03
 current_phase_name: drift-forget
-status: executing
+status: verifying
 stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-07-02T16:19:03.576Z"
+last_updated: "2026-07-02T16:30:53.167Z"
 last_activity: 2026-07-02
 last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
-  percent: 50
+  completed_plans: 10
+  percent: 75
 ---
 
 # Project State
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 Phase: 03 (drift-forget) — EXECUTING
 Plan: 2 of 2
 Next: Phase 03 (Drift + Forget) — not yet planned
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-02 — Phase 03 execution started
 
 Progress: [█████░░░░░] 50% of milestone (2 of 4 phases)
@@ -63,6 +63,7 @@ Progress: [█████░░░░░] 50% of milestone (2 of 4 phases)
 | Phase 02 P02 | 70min | 3 tasks | 31 files |
 | Phase 02 P03 | 180min | 2 tasks | 12 files |
 | Phase 03 P01 | 27min | 3 tasks | 8 files |
+| Phase 03 P02 | 12min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,7 @@ Recent decisions affecting current work:
 - [Phase 03-01]: RESEARCH.md Assumption A1 falsified live -- the pre-flip snapshot already had workarounds_v1_8 forgotten (snapshot was itself post-flip); fell back to --seed to rebuild the demo corpus (bills cognify() on Mistral free tier).
 - [Phase 03-01]: _pick_primary_result's new drift_states param defaults to None (backward compatible) so Phase 2's test_search_helpers.py single-argument call sites kept working unmodified.
 - [Phase 03-01]: compute_drift_states is imported lazily inside search()'s function body, not at backend/search.py's module top -- avoids a circular import since backend/drift.py imports the shared version regex/sort-key FROM backend.search at its own module top.
+- [Phase 03-02]: Executed exactly as planned -- no deviations. POST /forget's durable-dataset guard (regex+denylist before any Cognee call) and the frontend ForgetButton's two-step inline confirm both matched the plan's PATTERNS-derived code verbatim.
 
 ### Pending Todos
 
@@ -121,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-02T16:19:03.572Z
+Last session: 2026-07-02T16:30:01.406Z
 Stopped at: Phase 3 UI-SPEC approved
 Resume file: .planning/phases/03-drift-forget/03-UI-SPEC.md

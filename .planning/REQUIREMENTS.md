@@ -42,8 +42,8 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Forget & Proof
 
-- [ ] **FORGET-01**: User can forget a flagged workaround via surgical `forget(dataset="workarounds_v{N}")`
-- [ ] **FORGET-02**: Re-searching the same bug after forget returns the new correct fix (the before/after proof)
+- [x] **FORGET-01**: User can forget a flagged workaround via surgical `forget(dataset="workarounds_v{N}")`
+- [x] **FORGET-02**: Re-searching the same bug after forget returns the new correct fix (the before/after proof)
 
 ### Demo & Reset
 
@@ -105,8 +105,8 @@ Deferred beyond the hackathon.
 | DRIFT-01 | Phase 3 | Complete |
 | DRIFT-02 | Phase 3 | Complete |
 | DRIFT-03 | Phase 3 | Complete |
-| FORGET-01 | Phase 3 | Pending |
-| FORGET-02 | Phase 3 | Pending |
+| FORGET-01 | Phase 3 | Complete |
+| FORGET-02 | Phase 3 | Complete |
 | DEMO-01 | Phase 4 | Pending |
 | DEMO-02 | Phase 1 | Complete |
 | DEMO-03 | Phase 4 | Pending |
