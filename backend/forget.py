@@ -74,6 +74,16 @@ async def forget_dataset(request: ForgetRequest):
             return {"status": "error", "message": _MSG_INVALID_DATASET}
 
         await cognee.forget(dataset=request.dataset)
+
+        # WR-01: purge any cached drift-reason entries for the
+        # now-forgotten dataset so a same-named dataset re-ingested later
+        # (while the current highest is unchanged, keeping the cache key
+        # identical) doesn't serve the stale, pre-forget reason string.
+        from backend.drift import _reason_cache
+
+        for key in [k for k in _reason_cache if k[0] == request.dataset]:
+            del _reason_cache[key]
+
         return {"status": "forgotten", "dataset": request.dataset}
     except Exception:  # noqa: BLE001 - D-24: never leak raw exception text
         logger.exception("forget failed for dataset=%s", request.dataset)
