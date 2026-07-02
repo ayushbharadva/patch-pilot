@@ -4,17 +4,17 @@ milestone: v1.9
 milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
-status: executing
-stopped_at: "Completed 02-03-PLAN.md (ingest vertical slice: upload panel + background-cognify endpoint)"
-last_updated: "2026-07-02T11:56:12.766Z"
+status: complete
+stopped_at: "Phase 02 complete — 4/4 plans, ROADMAP marked complete (commit d2c3eef); 1 SC (FEEDBACK-02) deferred, see 02-VERIFICATION.md"
+last_updated: "2026-07-02T14:07:39.907Z"
 last_activity: 2026-07-02
-last_activity_desc: Phase 02 execution started
+last_activity_desc: Phase 02 complete — STATE reconciled with ROADMAP
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 25
+  completed_plans: 8
+  percent: 50
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 
 ## Current Position
 
-Phase: 02 (core-recall) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 02
-Last activity: 2026-07-02 — Phase 02 execution started
+Phase: 02 (core-recall) — COMPLETE (4/4 plans)
+Next: Phase 03 (Drift + Forget) — not yet planned
+Status: Phase 02 complete; 1 success criterion (FEEDBACK-02 / SC#3) deferred — see 02-VERIFICATION.md
+Last activity: 2026-07-02 — Phase 02 complete, STATE reconciled with ROADMAP
 
-Progress: [██████████] 100% (Phase 01 plans) — 25% of milestone (1 of 4 phases)
+Progress: [█████░░░░░] 50% of milestone (2 of 4 phases)
 
 ## Performance Metrics
 
@@ -106,10 +106,10 @@ None yet.
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| *(none)* | | | |
+| Verification | FEEDBACK-02 / ROADMAP SC#3 — "Accept makes re-search show the fix with higher priority." Verifier (02-VERIFICATION.md, human_needed) found the dataset winner is a fixed highest-version tie-break (`_pick_primary_result`/`_version_sort_key`) independent of `feedback_influence`, so a visible pre/post-Accept reorder is not demonstrable with the current seed corpus. Address in a later phase (change tie-break or seed corpus) if the demo must show reinforcement changing results. | Open (deferred) | Phase 02 (2026-07-02) |
 
 ## Session Continuity
 
-Last session: 2026-07-02T11:14:27.883Z
-Stopped at: Completed 02-03-PLAN.md (ingest vertical slice: upload panel + background-cognify endpoint)
+Last session: 2026-07-02T14:07:39.907Z
+Stopped at: Phase 02 complete (4/4 plans); STATE reconciled with ROADMAP. Next: plan Phase 03.
 Resume file: None
