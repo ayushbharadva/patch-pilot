@@ -4,9 +4,9 @@ milestone: v1.9
 milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
-status: complete
+status: executing
 stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-07-02T15:03:43.865Z"
+last_updated: "2026-07-02T15:45:07.090Z"
 last_activity: 2026-07-02
 last_activity_desc: Phase 02 complete, STATE reconciled with ROADMAP
 progress:
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 
 Phase: 02 (core-recall) — COMPLETE (4/4 plans)
 Next: Phase 03 (Drift + Forget) — not yet planned
-Status: Phase 02 complete; 1 success criterion (FEEDBACK-02 / SC#3) deferred — see 02-VERIFICATION.md
+Status: Ready to execute
 Last activity: 2026-07-02 — Phase 02 complete, STATE reconciled with ROADMAP
 
 Progress: [█████░░░░░] 50% of milestone (2 of 4 phases)
