@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
 status: complete
-stopped_at: Phase 3 context gathered
-last_updated: "2026-07-02T14:26:09.927Z"
+stopped_at: Phase 3 UI-SPEC approved
+last_updated: "2026-07-02T15:03:43.865Z"
 last_activity: 2026-07-02
-last_activity_desc: "Completed quick task 260702-ros: widen demo-loop timing constraint 60s -> 120s"
+last_activity_desc: Phase 02 complete, STATE reconciled with ROADMAP
 progress:
   total_phases: 4
   completed_phases: 2
@@ -116,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-02T14:24:05.685Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-drift-forget/03-CONTEXT.md
+Last session: 2026-07-02T15:03:43.860Z
+Stopped at: Phase 3 UI-SPEC approved
+Resume file: .planning/phases/03-drift-forget/03-UI-SPEC.md
