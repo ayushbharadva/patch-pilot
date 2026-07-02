@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
 import type { SearchResponse } from "@/lib/api";
 
@@ -9,7 +10,6 @@ import type { SearchResponse } from "@/lib/api";
  * Single-page dashboard (D-17): persistent search bar on top, results
  * region below. Holds the current SearchResponse/loading state at the
  * page level and passes it down (SearchBar only owns the input + chip).
- * The results region renders DiagnosisCard as of Task 2 of this plan.
  */
 export default function Home() {
   const [response, setResponse] = useState<SearchResponse | null>(null);
@@ -28,13 +28,9 @@ export default function Home() {
 
       <section aria-live="polite" className="flex flex-col gap-8">
         {isPending ? (
-          <p className="font-sans text-sm text-muted-foreground">
-            Searching memory…
-          </p>
+          <DiagnosisCardSkeleton />
         ) : hasSearched && response ? (
-          <pre className="font-mono text-sm text-muted-foreground">
-            {JSON.stringify(response, null, 2)}
-          </pre>
+          <DiagnosisCard response={response} />
         ) : (
           <EmptyState />
         )}
