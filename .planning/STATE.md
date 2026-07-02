@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
 status: complete
-stopped_at: "Phase 02 complete — 4/4 plans, ROADMAP marked complete (commit d2c3eef); 1 SC (FEEDBACK-02) deferred, see 02-VERIFICATION.md"
-last_updated: "2026-07-02T14:07:39.907Z"
+stopped_at: Phase 3 context gathered
+last_updated: "2026-07-02T14:24:05.689Z"
 last_activity: 2026-07-02
-last_activity_desc: Phase 02 complete — STATE reconciled with ROADMAP
+last_activity_desc: Phase 02 complete, STATE reconciled with ROADMAP
 progress:
   total_phases: 4
   completed_phases: 2
@@ -110,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-02T14:07:39.907Z
-Stopped at: Phase 02 complete (4/4 plans); STATE reconciled with ROADMAP. Next: plan Phase 03.
-Resume file: None
+Last session: 2026-07-02T14:24:05.685Z
+Stopped at: Phase 3 context gathered
+Resume file: .planning/phases/03-drift-forget/03-CONTEXT.md
