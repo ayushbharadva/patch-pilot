@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 02
 current_phase_name: core-recall
 status: executing
-stopped_at: Completed 02-01-PLAN.md (fused /search + config keystone)
-last_updated: "2026-07-02T06:49:57.081Z"
+stopped_at: "Completed 02-02-PLAN.md (search slice frontend: dashboard + SearchBar + DiagnosisCard)"
+last_updated: "2026-07-02T07:19:27.023Z"
 last_activity: 2026-07-02
 last_activity_desc: Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 6
   percent: 25
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 ## Current Position
 
 Phase: 02 (core-recall) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-07-02 — Phase 02 execution started
 
@@ -59,6 +59,7 @@ Progress: [██████████] 100% (Phase 01 plans) — 25% of mile
 | Phase 01 P03 | 15min | 3 tasks | 9 files |
 | Phase 01 P04 | 35min | 3 tasks | 2 files |
 | Phase 02 P01 | 95min | 2 tasks | 9 files |
+| Phase 02 P02 | 70min | 3 tasks | 31 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,10 @@ Recent decisions affecting current work:
 - [Phase 02-01]: CACHING=true + AUTO_FEEDBACK=false: two independent flags keep Q&A history recording (for feedback) while permanently disabling the LLM turn-continuation classifier that caused the Phase 1 'Got it.' regression. Verified live. Unblocks FEEDBACK-01/02 (B-01 resolved).
 - [Phase 02-01]: cognee 1.2.2 ingestion: cognee.add() must be passed the whole FastAPI/Starlette UploadFile (reads .file+.filename), NOT upload.file/bare BinaryIO (raises IngestionError). Falsifies RESEARCH Assumption A2; Plan 02 ingest.py must pass the UploadFile object.
 - [Phase 02-01]: Fused-search latency measured ~7.1s (Mistral free tier, seed corpus), above RESEARCH's ~5s assumption. Plan 02 must size the D-20 skeleton-card minimum-display time accordingly.
+- [Phase 02-02]: Frontend scaffold moves create-next-app's src/app -> app and repoints the @/* alias to ./* so paths match the plan's declared frontend/app + frontend/lib + frontend/components layout.
+- [Phase 02-02]: UI-SPEC indigo brand accent mapped to shadcn's primary token (CTA fills, focus rings, active chip); shadcn's own accent token left as a neutral hover color to avoid terminology collision.
+- [Phase 02-02]: shadcn v4 CLI replaced --base-color with --base <radix|base> + -p <preset>; used 'shadcn init --template next --base radix --css-variables -p nova -y' (neutral base carried by components.json baseColor:neutral) — same six blocks + CSS-variable theming landed.
+- [Phase 02-02]: DiagnosisCardSkeleton shows a shape-matched card + "Searching memory…" label (not a bare spinner) because Plan 01 measured ~7.1s fused-search latency, above the ~5s bare-skeleton threshold (D-20/B-02).
 
 ### Pending Todos
 
@@ -101,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-02T06:49:57.069Z
-Stopped at: Completed 02-01-PLAN.md (fused /search + config keystone)
+Last session: 2026-07-02T07:19:27.007Z
+Stopped at: Completed 02-02-PLAN.md (search slice frontend: dashboard + SearchBar + DiagnosisCard)
 Resume file: None
