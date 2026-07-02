@@ -1,5 +1,6 @@
 """GET /datasets — name + live document count for display datasets only
-(RELEASE-01, D-15).
+(RELEASE-01, D-15). Also returns each dataset's drift_state + drift_reason
+(DRIFT-01/02/03).
 
 Import order follows the config-before-import keystone (see
 backend/cognee_config.py's module docstring): backend.cognee_config, then
@@ -15,6 +16,8 @@ from fastapi import APIRouter  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import CANARY, HEALTHCHECK  # noqa: E402
+from backend.drift import compute_drift_states, get_or_generate_reason  # noqa: E402
+from backend.search import _version_sort_key  # noqa: E402
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -41,9 +44,19 @@ def _is_display_dataset(name: str) -> bool:
 @router.get("/datasets")
 async def list_datasets():
     """Live doc counts, never manually tracked — always accurate against
-    the actual relational DB state (RESEARCH.md "Don't Hand-Roll")."""
+    the actual relational DB state (RESEARCH.md "Don't Hand-Roll"). Each row
+    also carries drift_state + drift_reason (DRIFT-01/02/03), computed via
+    the same shared classifier /search uses so the two endpoints can never
+    disagree about which dataset is drifting."""
     all_datasets = await cognee.datasets.list_datasets()
     display_datasets = [ds for ds in all_datasets if _is_display_dataset(ds.name)]
+    names = [ds.name for ds in display_datasets]
+    drift_states = compute_drift_states(names)
+    highest = max(
+        (n for n in names if drift_states.get(n) != "drifting"),
+        default=None,
+        key=_version_sort_key,
+    )
     result = []
     for ds in display_datasets:
         try:
@@ -51,5 +64,20 @@ async def list_datasets():
         except Exception:  # noqa: BLE001 - D-24: one bad dataset must not break the whole list
             logger.exception("could not resolve doc count for dataset=%s", ds.name)
             doc_count = 0
-        result.append({"name": ds.name, "doc_count": doc_count})
+        state = drift_states.get(ds.name, "stable")
+        reason = None
+        if state == "drifting" and highest:
+            try:
+                reason = await get_or_generate_reason(ds.name, highest)
+            except Exception:  # noqa: BLE001 - D-24: one bad reason must not break the whole list
+                logger.exception("could not resolve drift reason for dataset=%s", ds.name)
+                reason = None
+        result.append(
+            {
+                "name": ds.name,
+                "doc_count": doc_count,
+                "drift_state": state,
+                "drift_reason": reason,
+            }
+        )
     return result

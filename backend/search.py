@@ -24,6 +24,14 @@ from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 Mistr
 from backend.datasets import INCIDENTS  # noqa: E402
 from backend.sessions import new_session_id  # noqa: E402
 
+# NOTE: backend.drift is intentionally NOT imported at module level here.
+# backend/drift.py itself imports _WORKAROUNDS_VERSION_RE/_version_sort_key
+# FROM this module (RESEARCH.md "Don't Hand-Roll" — reuse, never duplicate
+# the version regex), so a top-level `from backend.drift import
+# compute_drift_states` here would create a circular import that fails
+# depending on which module loads first. compute_drift_states is imported
+# lazily inside search() below, once both modules have finished loading.
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -132,11 +140,23 @@ def _version_sort_key(dataset_name: str | None) -> tuple[int, int]:
     return (major, minor)
 
 
-def _pick_primary_result(results: list[dict]) -> dict | None:
-    """Prefer the result whose text is non-empty; among ties, prefer the
-    highest-numbered workarounds_v{N} dataset (Pitfall 4) — `incidents`
-    alone rarely carries remediation text."""
-    candidates = [r for r in results if _result_text(r.get("search_result"))]
+def _pick_primary_result(results: list[dict], drift_states: dict[str, str] | None = None) -> dict | None:
+    """Prefer the result whose text is non-empty AND is not drift-flagged
+    (D-01 — a 🔴-flagged dataset must never win as the primary answer, even
+    while it stays "active"/searchable for the evidence panel); among the
+    remaining ties, prefer the highest-numbered workarounds_v{N} dataset
+    (Pitfall 4) — `incidents` alone rarely carries remediation text.
+
+    `drift_states` defaults to `None` (treated as empty — everything
+    non-drifting) so existing callers that don't pass it keep their prior
+    behavior unchanged."""
+    drift_states = drift_states or {}
+    candidates = [
+        r
+        for r in results
+        if _result_text(r.get("search_result"))
+        and drift_states.get(r.get("dataset_name"), "stable") != "drifting"
+    ]
     if not candidates:
         return None
     candidates.sort(key=lambda r: _version_sort_key(r.get("dataset_name")), reverse=True)
@@ -204,7 +224,12 @@ async def search(request: SearchRequest):
         logger.exception("search failed for query=%r", query)
         return {"status": "error", "message": "Search failed. Please try again in a moment."}
 
-    primary = _pick_primary_result(root_cause_results)
+    # Lazy import — see the module-level NOTE above the imports for why this
+    # can't be a top-level import (circular with backend.drift).
+    from backend.drift import compute_drift_states
+
+    drift_states = compute_drift_states(datasets)
+    primary = _pick_primary_result(root_cause_results, drift_states)
     evidence = _flatten_and_truncate(evidence_results, limit=EVIDENCE_LIMIT)
 
     root_cause = _result_text(primary.get("search_result")) if primary else ""
@@ -232,4 +257,7 @@ async def search(request: SearchRequest):
         "source_dataset": primary.get("dataset_name") if primary else None,
         "session_id": session_id,
         "qa_id": qa_id,
+        # UI-SPEC Interaction Contract point 6 — the winning dataset's own
+        # drift state, so DiagnosisCard's VersionTagBadge can wire healthState.
+        "drift_state": drift_states.get(primary.get("dataset_name")) if primary else None,
     }
