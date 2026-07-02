@@ -1,9 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { type DatasetInfo, type DriftState, listDatasets } from "@/lib/api";
+import { type DatasetInfo, type DriftState, forgetDataset, listDatasets } from "@/lib/api";
 
 /**
  * Shared React Query key -- exported so UploadPanel can invalidate this
@@ -21,18 +25,112 @@ const DRIFT_BADGE: Record<DriftState, { dot: string; label: string }> = {
   drifting: { dot: "bg-drift-drifting", label: "🔴 Drifting" },
 };
 
-function DatasetRow({ dataset }: { dataset: DatasetInfo }) {
+/** D-24 short human message for a failed Forget call -- must match
+ * backend/forget.py's `_MSG_ERROR` exactly. */
+const FORGET_ERROR_FALLBACK = "Could not forget dataset. Please try again.";
+
+/**
+ * Forget button + two-step inline confirm (FORGET-01/02, UI-SPEC
+ * Interaction Contract point 3) -- rendered only on 🔴 drifting rows.
+ * Mirrors DiagnosisCard.tsx's AcceptDismissControls local-state/mutation
+ * pattern: `confirming`/`isForgetting`/`error` flags gate which buttons
+ * render, no modal component.
+ */
+function ForgetButton({
+  datasetName,
+  onForgotten,
+}: {
+  datasetName: string;
+  onForgotten?: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [confirming, setConfirming] = useState(false);
+  const [isForgetting, setIsForgetting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleForget() {
+    setIsForgetting(true);
+    setError(null);
+    const result = await forgetDataset({ dataset: datasetName });
+    setIsForgetting(false);
+
+    if (result.status === "forgotten") {
+      await queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
+      toast.success("Forgotten — updating results…");
+      onForgotten?.();
+    } else {
+      setError(result.message || FORGET_ERROR_FALLBACK);
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        {confirming ? (
+          <>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={isForgetting}
+              onClick={() => void handleForget()}
+              className="font-sans text-sm font-semibold"
+            >
+              Confirm forget?
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={isForgetting}
+              onClick={() => setConfirming(false)}
+              className="font-sans text-sm font-semibold text-muted-foreground"
+            >
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setConfirming(true)}
+            className="gap-1 font-sans text-sm font-semibold text-destructive"
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+            Forget
+          </Button>
+        )}
+      </div>
+      {error ? (
+        <p className="font-sans text-sm font-semibold text-destructive">{error}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function DatasetRow({
+  dataset,
+  onForgotten,
+}: {
+  dataset: DatasetInfo;
+  onForgotten?: () => void;
+}) {
   const badge = DRIFT_BADGE[dataset.drift_state];
   const isDrifting = dataset.drift_state === "drifting";
 
   return (
     <div className="flex flex-col gap-1 rounded-md border border-border px-3 py-2">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className={`size-2 shrink-0 rounded-full ${badge.dot}`} aria-hidden="true" />
         <span className="font-mono text-sm text-foreground">
           {dataset.name} · {dataset.doc_count} docs
         </span>
         <span className="font-sans text-sm font-semibold text-foreground">{badge.label}</span>
+        {isDrifting ? (
+          <ForgetButton datasetName={dataset.name} onForgotten={onForgotten} />
+        ) : null}
       </div>
       {isDrifting && dataset.drift_reason ? (
         <p className="mt-1 font-sans text-sm leading-[1.4] font-normal text-muted-foreground">
@@ -44,12 +142,16 @@ function DatasetRow({ dataset }: { dataset: DatasetInfo }) {
 }
 
 /**
- * Dataset list (RELEASE-01, D-15, DRIFT-01/02/03): name + live document
- * count per display dataset, mono `name · N docs`, plus a 🟢/🟡/🔴 health
- * badge with its text label and (drifting rows only) a generated reason
- * caption beneath the row.
+ * Dataset list (RELEASE-01, D-15, DRIFT-01/02/03, FORGET-01/02): name + live
+ * document count per display dataset, mono `name · N docs`, plus a
+ * 🟢/🟡/🔴 health badge with its text label, a generated reason caption on
+ * drifting rows, and (drifting rows only) a guarded Forget button.
+ *
+ * `onForgotten` is provided by the page and re-runs the last search after a
+ * successful forget, mirroring D-12's Accept→auto-re-search pattern so the
+ * before/after memory change is visible without a manual re-search.
  */
-export function DatasetList() {
+export function DatasetList({ onForgotten }: { onForgotten?: () => void }) {
   const { data, isLoading, isError } = useQuery({
     queryKey: DATASETS_QUERY_KEY,
     queryFn: listDatasets,
@@ -68,7 +170,9 @@ export function DatasetList() {
             Could not load datasets. Please try again.
           </p>
         ) : data && data.length > 0 ? (
-          data.map((dataset) => <DatasetRow key={dataset.name} dataset={dataset} />)
+          data.map((dataset) => (
+            <DatasetRow key={dataset.name} dataset={dataset} onForgotten={onForgotten} />
+          ))
         ) : (
           <p className="font-sans text-sm text-muted-foreground">
             No datasets yet. Upload files or load sample data to get started.

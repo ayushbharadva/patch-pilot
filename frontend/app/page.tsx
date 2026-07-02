@@ -81,7 +81,7 @@ export default function Home() {
       </section>
 
       <section aria-label="Datasets">
-        <DatasetList />
+        <DatasetList onForgotten={() => void handleReSearch()} />
       </section>
     </main>
   );

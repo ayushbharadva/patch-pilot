@@ -246,6 +246,57 @@ export async function acceptFeedback({
   }
 }
 
+/**
+ * Forget wrapper mirroring backend/forget.py's `POST /forget` contract
+ * (FORGET-01, FORGET-02, D-24).
+ */
+
+interface ForgetForgottenResponse {
+  status: "forgotten";
+  dataset: string;
+}
+
+interface ForgetErrorResponse {
+  status: "error";
+  message: string;
+}
+
+/** Discriminated union matching backend/forget.py's POST /forget response exactly. */
+export type ForgetResponse = ForgetForgottenResponse | ForgetErrorResponse;
+
+/**
+ * POST {dataset} to `${API_BASE}/forget` (FORGET-01). Network/parse
+ * failures are normalized into the `error` variant (D-24) — the fallback
+ * message must match backend/forget.py's `_MSG_ERROR` exactly.
+ */
+export async function forgetDataset({
+  dataset,
+}: {
+  dataset: string;
+}): Promise<ForgetResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/forget`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataset }),
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Could not forget dataset. Please try again.",
+      };
+    }
+
+    return (await res.json()) as ForgetResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Could not forget dataset. Please try again.",
+    };
+  }
+}
+
 /** One dataset-list row (D-15): `{name}` mono + doc count, plus its
  * DRIFT-01/02/03 health state and (drifting rows only) a generated reason. */
 export interface DatasetInfo {
