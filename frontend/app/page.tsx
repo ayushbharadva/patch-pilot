@@ -21,11 +21,21 @@ export default function Home() {
   // (D-12) — DiagnosisCard has no visibility into SearchBar's own state.
   const [lastQuery, setLastQuery] = useState<string | null>(null);
 
+  // Deliberately separate from `isPending` (the SearchBar-driven flag): if
+  // an accept-triggered re-search shared `isPending`, it would swap the
+  // just-accepted DiagnosisCard for <DiagnosisCardSkeleton /> in the SAME
+  // render batch as the card's own setAccepted(true) — "Reinforced ✓"
+  // (D-11) would never actually paint before being replaced. Keeping the
+  // re-search pending state separate lets the accepted card stay mounted
+  // (still showing "Reinforced ✓") for the duration of the re-search,
+  // swapping directly to the new diagnosis once it resolves.
+  const [isReSearching, setIsReSearching] = useState(false);
+
   async function handleReSearch() {
     if (!lastQuery) return;
-    setIsPending(true);
+    setIsReSearching(true);
     const result = await searchIncident(lastQuery);
-    setIsPending(false);
+    setIsReSearching(false);
     setResponse(result);
   }
 
@@ -59,6 +69,11 @@ export default function Home() {
         ) : (
           <EmptyState />
         )}
+        {isReSearching ? (
+          <p className="font-sans text-sm text-muted-foreground">
+            Updating diagnosis with reinforced memory…
+          </p>
+        ) : null}
       </section>
 
       <section aria-label="Upload incident memory">
