@@ -49,7 +49,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### Phase 2: Core Recall
 
-**Goal**: Users can ingest incident data, search it, and receive evidence-grounded recommendations in the browser — the diagnosis card works end-to-end with feedback reinforcement and release upload.
+**Goal**: As a developer, I want to ingest incident history, search a bug, and get an evidence-grounded diagnosis I can reinforce, so that I recall how similar incidents were fixed before instead of re-debugging from scratch.
 **Mode:** mvp
 **Depends on**: Phase 1
 **Requirements**: INGEST-01, RECALL-01, RECALL-02, RECALL-03, FEEDBACK-01, FEEDBACK-02, RELEASE-01
