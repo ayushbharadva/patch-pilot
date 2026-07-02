@@ -1,6 +1,7 @@
-"""Unit tests for drift classification (backend/drift.py) and the
-_pick_primary_result drift-exclusion extension (backend/search.py) -- in
-in-memory fakes only, no network / no Cognee calls (DRIFT-01/02/03 behavior
+"""Unit tests for drift classification (backend/drift.py), the
+_pick_primary_result drift-exclusion extension (backend/search.py), and the
+forget-guard + route-registration behavior (backend/forget.py) -- in-memory
+fakes only, no network / no Cognee calls (DRIFT-01/02/03, FORGET-01 behavior
 contract)."""
 
 import sys
@@ -12,7 +13,13 @@ if str(_REPO_ROOT) not in sys.path:
 
 from backend.datasets import INCIDENTS  # noqa: E402
 from backend.drift import compute_drift_states  # noqa: E402
+from backend.forget import _is_forgettable_workaround, router as forget_router  # noqa: E402
 from backend.search import _pick_primary_result  # noqa: E402
+
+
+class _FakeDataset:
+    def __init__(self, name: str):
+        self.name = name
 
 
 def test_drift_reuses_shared_version_regex_not_a_duplicate():
@@ -94,3 +101,91 @@ def test_pick_primary_result_without_drift_states_arg_still_works():
     primary = _pick_primary_result(results)
     assert primary is not None
     assert primary["dataset_name"] == "workarounds_v1_9"
+
+
+# --- _is_forgettable_workaround (FORGET-01, durable-dataset guard) --------
+
+
+async def test_is_forgettable_workaround_rejects_incidents(monkeypatch):
+    """The durable incidents dataset must never be forgettable through this
+    route, even though cognee.forget() itself has no such concept."""
+    fake_datasets = [_FakeDataset(INCIDENTS), _FakeDataset("workarounds_v1_8")]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+
+    assert not await _is_forgettable_workaround(INCIDENTS)
+
+
+async def test_is_forgettable_workaround_rejects_healthcheck_and_canary(monkeypatch):
+    """Throwaway names are not workarounds_v{N} and must not be forgettable
+    through this route."""
+    fake_datasets = [_FakeDataset("healthcheck"), _FakeDataset("canary")]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+
+    assert not await _is_forgettable_workaround("healthcheck")
+    assert not await _is_forgettable_workaround("canary")
+
+
+async def test_is_forgettable_workaround_accepts_live_workaround(monkeypatch):
+    """A live workarounds_v{N} present in list_datasets() is forgettable."""
+    fake_datasets = [
+        _FakeDataset(INCIDENTS),
+        _FakeDataset("workarounds_v1_8"),
+        _FakeDataset("workarounds_v1_9"),
+    ]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+
+    assert await _is_forgettable_workaround("workarounds_v1_9")
+
+
+async def test_is_forgettable_workaround_rejects_forged_name(monkeypatch):
+    """A forged/unknown dataset name fails the workarounds_v{N} regex before
+    any Cognee call -- never reaches forget() where an unknown name raises
+    an AttributeError (Pitfall 2)."""
+    fake_datasets = [_FakeDataset(INCIDENTS), _FakeDataset("workarounds_v1_9")]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+
+    assert not await _is_forgettable_workaround("some_forged_name")
+
+
+async def test_is_forgettable_workaround_rejects_absent_versioned_name(monkeypatch):
+    """A name that matches the workarounds_v{N} regex but is absent from the
+    live dataset list is not forgettable (regex passes, existence fails)."""
+    fake_datasets = [_FakeDataset(INCIDENTS), _FakeDataset("workarounds_v1_9")]
+
+    async def _fake_list_datasets():
+        return fake_datasets
+
+    import cognee
+
+    monkeypatch.setattr(cognee.datasets, "list_datasets", _fake_list_datasets)
+
+    assert not await _is_forgettable_workaround("workarounds_v9_9")
+
+
+def test_forget_router_has_forget_route():
+    paths = {route.path for route in forget_router.routes}
+    assert "/forget" in paths
