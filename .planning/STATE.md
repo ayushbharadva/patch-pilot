@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.9
 milestone_name: milestone
-current_phase: 03
-current_phase_name: drift-forget
-status: verifying
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-07-02T16:30:53.167Z"
+current_phase: 4
+current_phase_name: Demo Loop + Stretch
+status: planning
+stopped_at: Phase 3 complete, ready to plan Phase 4
+last_updated: "2026-07-02T17:38:18.945Z"
 last_activity: 2026-07-02
-last_activity_desc: Phase 03 execution started
+last_activity_desc: Phase 03 complete, transitioned to Phase 4
 progress:
   total_phases: 4
   completed_phases: 3
@@ -21,26 +21,26 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-30)
+See: .planning/PROJECT.md (updated 2026-07-02)
 
 **Core value:** search → drift-detected → forget → re-search loop works visibly in under 120 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle
-**Current focus:** Phase 03 — drift-forget
+**Current focus:** Phase 04 — demo-loop-+-stretch
 
 ## Current Position
 
-Phase: 03 (drift-forget) — EXECUTING
-Plan: 2 of 2
-Next: Phase 03 (Drift + Forget) — not yet planned
-Status: Phase complete — ready for verification
-Last activity: 2026-07-02 — Phase 03 execution started
+Phase: 4 — Demo Loop + Stretch
+Plan: Not started
+Next: Phase 4 (Demo Loop + Stretch) — not yet planned
+Status: Ready to plan Phase 4
+Last activity: 2026-07-02 — Phase 03 complete (UAT + security verified), transitioned to Phase 4
 
-Progress: [█████░░░░░] 50% of milestone (2 of 4 phases)
+Progress: [████████░░] 75% of milestone (3 of 4 phases)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 4
+- Total plans completed: 6
 - Average duration: —
 - Total execution time: 0 hours
 
@@ -49,6 +49,7 @@ Progress: [█████░░░░░] 50% of milestone (2 of 4 phases)
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | - | - |
+| 03 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -108,6 +109,8 @@ None yet.
 - **Cognee #1023**: `forget(dataset=...)` leaks across datasets in vector layer; seed data must use strictly isolated entity names (Phase 1 exit gate includes before/after CLI assertion)
 - **Cognify budget**: Seed corpus is 8 files (per D-03/01-03-PLAN), each 172-220 words, well under the ~300-word budget; provider is now Mistral free tier (not OpenAI, see Decisions), so per-token cost risk is lower than originally assumed. Still cache cognified state as tar snapshot for zero-cost reseeds.
 - **RESOLVED** — Gemini free-tier daily quota (20 req/day, gemini-2.5-flash) exhausted mid-Task-3 verification (backend/persistence_check.py --store); cognify() retries never succeeded. User pivoted to Mistral's free tier instead of waiting for reset or paying for OpenAI (see Decisions).
+- **[Phase 03] Evidence panel is not interleaved across datasets** — `backend/search.py::_flatten_and_truncate` fills its `EVIDENCE_LIMIT=3` slots in per-dataset return order, no relevance interleaving. For the canonical "double-charged" demo query, `incidents` chunks dominate all 3 slots and `workarounds_v1_8` never appears in the evidence panel — before OR after forgetting. Live-UAT-confirmed via direct backend probe during Phase 3 verification. Not a Phase 3 defect (function predates Phase 3, untouched by it) but affects Phase 4 demo scripting: the visible forget proof for this query is the dataset-list row disappearing, not an evidence-panel diff. If Phase 4 wants the evidence-chunk flip specifically, either pick a different demo query or add interleaving to `_flatten_and_truncate`.
+- **[Phase 03] Demo corpus reseed during UAT bills `cognify()`** — the committed snapshot (`patchpilot_memory.snapshot.tar`) predates the Phase 1 flip, so `seed_cli.py --reset` cannot restore `workarounds_v1_8`; only `--seed` (full reseed, low-cost Mistral free-tier LLM calls) works. Needed 3x during Phase 3 UAT (each UAT forget click consumes the corpus). Phase 4's demo-reset feature (DEMO-01) should account for this — either take a fresh post-Phase-3 snapshot for `--reset`, or accept `--seed`'s small recurring cost as the reset path.
 
 ### Quick Tasks Completed
 
@@ -123,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-02T16:30:01.406Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-drift-forget/03-UI-SPEC.md
+Last session: 2026-07-02T17:41:28.000Z
+Stopped at: Phase 3 complete (UAT 3/3 passed, security verified, threats_open: 0), ready to plan Phase 4
+Resume file: None

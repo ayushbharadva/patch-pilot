@@ -128,5 +128,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
 | 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
-| 3. Drift + Forget | 2/2 | Complete   | 2026-07-02 |
+| 3. Drift + Forget | 2/2 | Complete    | 2026-07-02 |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |

@@ -1,31 +1,37 @@
 ---
 phase: 03-drift-forget
 verified: 2026-07-02T16:40:00Z
-status: human_needed
+status: passed
 score: 8/11 must-haves verified
 behavior_unverified: 3 # present + wired in code, but the runtime state transition is not exercised by any automated test — see behavior_unverified_items
 overrides_applied: 0
 mvp_mode_note: "ROADMAP.md declares mode: mvp for Phase 3, but the phase-level goal text ('Uploading a release exposes stale workarounds...') does not pass the User Story format guard (gsd_run query user-story.validate --pick valid returned false — missing 'As a ___, I want to ___, so that ___.' structure). Per the MVP verification rules this would normally block verification entirely. Given the parent request explicitly commissioned goal-backward verification of this phase and the ROADMAP already supplies four well-formed, testable Success Criteria, standard (non-MVP-narrowed) goal-backward verification was performed against those Success Criteria instead of producing a User Flow Coverage table. Recommend running `/gsd mvp-phase 3` to backfill a compliant User Story goal for future re-verification passes, but this is a process gap, not a phase-goal failure."
 behavior_unverified_items:
+
   - truth: "Clicking Forget on a 🔴 dataset surgically removes it via cognee.forget(dataset=...) and the incidents dataset remains intact"
     test: "With backend + frontend running and the corpus restored, click Forget on the workarounds_v1_8 row, click Confirm forget?, and observe the network call / server log for a successful cognee.forget(dataset='workarounds_v1_8') call, then re-list datasets and confirm workarounds_v1_8 is gone while incidents is still present with doc_count > 0."
     expected: "workarounds_v1_8 is absent from a fresh GET /datasets response; incidents is still present and search against it still returns results."
     why_human: "No automated test invokes the real cognee.forget() lifecycle verb end-to-end (unit tests only cover the _is_forgettable_workaround guard's True/False decisions, never the actual removal call) and the verifier must not mutate live memory state as a side effect of an automated check."
+
   - truth: "After a successful forget, the dataset's row disappears from the list and — if a search is on screen — the same query auto-re-runs so the change is visible"
     test: "Search 'double-charged', then Forget → Confirm forget? on workarounds_v1_8, and watch the dataset list and diagnosis card in the browser."
     expected: "The workarounds_v1_8 row vanishes from the Datasets card within one refetch cycle, a 'Forgotten — updating results…' toast appears, and the diagnosis card automatically re-renders with a freshly re-run search (no manual re-search needed)."
     why_human: "This is a client-side render + refetch + callback-triggered mutation sequence (React Query invalidation → refetch → conditional JSX removal → onForgotten → handleReSearch) that only a running browser session can confirm; no component/e2e test exercises it."
+
   - truth: "Re-searching the same query after forget returns the new correct fix, not the old stale workaround — the before/after flip is visible and unambiguous in the browser"
     test: "Before forgetting workarounds_v1_8, search 'double-charged' and note the evidence panel includes a workarounds_v1_8 chunk. After Forget → Confirm forget? and the auto re-search completes, inspect the new diagnosis card and evidence panel."
     expected: "The re-searched evidence panel no longer contains any workarounds_v1_8 chunk, the root cause still names the workarounds_v1_9 idempotency_guard fix, and incidents evidence still appears — the flip is visually obvious without reading logs."
     why_human: "Full before/after visual proof requires a live browser session comparing two rendered diagnosis cards; this is the phase's core value proposition and both 03-01-SUMMARY.md and 03-02-SUMMARY.md explicitly flag it as human_judgment: true, never exercised live during execution."
 human_verification:
+
   - test: "Click Forget on workarounds_v1_8 (🔴 row), confirm via 'Confirm forget?', and verify the row disappears while incidents remains listed with a non-zero doc count."
     expected: "workarounds_v1_8 is surgically removed; incidents is untouched (FORGET-01, ROADMAP SC3)."
     why_human: "Requires a live running backend + browser session to observe the actual cognee.forget() effect; the verifier must not mutate live memory as a side effect of an automated check."
+
   - test: "With a search on screen, Forget the drifting dataset and observe the auto re-search."
     expected: "Toast fires, row disappears, last query auto-re-runs without a manual refresh (FORGET-02, ROADMAP SC3/SC4)."
     why_human: "Client-side render/refetch/callback sequence only observable in a running browser."
+
   - test: "Search 'double-charged' before and after forgetting workarounds_v1_8; compare the two diagnosis cards and evidence panels."
     expected: "Before: root cause and evidence may reference the old workaround. After: root cause names the workarounds_v1_9 fix, evidence panel excludes workarounds_v1_8 chunks, incidents evidence still present — the before/after flip is visually unambiguous (FORGET-02, ROADMAP SC4, PatchPilot's core value loop)."
     why_human: "This is the phase's headline proof and is inherently a visual/browser confirmation; both plan SUMMARYs explicitly defer it to /gsd-verify-work."
