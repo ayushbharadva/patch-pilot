@@ -1,7 +1,7 @@
 ---
 phase: 3
 slug: drift-forget
-status: draft
+status: approved
 shadcn_initialized: true
 preset: "radix-nova, base neutral (code b2fA) — https://ui.shadcn.com/create?preset=b2fA — inherited unchanged from Phase 2, no new init needed"
 created: 2026-07-02
@@ -124,6 +124,8 @@ The default `Forget` button (before confirm) uses `variant="outline"` with destr
 
 This section documents the discretion areas CONTEXT.md explicitly left open (badge placement, one-click vs. confirm, auto-re-search), resolved here so planner/executor build one consistent flow.
 
+**Visual hierarchy:** The 🔴 drifting badge (red, with reason caption below and Forget button on the row) is the primary focal point on each dataset row, drawing attention to actionable memory drift. 🟢 and 🟡 rows display badges only, no buttons, signaling they are read-only.
+
 1. **Badge placement:** `DatasetList.tsx` row (primary location, all three states) **and** `DiagnosisCard.tsx`'s `VersionTagBadge` (secondary location, 🟢/🟡 only per the D-01 exclusion above). Both read from the same backend-computed `drift_state` value — never computed independently client-side (mirrors the backend's own "one shared helper" rule from RESEARCH.md Pattern 1/Anti-Patterns).
 2. **Forget button visibility:** only rendered on rows where `drift_state === "drifting"`. 🟢 and 🟡 rows show a badge only, no action button — DRIFT-03 recommends forgetting drifting memories specifically, not aging ones.
 3. **Confirmation:** two-step **inline** confirm (no `alert-dialog`/modal component added — keeps the registry footprint at zero new components and matches this app's existing no-modal pattern from Accept/Dismiss). Clicking `Forget` swaps the button in place for `Confirm forget?` + `Cancel`; there is no auto-timeout revert — the row simply refetches back to the default state on the next successful `GET /datasets` poll if the user navigates away without deciding.
@@ -159,11 +161,11 @@ No third-party registries or blocks are used this phase. Registry vetting gate: 
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS (post-revision — visual hierarchy statement added above per checker recommendation)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** APPROVED (2026-07-02)
