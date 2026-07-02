@@ -2,6 +2,7 @@ import {
   Activity,
   Eraser,
   House,
+  PlayCircle,
   ScanSearch,
   Upload,
   Waypoints,
@@ -63,6 +64,12 @@ const nav = [
     href: "/forget",
     icon: Eraser,
     description: "Retire outdated workarounds and reset the demo",
+  },
+  {
+    label: "Demo",
+    href: "/demo",
+    icon: PlayCircle,
+    description: "Guided walkthrough of the full memory lifecycle",
   },
 ] as const satisfies readonly NavItem[];
 
