@@ -36,9 +36,9 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Memory Drift
 
-- [ ] **DRIFT-01**: Every memory carries a health state — 🟢 Stable / 🟡 Aging / 🔴 Drifting
-- [ ] **DRIFT-02**: On release upload, drift detection flags affected older memories with a visible, explainable reason string
-- [ ] **DRIFT-03**: Drift recommends which workarounds to forget
+- [x] **DRIFT-01**: Every memory carries a health state — 🟢 Stable / 🟡 Aging / 🔴 Drifting
+- [x] **DRIFT-02**: On release upload, drift detection flags affected older memories with a visible, explainable reason string
+- [x] **DRIFT-03**: Drift recommends which workarounds to forget
 
 ### Forget & Proof
 
@@ -102,9 +102,9 @@ Deferred beyond the hackathon.
 | FEEDBACK-02 | Phase 2 | Pending |
 | GRAPH-01 | Phase 4 | Pending |
 | RELEASE-01 | Phase 2 | Complete |
-| DRIFT-01 | Phase 3 | Pending |
-| DRIFT-02 | Phase 3 | Pending |
-| DRIFT-03 | Phase 3 | Pending |
+| DRIFT-01 | Phase 3 | Complete |
+| DRIFT-02 | Phase 3 | Complete |
+| DRIFT-03 | Phase 3 | Complete |
 | FORGET-01 | Phase 3 | Pending |
 | FORGET-02 | Phase 3 | Pending |
 | DEMO-01 | Phase 4 | Pending |

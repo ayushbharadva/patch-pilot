@@ -92,12 +92,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The drift view identifies which specific datasets to forget; clicking Forget on a 🔴 dataset surgically removes it via `forget(dataset="workarounds_v{N}")` — the `incidents` dataset remains intact and still returns results
   4. Re-searching the same query after forget returns the new correct fix, not the old stale workaround — the before/after flip is visible and unambiguous in the browser
 
-**Plans**: 2 plans (2 waves)
+**Plans**: 1/2 plans executed
 **UI hint**: yes
 
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Restore demo corpus + drift detection engine + 🟢/🟡/🔴 badges & reason (DRIFT-01/02/03) [wave 1]
+- [x] 03-01-PLAN.md — Restore demo corpus + drift detection engine + 🟢/🟡/🔴 badges & reason (DRIFT-01/02/03) [wave 1]
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -128,5 +128,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
 | 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
-| 3. Drift + Forget | 0/2 | Not started | - |
+| 3. Drift + Forget | 1/2 | In Progress|  |
 | 4. Demo Loop + Stretch | 0/TBD | Not started | - |
