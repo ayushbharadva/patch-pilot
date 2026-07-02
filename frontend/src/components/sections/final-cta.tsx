@@ -11,7 +11,7 @@ export function FinalCta() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pt-8 pb-24 sm:px-6 lg:px-8">
+    <section className="relative z-10 bg-background mx-auto w-full max-w-7xl px-4 pt-8 pb-24 sm:px-6 lg:px-8">
       <Reveal>
         <div className="relative overflow-hidden rounded-3xl border border-border/60 px-6 py-16 text-center sm:px-12">
           {/* Animated mesh gradient background */}

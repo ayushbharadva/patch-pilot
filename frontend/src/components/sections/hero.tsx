@@ -1,12 +1,21 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { ArrowRight, Play, Sparkles, Waypoints } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
 import { CtaButton } from '@/components/shared/cta-button';
 import { AmbientBackground } from '@/components/shared/ambient-background';
+import { NeuralCanvas } from '@/components/shared/neural-canvas';
 import { SITE_CONFIG } from '@/config/site';
 import { cn } from '@/lib/utils';
+
+// Lazy-load 3D scene to avoid blocking initial render
+const MemoryGraph3D = dynamic(
+  () =>
+    import('@/components/three/memory-graph-3d').then((m) => m.MemoryGraph3D),
+  { ssr: false, loading: () => null },
+);
 
 const HEADLINE_WORDS = ['Your', 'incidents,', 'remembered'];
 
@@ -16,6 +25,7 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden">
       <AmbientBackground variant="hero" />
+      <NeuralCanvas className="absolute inset-0 z-0 size-full" />
 
       <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-8 lg:py-32">
         {/* Left: Headline + CTAs */}
@@ -106,7 +116,7 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* Right: Animated Console Mock */}
+        {/* Right: 3D Memory Graph */}
         <motion.div
           initial={
             shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95, y: 20 }
@@ -117,8 +127,25 @@ export function Hero() {
             duration: 0.7,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
+          className="relative aspect-square w-full max-w-lg"
         >
-          <AnimatedConsoleMock />
+          {/* Glow behind 3D scene */}
+          <div
+            aria-hidden
+            className="absolute inset-8 rounded-full bg-linear-to-br from-glow-cyan to-glow-violet blur-3xl"
+          />
+          <MemoryGraph3D className="relative size-full" />
+          {/* Floating label */}
+          <motion.div
+            initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.6 }}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-border/60 bg-surface-elevated/80 px-4 py-1.5 backdrop-blur-md"
+          >
+            <span className="font-mono text-xs text-muted-foreground">
+              memory graph · 14 nodes · 15 edges
+            </span>
+          </motion.div>
         </motion.div>
       </div>
     </section>
@@ -126,89 +153,6 @@ export function Hero() {
 }
 
 function AnimatedConsoleMock() {
-  const shouldReduceMotion = useReducedMotion();
-
-  return (
-    <div className="relative">
-      <div
-        aria-hidden
-        className="absolute -inset-4 rounded-3xl bg-linear-to-br from-glow-cyan to-glow-violet blur-2xl"
-      />
-      <div className="relative rounded-2xl border border-border/60 bg-surface-elevated/80 shadow-2xl backdrop-blur-md">
-        <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
-          <span className="size-2.5 rounded-full bg-drift-drifting" />
-          <span className="size-2.5 rounded-full bg-drift-aging" />
-          <span className="size-2.5 rounded-full bg-drift-stable" />
-          <span className="ml-2 font-mono text-xs text-muted-foreground">
-            patchpilot recall — AUTH-401
-          </span>
-        </div>
-        <div className="space-y-4 p-5 font-mono text-sm">
-          <motion.p
-            initial={shouldReduceMotion ? undefined : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.4 }}
-            className="text-muted-foreground"
-          >
-            <span className="text-primary">$</span> patchpilot recall --bug
-            AUTH-401 &quot;users hit 401 after token refresh&quot;
-          </motion.p>
-          <motion.div
-            initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-            className="rounded-lg border border-primary/30 bg-primary/5 p-4"
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold tracking-wide text-primary uppercase">
-                Root cause
-              </p>
-              <span
-                className="text-xs font-bold text-primary"
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-              >
-                94% confidence
-              </span>
-            </div>
-            <p className="mt-1.5 font-sans text-foreground">
-              Refresh token rotation races the access-token clock skew, so a
-              renewed token is rejected as expired.
-            </p>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-              <motion.div
-                initial={shouldReduceMotion ? undefined : { width: 0 }}
-                animate={{ width: '94%' }}
-                transition={{ delay: 1.5, duration: 1, ease: 'easeOut' }}
-                className="h-full rounded-full bg-linear-to-r from-gradient-start to-gradient-end"
-              />
-            </div>
-          </motion.div>
-          <motion.div
-            initial={shouldReduceMotion ? undefined : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 0.5 }}
-            className="space-y-1.5 text-xs text-muted-foreground"
-          >
-            <p className="font-sans font-medium text-foreground">
-              Reconstructed from 3 prior incidents
-            </p>
-            {[
-              'AUTH-207 — clock-skew logout storm, Mar 2026',
-              'AUTH-318 — refresh loop after SSO migration',
-              'CHG-92 — token TTL lowered in release 1.8',
-            ].map((line, i) => (
-              <motion.p
-                key={line}
-                initial={shouldReduceMotion ? undefined : { opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 2 + i * 0.15, duration: 0.4 }}
-              >
-                · {line}
-              </motion.p>
-            ))}
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  );
+  // Replaced by ProductDemo — kept as no-op for backward compat
+  return null;
 }

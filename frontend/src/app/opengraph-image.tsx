@@ -32,13 +32,20 @@ export default function Image() {
 						alignItems: "center",
 						justifyContent: "center",
 						background:
-							"linear-gradient(135deg, #3ad6c6 0%, #4aa3f0 55%, #8b7bf0 100%)",
-						color: "#0b0f17",
-						fontSize: "40px",
-						fontWeight: 700,
+							"linear-gradient(135deg, #22d3ee 0%, #4aa3f0 55%, #8b7bf0 100%)",
+						position: "relative",
 					}}
 				>
-					P
+					{/* Memory graph logo */}
+					<svg viewBox="0 0 36 36" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+						<line x1="18" y1="18" x2="8" y2="9" stroke="#0b0f17" strokeWidth="1.5" strokeOpacity="0.5" />
+						<line x1="18" y1="18" x2="28" y2="9" stroke="#0b0f17" strokeWidth="1.5" strokeOpacity="0.5" />
+						<line x1="18" y1="18" x2="18" y2="30" stroke="#0b0f17" strokeWidth="1.5" strokeOpacity="0.5" />
+						<circle cx="8" cy="9" r="3" fill="#0b0f17" fillOpacity="0.7" />
+						<circle cx="28" cy="9" r="3" fill="#0b0f17" fillOpacity="0.7" />
+						<circle cx="18" cy="30" r="3" fill="#0b0f17" fillOpacity="0.7" />
+						<circle cx="18" cy="18" r="5" fill="#0b0f17" />
+					</svg>
 				</div>
 				<div
 					style={{

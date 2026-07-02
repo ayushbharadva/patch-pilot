@@ -246,6 +246,16 @@
     pointer-events: none;
     z-index: 0;
   }
+
+  /* Marquee animation for source scroll */
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 :root {
