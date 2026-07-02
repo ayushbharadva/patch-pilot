@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 
+import { DatasetList } from "@/components/DatasetList";
 import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
 import { UploadPanel } from "@/components/UploadPanel";
-import type { SearchResponse } from "@/lib/api";
+import { searchIncident, type SearchResponse } from "@/lib/api";
 
 /**
  * Single-page dashboard (D-17): persistent search bar on top, results
@@ -16,6 +17,17 @@ export default function Home() {
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  // Tracked so an Accept on the diagnosis card can re-run the SAME query
+  // (D-12) — DiagnosisCard has no visibility into SearchBar's own state.
+  const [lastQuery, setLastQuery] = useState<string | null>(null);
+
+  async function handleReSearch() {
+    if (!lastQuery) return;
+    setIsPending(true);
+    const result = await searchIncident(lastQuery);
+    setIsPending(false);
+    setResponse(result);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
@@ -25,13 +37,25 @@ export default function Home() {
           if (pending) setHasSearched(true);
         }}
         onResponse={setResponse}
+        onQuery={setLastQuery}
       />
 
       <section aria-live="polite" className="flex flex-col gap-8">
         {isPending ? (
           <DiagnosisCardSkeleton />
         ) : hasSearched && response ? (
-          <DiagnosisCard response={response} />
+          <DiagnosisCard
+            // Re-mount on every new search (fresh session_id/qa_id) so a
+            // prior card's Accept/Dismiss state never bleeds into the next
+            // search's card.
+            key={
+              response.status === "ok"
+                ? (response.qa_id ?? response.session_id)
+                : `${response.status}-${lastQuery ?? ""}`
+            }
+            response={response}
+            onReSearch={() => void handleReSearch()}
+          />
         ) : (
           <EmptyState />
         )}
@@ -39,6 +63,10 @@ export default function Home() {
 
       <section aria-label="Upload incident memory">
         <UploadPanel />
+      </section>
+
+      <section aria-label="Datasets">
+        <DatasetList />
       </section>
     </main>
   );

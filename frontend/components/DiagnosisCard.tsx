@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { EvidenceSnippet, SearchResponse } from "@/lib/api";
+import { acceptFeedback, type EvidenceSnippet, type SearchResponse } from "@/lib/api";
 
 /** D-07: at most 3 evidence snippets shown, even if the backend ever sends more. */
 const EVIDENCE_DISPLAY_LIMIT = 3;
@@ -102,8 +103,110 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
 
 type SearchResponseOk = Extract<SearchResponse, { status: "ok" }>;
 
-function DiagnosisCardOk({ response }: { response: SearchResponseOk }) {
+/** D-24 short human message for a failed Accept call. */
+const ACCEPT_ERROR_FALLBACK = "Could not save feedback. Please try again.";
+
+/**
+ * Accept Fix / Dismiss controls (D-10/D-11/D-12/D-13) — apply to the whole
+ * card only, never individual evidence items. Accept reinforces via
+ * add_feedback()+improve() against the exact `source_dataset` the answer
+ * came from, flips to a non-interactive "Reinforced ✓" state (D-11), and
+ * invokes `onReSearch` (re-runs the SAME query so the accepted fix's
+ * reordering is visible in the next card, D-12). Dismiss removes the card
+ * client-side only — NO backend call (D-10) — by flipping local state, not
+ * by calling any API.
+ */
+function AcceptDismissControls({
+  response,
+  onReSearch,
+  onDismiss,
+}: {
+  response: SearchResponseOk;
+  onReSearch?: () => void;
+  onDismiss: () => void;
+}) {
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Feedback needs both qa_id and source_dataset — RESEARCH.md notes qa_id
+  // resolution is best-effort and may be null; without it there is nothing
+  // to reinforce, so Accept is disabled rather than silently failing.
+  const canAccept = Boolean(response.qa_id) && Boolean(response.source_dataset);
+
+  async function handleAccept() {
+    if (!response.qa_id || !response.source_dataset) return;
+    setIsAccepting(true);
+    setError(null);
+    const result = await acceptFeedback({
+      session_id: response.session_id,
+      qa_id: response.qa_id,
+      source_dataset: response.source_dataset,
+    });
+    setIsAccepting(false);
+
+    if (result.status === "reinforced") {
+      setAccepted(true);
+      onReSearch?.();
+    } else {
+      setError(result.message || ACCEPT_ERROR_FALLBACK);
+    }
+  }
+
+  return (
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex items-center gap-3">
+        {accepted ? (
+          <span
+            aria-live="polite"
+            className="inline-flex items-center gap-1.5 font-sans text-sm font-semibold text-primary"
+          >
+            <Check className="size-4" aria-hidden="true" />
+            Reinforced ✓
+          </span>
+        ) : (
+          <Button
+            type="button"
+            onClick={() => void handleAccept()}
+            disabled={isAccepting || !canAccept}
+            className="font-sans text-sm font-semibold"
+          >
+            Accept Fix
+          </Button>
+        )}
+        {!accepted ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onDismiss}
+            className="font-sans text-sm font-semibold text-muted-foreground"
+          >
+            Dismiss
+          </Button>
+        ) : null}
+      </div>
+      {error ? (
+        <p className="font-sans text-sm font-semibold text-destructive">{error}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function DiagnosisCardOk({
+  response,
+  onReSearch,
+}: {
+  response: SearchResponseOk;
+  onReSearch?: () => void;
+}) {
+  const [dismissed, setDismissed] = useState(false);
   const evidence = response.evidence.slice(0, EVIDENCE_DISPLAY_LIMIT);
+
+  // D-10: Dismiss is a silent, client-only removal of the whole card — no
+  // API call, no confirmation. Rendering null here (rather than lifting
+  // dismissal to the page) keeps Dismiss purely local and free of any
+  // network side effect.
+  if (dismissed) return null;
 
   return (
     <Card className={`${CARD_SPACING} gap-6`}>
@@ -127,6 +230,13 @@ function DiagnosisCardOk({ response }: { response: SearchResponseOk }) {
           </p>
         )}
       </CardContent>
+      <CardFooter>
+        <AcceptDismissControls
+          response={response}
+          onReSearch={onReSearch}
+          onDismiss={() => setDismissed(true)}
+        />
+      </CardFooter>
     </Card>
   );
 }
@@ -136,8 +246,18 @@ function DiagnosisCardOk({ response }: { response: SearchResponseOk }) {
  * expandable evidence below (D-07/D-08), version tag (D-09) for status
  * "ok"; the explicit zero-result message (D-21) for "no_results"; a short
  * human error message (D-24, never raw exception text) for "error".
+ *
+ * `onReSearch` is provided by the page and re-runs the SAME query after a
+ * successful Accept, so the reinforced fix's reordering is visible in the
+ * next diagnosis card (D-12).
  */
-export function DiagnosisCard({ response }: { response: SearchResponse }) {
+export function DiagnosisCard({
+  response,
+  onReSearch,
+}: {
+  response: SearchResponse;
+  onReSearch?: () => void;
+}) {
   if (response.status === "error") {
     return (
       <Card className={CARD_SPACING}>
@@ -162,7 +282,7 @@ export function DiagnosisCard({ response }: { response: SearchResponse }) {
     );
   }
 
-  return <DiagnosisCardOk response={response} />;
+  return <DiagnosisCardOk response={response} onReSearch={onReSearch} />;
 }
 
 /**

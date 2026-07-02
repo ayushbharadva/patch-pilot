@@ -13,6 +13,13 @@ export const EXAMPLE_QUERY = "customers double-charged";
 interface SearchBarProps {
   onPendingChange: (pending: boolean) => void;
   onResponse: (response: SearchResponse) => void;
+  /**
+   * Reports the trimmed query text at submit time (form submit or chip
+   * click) so the page can re-run the SAME query after an Accept (D-12) —
+   * DiagnosisCard has no visibility into SearchBar's internal query state
+   * otherwise.
+   */
+  onQuery?: (query: string) => void;
 }
 
 /**
@@ -20,7 +27,7 @@ interface SearchBarProps {
  * Owns only the input + chip and the search mutation — results are lifted
  * to the page via onPendingChange/onResponse, never rendered here.
  */
-export function SearchBar({ onPendingChange, onResponse }: SearchBarProps) {
+export function SearchBar({ onPendingChange, onResponse, onQuery }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
   const mutation = useMutation({
@@ -48,6 +55,7 @@ export function SearchBar({ onPendingChange, onResponse }: SearchBarProps) {
   function submit(value: string) {
     const trimmed = value.trim();
     if (!trimmed || mutation.isPending) return;
+    onQuery?.(trimmed);
     mutation.mutate(trimmed);
   }
 

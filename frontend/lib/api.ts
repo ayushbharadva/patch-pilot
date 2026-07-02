@@ -181,3 +181,79 @@ export async function loadSampleData(): Promise<SampleLoadResponse> {
     };
   }
 }
+
+/**
+ * Feedback + dataset-list wrappers mirroring backend/feedback.py's
+ * `/feedback/accept` and backend/datasets_router.py's `/datasets` contracts
+ * (FEEDBACK-01, FEEDBACK-02, RELEASE-01, D-10/D-11/D-12/D-15).
+ */
+
+interface AcceptFeedbackReinforcedResponse {
+  status: "reinforced";
+}
+
+interface AcceptFeedbackErrorResponse {
+  status: "error";
+  message: string;
+}
+
+/** Discriminated union matching backend/feedback.py's POST /feedback/accept response. */
+export type AcceptFeedbackResponse =
+  | AcceptFeedbackReinforcedResponse
+  | AcceptFeedbackErrorResponse;
+
+/**
+ * POST {session_id, qa_id, source_dataset} to `${API_BASE}/feedback/accept`
+ * (FEEDBACK-01/02). There is deliberately no rejectFeedback() wrapper --
+ * Dismiss (D-10) is a silent client-side removal with no backend call.
+ */
+export async function acceptFeedback({
+  session_id,
+  qa_id,
+  source_dataset,
+}: {
+  session_id: string;
+  qa_id: string;
+  source_dataset: string;
+}): Promise<AcceptFeedbackResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/feedback/accept`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id, qa_id, source_dataset }),
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Could not save feedback. Please try again.",
+      };
+    }
+
+    return (await res.json()) as AcceptFeedbackResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Could not save feedback. Please try again.",
+    };
+  }
+}
+
+/** One dataset-list row (D-15): `{name}` mono + doc count. */
+export interface DatasetInfo {
+  name: string;
+  doc_count: number;
+}
+
+/**
+ * GET `${API_BASE}/datasets` (RELEASE-01/D-15). Network/parse failures
+ * resolve to an empty list rather than throwing, so a transient hiccup
+ * renders an empty dataset list instead of crashing the section.
+ */
+export async function listDatasets(): Promise<DatasetInfo[]> {
+  const res = await fetch(`${API_BASE}/datasets`);
+  if (!res.ok) {
+    throw new Error("Could not load datasets.");
+  }
+  return (await res.json()) as DatasetInfo[];
+}

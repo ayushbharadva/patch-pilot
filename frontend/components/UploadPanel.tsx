@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
 import { FileStatusRow, type FileStatus } from "@/components/FileStatusRow";
 import {
   loadSampleData,
@@ -67,6 +69,7 @@ function hasAllowedExtension(filename: string): boolean {
  * (D-05/D-22).
  */
 export function UploadPanel() {
+  const queryClient = useQueryClient();
   const [contentType, setContentType] = useState<ContentType>("ticket");
   const [releaseVersion, setReleaseVersion] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -94,13 +97,19 @@ export function UploadPanel() {
                 r.dataset === dataset && r.status === "processing" ? { ...r, status } : r,
               ),
             );
+            if (status === "ready") {
+              // Cognify has finished for this dataset -- refresh the
+              // dataset list so its doc count reflects the completed
+              // ingest (D-15), e.g. a newly uploaded workarounds_v{N}.
+              void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
+            }
           }
         });
       });
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [rows]);
+  }, [rows, queryClient]);
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     setPendingFiles(Array.from(event.target.files ?? []));
@@ -158,6 +167,11 @@ export function UploadPanel() {
     );
     setPendingFiles([]);
     setFileInputKey((k) => k + 1);
+    // A new workarounds_v{N} (or incidents) dataset may now exist -- refresh
+    // the list immediately so its name is visible even before cognify
+    // completes (D-15/D-16); the polling effect above refreshes again once
+    // the doc count is final.
+    void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
   }
 
   function handleUploadClick() {
@@ -188,6 +202,7 @@ export function UploadPanel() {
       file: null,
     }));
     setRows((prev) => [...prev, ...newRows]);
+    void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
   }
 
   function handleRetry(row: UploadRow) {
