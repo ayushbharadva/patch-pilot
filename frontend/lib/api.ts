@@ -14,6 +14,10 @@ export interface EvidenceSnippet {
   source: string | null;
 }
 
+/** Three-state memory health (DRIFT-01) -- matches backend/drift.py's
+ * compute_drift_states literals exactly. */
+export type DriftState = "stable" | "aging" | "drifting";
+
 interface SearchResponseOk {
   status: "ok";
   root_cause: string;
@@ -21,6 +25,9 @@ interface SearchResponseOk {
   source_dataset: string | null;
   session_id: string;
   qa_id: string | null;
+  /** The winning source_dataset's drift state (DRIFT-01, UI-SPEC Interaction
+   * Contract point 6) -- null only when no primary result was picked. */
+  drift_state: DriftState | null;
 }
 
 interface SearchResponseNoResults {
@@ -239,10 +246,13 @@ export async function acceptFeedback({
   }
 }
 
-/** One dataset-list row (D-15): `{name}` mono + doc count. */
+/** One dataset-list row (D-15): `{name}` mono + doc count, plus its
+ * DRIFT-01/02/03 health state and (drifting rows only) a generated reason. */
 export interface DatasetInfo {
   name: string;
   doc_count: number;
+  drift_state: DriftState;
+  drift_reason: string | null;
 }
 
 /**

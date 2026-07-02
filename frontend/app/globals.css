@@ -54,6 +54,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Phase 3 drift-badge palette (03-UI-SPEC.md "Implementation note") --
+     registers the already-declared :root/.dark values below so Tailwind v4
+     generates bg-drift-*/text-drift-*/border-drift-* utilities. */
+  --color-drift-stable: var(--color-drift-stable);
+  --color-drift-aging: var(--color-drift-aging);
+  --color-drift-drifting: var(--color-drift-drifting);
 }
 
 /* Color anchors — 02-UI-SPEC.md "Color" table. Accent (indigo) maps to the

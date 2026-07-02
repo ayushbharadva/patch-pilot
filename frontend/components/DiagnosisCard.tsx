@@ -54,7 +54,7 @@ function VersionTagBadge({ dataset, healthState }: VersionTagBadgeProps) {
     <Badge
       variant="outline"
       data-health-state={healthState ?? "neutral"}
-      className="shrink-0 font-mono text-xs font-normal text-muted-foreground"
+      className="shrink-0 font-mono text-xs font-normal text-muted-foreground data-[health-state=aging]:border-drift-aging data-[health-state=aging]:text-drift-aging data-[health-state=drifting]:border-drift-drifting data-[health-state=drifting]:text-drift-drifting data-[health-state=stable]:border-drift-stable data-[health-state=stable]:text-drift-stable"
     >
       {versionTagFromDataset(dataset)}
     </Badge>
@@ -214,7 +214,10 @@ function DiagnosisCardOk({
         <h2 className="font-display text-[28px] leading-[1.2] font-semibold text-foreground">
           {response.root_cause}
         </h2>
-        <VersionTagBadge dataset={response.source_dataset} />
+        <VersionTagBadge
+          dataset={response.source_dataset}
+          healthState={response.drift_state ?? undefined}
+        />
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {evidence.length > 0 ? (
