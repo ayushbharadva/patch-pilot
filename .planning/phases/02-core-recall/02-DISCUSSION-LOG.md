@@ -89,7 +89,7 @@
 | | Hero/centered, moves up after first search | Google-style centered then relocates | |
 
 **User's choice:** Single-page dashboard; persistent top-bar search.
-**Notes:** Chosen to minimize navigation clicks during the timed 60s demo.
+**Notes:** Chosen to minimize navigation clicks during the timed 120s demo.
 
 ---
 

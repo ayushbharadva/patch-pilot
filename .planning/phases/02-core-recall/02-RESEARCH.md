@@ -86,7 +86,7 @@ Phase 2's hardest problem — the unresolved FEEDBACK API question (B-01) — is
 
 The rest of the phase is comparatively standard: FastAPI accepts `UploadFile` and can hand its `BinaryIO` straight to `cognee.add()` with no temp file; background processing can use plain FastAPI `BackgroundTasks` with `cognee.datasets.get_status()` for polling (cognee's own `PipelineRunStatus` strings map directly onto the required Uploading/Processing/Ready/Failed badge states); and the "fused" GRAPH_COMPLETION + CHUNKS diagnosis card is fusion the PatchPilot backend must do itself — cognee returns one `SearchResult` per dataset searched, not one fused answer across datasets.
 
-**Primary recommendation:** Flip `backend/cognee_config.py`'s `CACHING` default from `"false"` to `"true"`, add a new `AUTO_FEEDBACK` default of `"false"`, mint a fresh UUID `session_id` per search request (never reuse `default_session`), and drive Accept via `add_feedback(session_id, qa_id, feedback_score=5)` → `improve(dataset=<source dataset>, session_ids=[session_id], feedback_alpha=1.0)` → re-search with `feedback_influence>=0.5` to make the effect visible within the 60-second demo window.
+**Primary recommendation:** Flip `backend/cognee_config.py`'s `CACHING` default from `"false"` to `"true"`, add a new `AUTO_FEEDBACK` default of `"false"`, mint a fresh UUID `session_id` per search request (never reuse `default_session`), and drive Accept via `add_feedback(session_id, qa_id, feedback_score=5)` → `improve(dataset=<source dataset>, session_ids=[session_id], feedback_alpha=1.0)` → re-search with `feedback_influence>=0.5` to make the effect visible within the 120-second demo window.
 
 ## Architectural Responsibility Map
 

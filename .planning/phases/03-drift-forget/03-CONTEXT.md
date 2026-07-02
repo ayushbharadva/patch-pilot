@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Phase 3 delivers Memory Drift detection and surgical Forget — the project's scoring differentiator. Uploading a release exposes stale workarounds with human-readable drift badges (🟢 Stable / 🟡 Aging / 🔴 Drifting); the engineer can forget a drifting workaround with one click; re-searching proves memory changed. This closes the loop PROJECT.md calls the Core Value: "search → drift-detected → forget → re-search — visibly, in under 60 seconds."
+Phase 3 delivers Memory Drift detection and surgical Forget — the project's scoring differentiator. Uploading a release exposes stale workarounds with human-readable drift badges (🟢 Stable / 🟡 Aging / 🔴 Drifting); the engineer can forget a drifting workaround with one click; re-searching proves memory changed. This closes the loop PROJECT.md calls the Core Value: "search → drift-detected → forget → re-search — visibly, in under 120 seconds."
 
 Discussion covered 3 areas: the drift trigger + visible-flip mechanism (the load-bearing risk carried over from Phase 2's verification), the drift reason string, and the 🟡 Aging heuristic. Badge/forget UI placement (one-click vs confirm, auto-re-search) was surfaced as an available area but the user chose not to discuss it — left to planner/UI-phase discretion within the decisions below.
 

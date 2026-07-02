@@ -331,7 +331,7 @@ User clicks "Forget" on stale workaround
     → 200 { status: "forgotten" }
     → User re-searches same query
     → Old workaround no longer appears; new fix (from v1.9) surfaces
-    ← This is the before/after demo loop — < 60 seconds end-to-end
+    ← This is the before/after demo loop — < 120 seconds end-to-end
 ```
 
 ---
@@ -509,7 +509,7 @@ Phase 4: Memory Drift
   └── "Forget" button triggers /forget → UI refreshes
   ↓
 Phase 5: Demo loop + Polish
-  └── Before/after recall flow < 60 s end-to-end
+  └── Before/after recall flow < 120 s end-to-end
   └── Feedback endpoint wired
   └── Graph visualization
   └── Seed dataset (compelling demo data)

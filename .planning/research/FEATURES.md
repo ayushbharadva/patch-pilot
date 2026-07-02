@@ -30,7 +30,7 @@ Features that exist nowhere else in the incident-tool landscape. These are the s
 | Memory Drift detection (🟢 Stable / 🟡 Aging / 🔴 Drifting) | No incident tool tracks whether old workarounds are still valid after a release ships — this is the product's reason to exist | HIGH | Heuristics: newer fix contradicts older workaround → 🔴; release changelog touches a memory's component → 🟡/🔴; memory not recalled successfully → 🟡; similar incidents resolve differently now → 🔴. Must stay visible and explainable — not a black-box score |
 | Per-release dataset scoping (`workarounds_v1_9`) | Enables surgical forget without destroying durable incident knowledge | LOW | Naming convention enforced at ingest time; `dataset_name` parameter on `add()`. Low code complexity but HIGH design importance — getting this wrong breaks drift + forget |
 | Surgical `forget(dataset)` | Delete only the stale workaround set, not all memory | LOW | Single `cognee.forget(dataset="workarounds_v1_9")` call; complexity is in the UX that makes the surgical nature visible |
-| Re-search proof loop | Makes "memory is live" tangible — before/after in 60 seconds; the demo moment | LOW | Just a second recall call + side-by-side display; zero additional complexity if ingest + drift + forget already work |
+| Re-search proof loop | Makes "memory is live" tangible — before/after in 120 seconds; the demo moment | LOW | Just a second recall call + side-by-side display; zero additional complexity if ingest + drift + forget already work |
 | Diagnosis card (root cause + evidence incidents) | Grounds the AI recommendation in real tickets; removes "why should I trust this?" objection | MEDIUM | UI layout: root cause panel (GRAPH_COMPLETION result) alongside evidence list (CHUNKS results); must visually link them |
 | `improve(feedback_alpha)` reinforcement | Memory improves from engineer feedback — not static storage | MEDIUM | API call is simple; UX requires storing accept/reject per recall event and triggering improve() asynchronously |
 | Memory Graph view | Shows Cognee's knowledge graph is richer than flat RAG; makes the graph-native approach tangible | MEDIUM | react-force-graph or Sigma.js; data from Cognee's graph query endpoint; interactivity (click a node) is stretch |
@@ -86,7 +86,7 @@ prune_data() + prune_system()
 
 ### Dependency Notes
 
-- **Re-search proof requires ALL of:** ingest → per-release dataset scoping → drift detection → forget(dataset) → second recall. This is the full demo loop. If any step breaks, the 60-second demo fails entirely.
+- **Re-search proof requires ALL of:** ingest → per-release dataset scoping → drift detection → forget(dataset) → second recall. This is the full demo loop. If any step breaks, the 120-second demo fails entirely.
 - **Drift detection requires dataset scoping:** without named per-release datasets, forget() would wipe everything and drift signals have nothing to compare across releases.
 - **Memory health dashboard requires drift detection:** it aggregates drift state counts — can't aggregate what hasn't been computed.
 - **Confidence scoring requires recall:** derives from `SearchResultPayload` relevance scores returned by `search()`. Pure display enhancement on the diagnosis card.
@@ -97,7 +97,7 @@ prune_data() + prune_system()
 
 ## MVP Definition
 
-### The 60-Second Demo Critical Path (must all work or demo fails)
+### The 120-Second Demo Critical Path (must all work or demo fails)
 
 These six features are sequentially dependent. Build and test them as a chain, not independently.
 
@@ -144,7 +144,7 @@ These six features are sequentially dependent. Build and test them as a chain, n
 | prune reset | MEDIUM | LOW | P1 — needed to re-run demo |
 | Past incident listing | MEDIUM | LOW | P1 — table stakes |
 | Memory Graph view | HIGH | MEDIUM | P1 — visual proof of Cognee graph |
-| Engineer feedback → improve() | MEDIUM | MEDIUM | P2 — completes lifecycle, not in 60s demo |
+| Engineer feedback → improve() | MEDIUM | MEDIUM | P2 — completes lifecycle, not in 120s demo |
 | Confidence scoring | MEDIUM | LOW | P2 — quick win after recall works |
 | Memory health dashboard | MEDIUM | MEDIUM | P2 — good second demo screen |
 | Incident timeline | LOW | LOW | P2 — cosmetic narrative aid |

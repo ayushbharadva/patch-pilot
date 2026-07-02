@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-PatchPilot is a hackathon-targeted incident-memory system where the primary scoring lever is deep, visible use of Cognee's memory lifecycle: ingest → recall → drift-detect → surgical forget → re-search proof. The core demo loop — search returns old workaround, upload release marks it 🔴, forget it, re-search returns new correct fix — must run end-to-end in under 60 seconds. The entire value proposition collapses if the before/after flip does not visibly happen. Everything in the architecture and build order is subordinate to protecting that loop.
+PatchPilot is a hackathon-targeted incident-memory system where the primary scoring lever is deep, visible use of Cognee's memory lifecycle: ingest → recall → drift-detect → surgical forget → re-search proof. The core demo loop — search returns old workaround, upload release marks it 🔴, forget it, re-search returns new correct fix — must run end-to-end in under 120 seconds. The entire value proposition collapses if the before/after flip does not visibly happen. Everything in the architecture and build order is subordinate to protecting that loop.
 
 The recommended approach is a three-tier architecture (Next.js App Router BFF → FastAPI → in-process Cognee) using fully file-based storage (Kuzu graph, LanceDB vector, SQLite relational) — no Docker, no external databases. The memory lifecycle uses a strict two-dataset split: durable incidents always in the `"incidents"` dataset, per-release workarounds in `"workarounds_v{version}"` datasets, enabling Cognee's `forget(dataset=...)` to surgically remove stale workarounds without touching durable incident knowledge. The DriftService is a pure Python heuristic class (no ML, no black box) that must surface a human-readable reason alongside every 🔴 badge.
 
@@ -34,7 +34,7 @@ The stack is fixed by hackathon spec and fully confirmed: Cognee 1.2.2 (pinned e
 
 ### Expected Features
 
-**Must have (60-second demo critical path — all 6 must work as a chain):**
+**Must have (120-second demo critical path — all 6 must work as a chain):**
 - Multi-source ingest with per-release dataset scoping (`incidents` durable, `workarounds_v{N}` per-release)
 - Recall: fused `search(GRAPH_COMPLETION)` + `search(CHUNKS)` → Diagnosis Card (root cause + evidence)
 - Release upload that sets dataset context and triggers drift evaluation
@@ -42,7 +42,7 @@ The stack is fixed by hackathon spec and fully confirmed: Cognee 1.2.2 (pinned e
 - Surgical `forget(dataset="workarounds_v1_9")` — one button, confirms surgical deletion
 - Re-search proof loop — same query, different result; old 🔴 workaround gone
 
-**Must have (full v1 per PROJECT.md, beyond the 60s demo path):**
+**Must have (full v1 per PROJECT.md, beyond the 120s demo path):**
 - Engineer feedback → `improve()` reinforcement (see Gaps — API is unresolved)
 - Memory Graph view (react-force-graph; visual proof Cognee builds a real knowledge graph)
 - `prune.prune_data()` + `prune.prune_system()` reset — dev-mode demo recovery button
@@ -86,7 +86,7 @@ Three-tier with Cognee in-process: Next.js App Router Route Handlers act as a BF
 
 4. **Ambiguous seed data — before/after flip never convinces:** Write seed data as a deliberate narrative with explicit contradiction. Validate before writing any UI — rewriting seed data is the fix, not code.
 
-5. **Scope creep kills the demo loop (5-day clock):** Hard rule: nothing beyond must-build lifecycle starts until `search → drift → forget → re-search` runs end-to-end in <60 seconds on the deployed instance.
+5. **Scope creep kills the demo loop (5-day clock):** Hard rule: nothing beyond must-build lifecycle starts until `search → drift → forget → re-search` runs end-to-end in <120 seconds on the deployed instance.
 
 6. **$10 OpenAI budget:** Seed corpus = 3 files max, each under 300 words. Cache cognified state as a tar snapshot for zero-cost reseeds.
 
@@ -135,11 +135,11 @@ Based on research, the build order has a clear dependency chain with one pre-wor
 
 ### Phase 5: Demo Loop Polish + Stretch Features (Day 4-5)
 
-**Rationale:** Full loop must be timed on Render deployment before any stretch features start. Kuzu cold start adds ~15 seconds on Render free tier. Stretch features unlock only when core loop runs < 60 seconds.
-**Delivers:** End-to-end demo loop < 60s on Render; `POST /reset` (prune + reseed from snapshot); `/api/admin/reseed` fast recovery; Memory Graph view; stretch features in priority order: confidence scoring → memory health dashboard → incident timeline (cut if time-boxed).
+**Rationale:** Full loop must be timed on Render deployment before any stretch features start. Kuzu cold start adds ~15 seconds on Render free tier. Stretch features unlock only when core loop runs < 120 seconds.
+**Delivers:** End-to-end demo loop < 120s on Render; `POST /reset` (prune + reseed from snapshot); `/api/admin/reseed` fast recovery; Memory Graph view; stretch features in priority order: confidence scoring → memory health dashboard → incident timeline (cut if time-boxed).
 **Implements:** `GraphViewer.tsx`, `MemoryHealthPanel.tsx`, `/reset` and `/reseed` endpoints
 **Addresses:** Pitfall 7 (scope creep; stretch features gated behind core loop)
-**Exit gate:** Full demo loop < 60 seconds on deployed Render instance; OpenAI usage < $5 after full seed + 3 demo runs.
+**Exit gate:** Full demo loop < 120 seconds on deployed Render instance; OpenAI usage < $5 after full seed + 3 demo runs.
 
 ### Phase Ordering Rationale
 

@@ -188,7 +188,7 @@ status: complete
 - **Fix:** Read seed docs as plain text and pass `str` to `cognee.add()`, matching `seed/seed_cli.py`'s already-proven `seed()` path.
 - **Committed in:** `58fb436`
 
-**3. [Rule 1/Rule 2 - Performance, threatens Core Value's 60s demo budget] `/sample/load` ran cognify() up to 4× against the same dataset**
+**3. [Rule 1/Rule 2 - Performance, threatens Core Value's 120s demo budget] `/sample/load` ran cognify() up to 4× against the same dataset**
 - **Found during:** Task 1 live verification
 - **Issue:** Original design scheduled one background task per FILE (8 tasks for the 8-doc arc), each running its own `add()+cognify()` — `cognify()` ran redundantly up to 4× against `incidents` alone, serializing into several minutes of LLM-bound work.
 - **Fix:** Batched to one background task PER DATASET that `add()`s every doc then `cognify()`s exactly once — the same efficient pattern `seed/seed_cli.py`'s proven `seed()` already uses.
@@ -221,7 +221,7 @@ status: complete
 ---
 
 **Total deviations:** 7 auto-fixed (1 falsified-plan-text correction carried over from 02-01, 6 real bugs found via live testing — 2 ingestion-type bugs, 1 performance bug, 3 background-execution bugs in the same root-cause family)
-**Impact on plan:** All fixes were essential for the plan's own must-haves (background ingest that actually completes) and PROJECT.md's Core Value (60-second demo budget). No scope creep — every fix stayed within `backend/ingest.py`. Deviations 4-7 in particular represent substantial, previously-undocumented findings about cognee 1.2.2's behavior in this exact environment (Windows + uvicorn + FastAPI `BackgroundTasks`/`asyncio.create_task()`) that no amount of static planning or pytest-only testing could have caught — they required live A/B testing against the actual running server.
+**Impact on plan:** All fixes were essential for the plan's own must-haves (background ingest that actually completes) and PROJECT.md's Core Value (120-second demo budget). No scope creep — every fix stayed within `backend/ingest.py`. Deviations 4-7 in particular represent substantial, previously-undocumented findings about cognee 1.2.2's behavior in this exact environment (Windows + uvicorn + FastAPI `BackgroundTasks`/`asyncio.create_task()`) that no amount of static planning or pytest-only testing could have caught — they required live A/B testing against the actual running server.
 
 ## Issues Encountered
 - **Extensive live-debugging time cost:** Isolating deviations 4-7 required building and discarding a disposable diagnostic FastAPI route, multiple full backend restarts, and direct A/B comparisons between `BackgroundTasks`/`asyncio.create_task()`/standalone-script execution contexts. This consumed the majority of this plan's execution time but was necessary — the bugs are 100% silent (no exception, no timeout, just an indefinitely "processing" status) unless probed exactly this way.

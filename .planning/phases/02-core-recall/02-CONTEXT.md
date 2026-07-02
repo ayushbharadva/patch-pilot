@@ -40,7 +40,7 @@ Discussion covered 9 areas across ingest UX, diagnosis card layout, feedback int
 - **D-16:** Release upload uses the **same upload flow as D-01**, with "Release Note" as one of the type-selector options (routes to `workarounds_v{N}` instead of `incidents`) — one upload component, not a separate release-specific flow.
 
 ### Page Structure & Search UX
-- **D-17:** UI is a **single-page dashboard** — search, diagnosis card, upload panel, and dataset list all visible in sections on one page, no tabs/navigation. Minimizes clicks during the timed 60s demo.
+- **D-17:** UI is a **single-page dashboard** — search, diagnosis card, upload panel, and dataset list all visible in sections on one page, no tabs/navigation. Minimizes clicks during the timed 120s demo.
 - **D-18:** Search bar is a **persistent top bar**, always visible; the diagnosis card renders below/replaces content when a search runs.
 - **D-19:** Empty state (before first search) shows a **prompt with the example query** (e.g. "Search an incident, e.g. 'customers double-charged'"), plus **clickable example-query chip(s)** below the search bar for a smoother live demo.
 - **D-20:** While the fused search is in flight, show a **skeleton diagnosis card** (greyed placeholder shaped like the real card), not a bare spinner.

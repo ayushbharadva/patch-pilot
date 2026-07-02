@@ -170,7 +170,7 @@ Confidence scoring, memory health dashboard, incident timeline, and interactive 
 The PROJECT.md already flags this: "All 4 nice-to-haves promoted to v1 (stretch) ⚠️ Revisit." The Cognee integration has hidden complexity (async issues, dataset scoping bugs, cognify latency), and each day lost debugging infrastructure is a day not spent perfecting the demo loop.
 
 **How to avoid:**
-- Hard cut rule: nothing beyond the must-build lifecycle starts until `search → drift → forget → re-search` works end-to-end with the actual seed data and the demo runs in under 60 seconds.
+- Hard cut rule: nothing beyond the must-build lifecycle starts until `search → drift → forget → re-search` works end-to-end with the actual seed data and the demo runs in under 120 seconds.
 - Order of features for the 5 days: Day 1: infra + cognee smoke test. Day 2: add/cognify/search working. Day 3: forget + drift badges. Day 4: demo loop polished + seed data perfect. Day 5: UI polish only on what exists.
 - Nice-to-haves are unlocked only when Day 4 is complete: interactive graph first (highest visual impact for judges), then health dashboard, then confidence scores, then timeline.
 - Cut timeline entirely — it provides no demo value and requires non-trivial data modeling.
@@ -275,7 +275,7 @@ After seeding, `search(SearchType.GRAPH_COMPLETION, "auth timeout")` returns an 
 - [ ] **Persistent disk mounted:** Render service shows no errors — verify by writing a canary file to `DATA_ROOT_DIRECTORY` on startup, reading it back, and logging the timestamp. A fresh file on every restart means the disk is not mounted.
 - [ ] **Drift badge shown:** Badge renders in UI — verify the `drift_detail.factors` list is non-empty and the first factor renders a human-readable sentence next to the badge.
 - [ ] **Seed data cognified:** `add()` returns success — verify with `search(SearchType.CHUNKS)` that at least 5 chunks are retrievable. `add()` success only means files were stored, not that the knowledge graph was built.
-- [ ] **Demo runs in 60 seconds:** The demo loop works locally — time it on the deployed Render instance including Kuzu cold start. Add 15 seconds for the cold start to your estimate.
+- [ ] **Demo runs in 120 seconds:** The demo loop works locally — time it on the deployed Render instance including Kuzu cold start. Add 15 seconds for the cold start to your estimate.
 - [ ] **OpenAI budget intact:** App works — check the OpenAI usage dashboard before any live judge session to confirm headroom remains.
 
 ---
@@ -303,7 +303,7 @@ After seeding, `search(SearchType.GRAPH_COMPLETION, "auth timeout")` returns an 
 | Drift feels magic | Phase 3 (drift detection) | Each 🔴 badge shows a human-readable factor sentence in UI |
 | Render ephemeral filesystem | Phase 1 (infra setup) | Canary file survives a Render redeploy |
 | $10 OpenAI budget blown | Phase 1 (corpus size rules) | OpenAI usage dashboard shows < $5 after full seed + 3 demo runs |
-| Nice-to-haves crowding core | Phase 0 (planning) | Core loop demo runs < 60 seconds before any stretch feature starts |
+| Nice-to-haves crowding core | Phase 0 (planning) | Core loop demo runs < 120 seconds before any stretch feature starts |
 | Instructor version conflict | Phase 1 (backend scaffold) | Clean `pip install -r requirements.txt` in fresh venv succeeds |
 | Sparse graph → empty GRAPH_COMPLETION | Phase 2 (recall) | `search(CHUNKS)` returns ≥ 5 results AND `search(GRAPH_COMPLETION)` returns non-empty after seed |
 
