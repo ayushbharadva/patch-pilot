@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { X } from "lucide-react";
 
@@ -13,8 +14,15 @@ interface MobileNavProps {
 	onOpenChange: (open: boolean) => void;
 }
 
+const subscribeNoop = () => () => {};
+
 export function MobileNav({ open, onOpenChange }: MobileNavProps) {
 	const shouldReduceMotion = useReducedMotion();
+	const isClient = useSyncExternalStore(
+		subscribeNoop,
+		() => true,
+		() => false,
+	);
 
 	useEffect(() => {
 		if (!open) {
@@ -33,7 +41,11 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
 		};
 	}, [open, onOpenChange]);
 
-	return (
+	if (!isClient) {
+		return null;
+	}
+
+	return createPortal(
 		<AnimatePresence>
 			{open ? (
 				<motion.div
@@ -84,6 +96,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
 					</motion.div>
 				</motion.div>
 			) : null}
-		</AnimatePresence>
+		</AnimatePresence>,
+		document.body,
 	);
 }
