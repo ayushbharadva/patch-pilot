@@ -56,6 +56,20 @@ _FALLBACK_REASON = "A newer release supersedes this workaround."
 _reason_cache: dict[tuple[str, str], str] = {}
 
 
+def highest_live_version(live_dataset_names: list[str]) -> str | None:
+    """The current highest-numbered live `workarounds_v{N}` name, or `None`
+    if none exist -- the exact "highest" notion `compute_drift_states` uses
+    internally to decide `"drifting"` vs `"stable"`. Exposed as a sibling
+    helper (WR-02) so callers (e.g. `datasets_router.py`, which needs the
+    winning name to pass into `get_or_generate_reason`) never re-derive it
+    via their own `max()` filtered on `compute_drift_states`'s output --
+    that duplication only agreed with this function by an unenforced
+    implicit invariant and could silently desync if the precedence rules
+    below ever change."""
+    versioned = [n for n in live_dataset_names if _WORKAROUNDS_VERSION_RE.match(n)]
+    return max(versioned, key=_version_sort_key) if versioned else None
+
+
 def compute_drift_states(
     live_dataset_names: list[str],
     aging_candidates: set[str] | None = None,
@@ -77,8 +91,7 @@ def compute_drift_states(
     4. Otherwise -> `"stable"`.
     """
     aging_candidates = aging_candidates or set()
-    versioned = [n for n in live_dataset_names if _WORKAROUNDS_VERSION_RE.match(n)]
-    highest = max(versioned, key=_version_sort_key) if versioned else None
+    highest = highest_live_version(live_dataset_names)
 
     states: dict[str, str] = {}
     for name in live_dataset_names:
