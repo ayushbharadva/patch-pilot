@@ -8,7 +8,7 @@ PatchPilot is a living incident-memory system for small SaaS and engineering tea
 
 ## Core Value
 
-The search → drift-detected → forget → re-search loop must work: searching a bug returns the old workaround, uploading a release marks it 🔴, forgetting it, then re-searching returns the new correct fix — visibly, in under 60 seconds. PatchPilot must be obviously impossible without Cognee's memory lifecycle.
+The search → drift-detected → forget → re-search loop must work: searching a bug returns the old workaround, uploading a release marks it 🔴, forgetting it, then re-searching returns the new correct fix — visibly, in under 120 seconds. PatchPilot must be obviously impossible without Cognee's memory lifecycle.
 
 ## Business Context
 
@@ -16,7 +16,7 @@ The search → drift-detected → forget → re-search loop must work: searching
 
 - **Customer**: Small SaaS / engineering teams drowning in scattered incident knowledge (GitHub, Slack, tickets, people's heads).
 - **Revenue model**: N/A — hackathon entry (The Hangover Part AI: Where's My Context? · WeMakeDevs × Cognee, Jun 29 – Jul 5, 2026).
-- **Success metric**: Judge score, weighted hardest on "Best Use of Cognee" (strongest axis) and the 60-second before/after demo landing.
+- **Success metric**: Judge score, weighted hardest on "Best Use of Cognee" (strongest axis) and the 120-second before/after demo landing.
 - **Strategy notes**: Target "Best Use of Open Source" (MacBook) via self-hosted Cognee. Open Source PR track ($100/merged PR, max 5/person) is separate parallel work — out of scope for this build.
 
 ## Requirements

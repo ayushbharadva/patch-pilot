@@ -8,7 +8,7 @@ PatchPilot is a living incident-memory system for small SaaS and engineering tea
 
 *Tagline: every bug remembers its history.*
 
-**Core Value:** The search → drift-detected → forget → re-search loop must work: searching a bug returns the old workaround, uploading a release marks it 🔴, forgetting it, then re-searching returns the new correct fix — visibly, in under 60 seconds. PatchPilot must be obviously impossible without Cognee's memory lifecycle.
+**Core Value:** The search → drift-detected → forget → re-search loop must work: searching a bug returns the old workaround, uploading a release marks it 🔴, forgetting it, then re-searching returns the new correct fix — visibly, in under 120 seconds. PatchPilot must be obviously impossible without Cognee's memory lifecycle.
 
 ### Constraints
 

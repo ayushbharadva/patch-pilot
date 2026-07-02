@@ -1,7 +1,7 @@
 # Requirements: PatchPilot
 
 **Defined:** 2026-06-30
-**Core Value:** The search → drift-detected → forget → re-search loop works visibly in under 60 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle.
+**Core Value:** The search → drift-detected → forget → re-search loop works visibly in under 120 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle.
 
 ## v1 Requirements
 
@@ -49,7 +49,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 - [ ] **DEMO-01**: User can reset / reseed memory (`prune_data()` + `prune_system()`) to a clean demo state
 - [x] **DEMO-02**: Bundled seed datasets tell a clear before/after story — isolated entity names so forget visibly flips recall (mitigates Cognee #1023 cross-dataset leak)
-- [ ] **DEMO-03**: The full search → drift → forget → re-search loop completes in under 60 seconds
+- [ ] **DEMO-03**: The full search → drift → forget → re-search loop completes in under 120 seconds
 
 ### Platform
 

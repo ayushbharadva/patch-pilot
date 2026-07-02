@@ -2,7 +2,7 @@
 
 ## Overview
 
-PatchPilot is built in 4 phases, ordered by the hardest risks first. Phase 1 retires the two highest-risk unknowns (Cognee hangs, ephemeral FS loss) and locks the architectural keystone (dataset naming) before any UI is written. Phase 2 delivers the complete ingest-to-recall experience in the browser. Phase 3 adds Drift detection and surgical Forget — the project's scoring differentiator. Phase 4 verifies the full 60-second demo loop on the deployed instance and adds depth with the memory graph and stretch features. Every phase except Phase 1 delivers a vertical, user-visible capability slice; no horizontal layers.
+PatchPilot is built in 4 phases, ordered by the hardest risks first. Phase 1 retires the two highest-risk unknowns (Cognee hangs, ephemeral FS loss) and locks the architectural keystone (dataset naming) before any UI is written. Phase 2 delivers the complete ingest-to-recall experience in the browser. Phase 3 adds Drift detection and surgical Forget — the project's scoring differentiator. Phase 4 verifies the full 120-second demo loop on the deployed instance and adds depth with the memory graph and stretch features. Every phase except Phase 1 delivers a vertical, user-visible capability slice; no horizontal layers.
 
 ## Phases
 
@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Cognee verified, data persists, seed data produces a CLI before/after flip — all blocking risks retired before UI work begins (completed 2026-07-01)
 - [x] **Phase 2: Core Recall** - Full-stack ingest, evidence-grounded diagnosis card, feedback reinforcement, and release upload — the core product experience in the browser (completed 2026-07-02)
 - [ ] **Phase 3: Drift + Forget** - Drift detection with human-readable badges, surgical forget, and visible before/after proof — the scoring differentiator
-- [ ] **Phase 4: Demo Loop + Stretch** - 60-second loop verified on deployed instance, one-button demo reset, memory graph view, and stretch features gated behind a working loop
+- [ ] **Phase 4: Demo Loop + Stretch** - 120-second loop verified on deployed instance, one-button demo reset, memory graph view, and stretch features gated behind a working loop
 
 ## Phase Details
 
@@ -97,13 +97,13 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### Phase 4: Demo Loop + Stretch
 
-**Goal**: The full search → release → drift → forget → re-search loop runs in under 60 seconds on the deployed instance; demo reset works in one click; memory graph and stretch features add judge-facing depth gated behind a confirmed working loop.
+**Goal**: The full search → release → drift → forget → re-search loop runs in under 120 seconds on the deployed instance; demo reset works in one click; memory graph and stretch features add judge-facing depth gated behind a confirmed working loop.
 **Mode:** mvp
 **Depends on**: Phase 3
 **Requirements**: DEMO-01, DEMO-03, GRAPH-01, STRETCH-01, STRETCH-02, STRETCH-03, STRETCH-04
 **Success Criteria** (what must be TRUE):
 
-  1. The complete search → release upload → drift badge appears → forget → re-search loop finishes in under 60 seconds on the deployed Render instance — timed from first search keystroke to seeing the updated answer
+  1. The complete search → release upload → drift badge appears → forget → re-search loop finishes in under 120 seconds on the deployed Render instance — timed from first search keystroke to seeing the updated answer
   2. Demo reset button invokes `prune_data()` + `prune_system()` + reseed and returns memory to a clean, demo-ready state verifiable by re-running the loop from the top
   3. Memory graph view renders incidents, fixes, and component relationships as a navigable visual graph — visually proving Cognee builds a real knowledge graph, not just a search index
   4. (Stretch — cut in reverse order if time-boxed) Recall card shows a confidence score from search payload; memory health dashboard displays drift-state counts; incident timeline shows events chronologically; graph visualization supports click-to-explore nodes
