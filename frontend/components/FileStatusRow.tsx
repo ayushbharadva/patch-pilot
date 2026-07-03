@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /** Per-file/per-dataset badge state (D-22) -- "uploading" is a purely
  * client-side transient state for the in-flight network request; the other
@@ -17,6 +18,11 @@ const STATUS_LABEL: Record<FileStatus, string> = {
 
 /** D-24 -- short human message for a post-acceptance cognify failure. */
 const COGNIFY_FAILURE_MESSAGE = "Couldn't process this file. Retry, or upload it again.";
+
+/** D-05/D-22 -- reassurance caption while cognify builds the graph (8-20s);
+ * mirrors the D-24 failed-row caption pattern so a "Processing" badge doesn't
+ * read as hung during the real cold-start. */
+const PROCESSING_MESSAGE = "Building the knowledge graph — this can take a few seconds.";
 
 interface FileStatusRowProps {
   filename: string;
@@ -41,7 +47,12 @@ export function FileStatusRow({ filename, status, onRetry }: FileStatusRowProps)
         <div className="flex shrink-0 items-center gap-2">
           <Badge
             variant={status === "failed" ? "destructive" : "outline"}
-            className="font-sans text-xs font-normal"
+            className={cn(
+              "font-sans text-xs font-normal",
+              // D-05: the Processing badge breathes while cognify runs (8-20s);
+              // uploading/ready/failed badges stay static.
+              status === "processing" && "animate-pulse",
+            )}
           >
             {STATUS_LABEL[status]}
           </Badge>
@@ -60,6 +71,9 @@ export function FileStatusRow({ filename, status, onRetry }: FileStatusRowProps)
       </div>
       {status === "failed" ? (
         <p className="font-sans text-sm text-muted-foreground">{COGNIFY_FAILURE_MESSAGE}</p>
+      ) : null}
+      {status === "processing" ? (
+        <p className="font-sans text-sm text-muted-foreground">{PROCESSING_MESSAGE}</p>
       ) : null}
     </div>
   );
