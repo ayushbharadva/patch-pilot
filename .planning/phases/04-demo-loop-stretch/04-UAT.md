@@ -28,9 +28,8 @@ result: pass
 
 ### 3. 3D Memory Graph tab + click-to-explore (GRAPH-01, STRETCH-04)
 expected: Toggle from Search to the Graph tab. A 3D force-directed graph paints (WebGL) showing incidents/fixes/components as nodes with readable labels. Clicking a node surfaces its detail. (Backend was restarted so /graph serves ~141–174 nodes.)
-result: issue
-reported: "NO graph visible"
-severity: major
+result: pass
+note: "Initially failed (blank graph). Fixed in commit c87c8a1 — callback-ref width measurement + switch to react-force-graph-3d (AFRAME). Re-tested: graph renders, node click works."
 
 ### 4. On-screen demo loop under 120s (DEMO-03)
 expected: Perform the full loop in the browser — search → upload a release → drift badge flips (🟢→🔴) → Forget the stale workaround (its dataset row vanishes) → re-search returns the new correct fix — visibly, end to end under 120 seconds. (Automated HTTP harness already measured 57.2s; this is the on-camera human confirmation for the submission video.)
@@ -107,8 +106,8 @@ coverage_id: 04-06-D2
 ## Summary
 
 total: 16
-passed: 12
-issues: 1
+passed: 13
+issues: 0
 pending: 3
 skipped: 0
 blocked: 0
@@ -116,9 +115,10 @@ blocked: 0
 ## Gaps
 
 - truth: "Graph tab renders a 3D force-directed graph (WebGL) of the real Cognee graph; clicking a node surfaces detail"
-  status: failed
+  status: resolved
   reason: "User reported: NO graph visible"
   severity: major
   test: 3
-  artifacts: []
+  resolution: "Fixed inline during UAT (commit c87c8a1): (1) width measured via callback ref + ResizeObserver instead of mount-time effect; (2) import react-force-graph-3d instead of umbrella react-force-graph to avoid 'AFRAME is not defined'."
+  artifacts: [frontend/components/MemoryGraphView.tsx, frontend/package.json]
   missing: []
