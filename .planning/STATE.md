@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 04
 current_phase_name: demo-loop-stretch
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-07-03T09:44:37.183Z"
+stopped_at: Completed 04-05-PLAN.md
+last_updated: "2026-07-03T09:57:54.240Z"
 last_activity: 2026-07-03
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
   percent: 75
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-02)
 ## Current Position
 
 Phase: 04 (demo-loop-stretch) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Next: Phase 4 (Demo Loop + Stretch) — not yet planned
 Status: Ready to execute
 Last activity: 2026-07-03 — Phase 04 execution started
@@ -69,6 +69,7 @@ Progress: [████████░░] 75% of milestone (3 of 4 phases)
 | Phase 04 P02 | 12min | 2 tasks | 6 files |
 | Phase 04 P03 | 35min | 3 tasks | 7 files |
 | Phase 04 P04 | 25min | 1 tasks | 2 files |
+| Phase 04 P05 | 15min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,8 @@ Recent decisions affecting current work:
 - [Phase 04-03]: aggregate_multi_user_graphs imported via full internal path (cognee.modules.visualization.cognee_network_visualization), not top-level — the sanctioned path the public visualize_multi_user_graph wrapper uses; single-lined so the GRAPH_ROUTE_WIRED grep gate matches, kept inside the function body to preserve the config-before-cognee keystone.
 - [Phase 04-04]: backend/reset.py: cognee CACHING=true opens a separate cache.db SQLite handle via close_cache_engine() that reset must close before the snapshot filesystem swap, or shutil.rmtree() raises WinError 32.
 - [Phase 04-04]: scripts/time_demo_loop.py drives a live workarounds_v1_9 -> workarounds_v1_10 drift transition instead of v1_8 -> v1_9, since the enriched seed corpus already bakes v1_8's drift into the reset snapshot and POST /forget's CR-02 guard correctly blocks forgetting the current highest version.
+- [Phase 04-05]: _confidence_from_results() takes the single BEST (lowest-distance) score across every dataset's objects_result items, not just the first result's first item -- represents the strongest evidence backing the diagnosis
+- [Phase 04-05]: Confidence extraction wraps its own internal try/except (mirroring qa_id's best-effort pattern) so a malformed score can never fail /search, only degrade to confidence: null
 
 ### Pending Todos
 
@@ -138,6 +141,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-03T09:43:57.620Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-07-03T09:57:54.228Z
+Stopped at: Completed 04-05-PLAN.md
 Resume file: None

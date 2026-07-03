@@ -58,7 +58,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Stretch (v1 if time — cut first if schedule slips)
 
-- [ ] **STRETCH-01**: Recall recommendations display a confidence score (derived from `search()` payload scores)
+- [x] **STRETCH-01**: Recall recommendations display a confidence score (derived from `search()` payload scores)
 - [ ] **STRETCH-02**: Memory health dashboard shows counts / overview of memory states across the graph
 - [ ] **STRETCH-03**: Incident timeline shows incidents / releases chronologically
 - [x] **STRETCH-04**: Richer interactive graph visualization beyond the basic memory graph
@@ -112,7 +112,7 @@ Deferred beyond the hackathon.
 | DEMO-03 | Phase 4 | Complete |
 | PLAT-01 | Phase 1 | Complete |
 | PLAT-02 | Phase 1 | Complete |
-| STRETCH-01 | Phase 4 | Pending |
+| STRETCH-01 | Phase 4 | Complete |
 | STRETCH-02 | Phase 4 | Pending |
 | STRETCH-03 | Phase 4 | Pending |
 | STRETCH-04 | Phase 4 | Complete |
