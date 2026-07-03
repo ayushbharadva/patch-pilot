@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { AuroraBackground } from "@/components/AuroraBackground";
 import { Providers } from "@/lib/providers";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -36,11 +37,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // Neural-dark by default (260703-vga): `dark` is hardcoded so the elevated
+    // dark theme renders with zero JS/hydration dependency AND every component's
+    // `dark:` utility variants stay active. suppressHydrationWarning guards the
+    // <html> attribute set from any client theming that may run later.
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`dark ${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="relative min-h-full flex flex-col font-sans">
+        {/* Global aurora/particle atmosphere — fixed, behind all content,
+            pointer-events-none. Mounted once here so it persists across the
+            search/graph views. */}
+        <AuroraBackground />
         <Providers>{children}</Providers>
         <Toaster />
       </body>

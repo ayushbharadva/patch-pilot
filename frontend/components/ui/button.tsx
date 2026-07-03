@@ -9,7 +9,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // Neural-dark redesign (260703-vga): the primary button is an
+        // indigo->violet->cyan gradient with a soft brand glow that intensifies
+        // on hover. Variant name + API unchanged.
+        default:
+          "bg-[linear-gradient(100deg,var(--accent-indigo),var(--accent-violet)_55%,var(--accent-cyan))] bg-[length:160%_100%] bg-[position:0%_50%] text-white shadow-[0_0_22px_-6px_color-mix(in_oklch,var(--accent-violet)_70%,transparent)] transition-[background-position,box-shadow,transform] hover:bg-[position:100%_50%] hover:shadow-[0_0_30px_-4px_color-mix(in_oklch,var(--accent-cyan)_75%,transparent)]",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
