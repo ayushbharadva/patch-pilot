@@ -32,7 +32,7 @@ Phase: 04
 Plan: Not started
 Next: Phase 4 (Demo Loop + Stretch) — not yet planned
 Status: Phase complete — ready for verification
-Last activity: 2026-07-03 — Phase 04 complete
+Last activity: 2026-07-03 - Completed quick task 260703-rks: Rewrite README.md end-to-end to accurately reflect the full, final PatchPilot project
 
 Progress: [████████░░] 75% of milestone (3 of 4 phases)
 
@@ -136,6 +136,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260702-ros | Widen demo-loop timing constraint 60s → 120s across 14 planning docs (PROJECT.md, CLAUDE.md, REQUIREMENTS.md DEMO-03, ROADMAP.md Phase 4, research corpus, phase context docs) | 2026-07-02 | 1c42254, 3e313c2 | [260702-ros-change-the-demo-video-loop-timing-constr](./quick/260702-ros-change-the-demo-video-loop-timing-constr/) |
+| 260703-rks | Rewrite README.md end-to-end for shipped v1.9 state — all 4 phases, Phase 4 stretch features, verified tech stack/endpoints/versions against live codebase | 2026-07-03 | e034882 | [260703-rks-rewrite-readme-md-end-to-end-to-accurate](./quick/260703-rks-rewrite-readme-md-end-to-end-to-accurate/) |
 
 ## Deferred Items
 

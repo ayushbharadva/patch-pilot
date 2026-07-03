@@ -152,7 +152,7 @@ Opens on `http://localhost:3000` — the only origin the backend's CORS policy a
 
 ## Seed Corpus
 
-`seed/` is the human-authored source of truth for the demo memory (8 Markdown documents, see `seed/README.md`). Three datasets: `incidents` (durable, survives every forget), `workarounds_v1_8` (the old fix, gets forgotten), `workarounds_v1_9` (the new fix, survives forget). Canonical demo query: **`"customers double-charged"`**.
+`seed/` is the human-authored source of truth for the demo memory (11 Markdown documents across 3 folders — `seed/README.md`'s own count of "8" predates the Phase 4 corpus enrichment and is stale). Three datasets: `incidents` (5 docs, durable, survives every forget), `workarounds_v1_8` (3 docs, the old fix, gets forgotten), `workarounds_v1_9` (3 docs, the new fix, survives forget). Canonical demo query: **`"customers double-charged"`**.
 
 ## License & Disclosure
 
