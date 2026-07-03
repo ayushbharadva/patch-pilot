@@ -297,6 +297,49 @@ export async function forgetDataset({
   }
 }
 
+/**
+ * Reset wrapper mirroring backend/reset.py's `POST /reset` contract
+ * (DEMO-01, D-03/D-04/D-05, D-24).
+ */
+
+interface ResetOkResponse {
+  status: "reset";
+}
+
+interface ResetErrorResponse {
+  status: "error";
+  message: string;
+}
+
+/** Discriminated union matching backend/reset.py's POST /reset response exactly. */
+export type ResetResponse = ResetOkResponse | ResetErrorResponse;
+
+/**
+ * POST to `${API_BASE}/reset` (DEMO-01) — restores the fresh demo snapshot,
+ * releasing every open Cognee engine handle server-side first. Network/parse
+ * failures are normalized into the `error` variant (D-24) — the fallback
+ * message must match backend/reset.py's `_MSG_ERROR` exactly.
+ */
+export async function resetMemory(): Promise<ResetResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/reset`, { method: "POST" });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Could not reset memory. Please try again.",
+      };
+    }
+
+    return (await res.json()) as ResetResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Could not reset memory. Please try again.",
+    };
+  }
+}
+
 /** One dataset-list row (D-15): `{name}` mono + doc count, plus its
  * DRIFT-01/02/03 health state and (drifting rows only) a generated reason. */
 export interface DatasetInfo {

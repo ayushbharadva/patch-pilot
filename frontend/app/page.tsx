@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { DatasetList } from "@/components/DatasetList";
 import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
+import { ResetButton } from "@/components/ResetButton";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
 import { UploadPanel } from "@/components/UploadPanel";
 import { searchIncident, type SearchResponse } from "@/lib/api";
@@ -41,6 +42,10 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
+      <section aria-label="Demo controls" className="flex justify-end">
+        <ResetButton />
+      </section>
+
       <SearchBar
         onPendingChange={(pending) => {
           setIsPending(pending);
