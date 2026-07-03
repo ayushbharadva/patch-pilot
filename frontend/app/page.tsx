@@ -5,6 +5,7 @@ import { useState } from "react";
 import { DatasetList } from "@/components/DatasetList";
 import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
 import { HealthDashboard } from "@/components/HealthDashboard";
+import { IncidentTimeline } from "@/components/IncidentTimeline";
 import { MemoryGraphView } from "@/components/MemoryGraphView";
 import { ResetButton } from "@/components/ResetButton";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
@@ -119,6 +120,10 @@ export default function Home() {
 
           <section aria-label="Memory health">
             <HealthDashboard />
+          </section>
+
+          <section aria-label="Incident timeline">
+            <IncidentTimeline />
           </section>
 
           <section aria-label="Datasets">
