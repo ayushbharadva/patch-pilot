@@ -4,9 +4,11 @@ import { useState } from "react";
 
 import { DatasetList } from "@/components/DatasetList";
 import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
+import { MemoryGraphView } from "@/components/MemoryGraphView";
 import { ResetButton } from "@/components/ResetButton";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
 import { UploadPanel } from "@/components/UploadPanel";
+import { Button } from "@/components/ui/button";
 import { searchIncident, type SearchResponse } from "@/lib/api";
 
 /**
@@ -32,6 +34,11 @@ export default function Home() {
   // swapping directly to the new diagnosis once it resolves.
   const [isReSearching, setIsReSearching] = useState(false);
 
+  // D-08: a search/graph tab toggle on the main page — NO navigation away.
+  // "search" keeps the existing search/upload/datasets sections; "graph"
+  // swaps in the live 3D Cognee memory graph (GRAPH-01).
+  const [view, setView] = useState<"search" | "graph">("search");
+
   async function handleReSearch() {
     if (!lastQuery) return;
     setIsReSearching(true);
@@ -42,52 +49,82 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
-      <section aria-label="Demo controls" className="flex justify-end">
+      <section aria-label="Demo controls" className="flex items-center justify-between gap-4">
+        <div role="tablist" aria-label="View" className="flex gap-2">
+          <Button
+            type="button"
+            role="tab"
+            aria-selected={view === "search"}
+            variant={view === "search" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("search")}
+          >
+            Search
+          </Button>
+          <Button
+            type="button"
+            role="tab"
+            aria-selected={view === "graph"}
+            variant={view === "graph" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("graph")}
+          >
+            Graph
+          </Button>
+        </div>
         <ResetButton />
       </section>
 
-      <SearchBar
-        onPendingChange={(pending) => {
-          setIsPending(pending);
-          if (pending) setHasSearched(true);
-        }}
-        onResponse={setResponse}
-        onQuery={setLastQuery}
-      />
-
-      <section aria-live="polite" className="flex flex-col gap-8">
-        {isPending ? (
-          <DiagnosisCardSkeleton />
-        ) : hasSearched && response ? (
-          <DiagnosisCard
-            // Re-mount on every new search (fresh session_id/qa_id) so a
-            // prior card's Accept/Dismiss state never bleeds into the next
-            // search's card.
-            key={
-              response.status === "ok"
-                ? (response.qa_id ?? response.session_id)
-                : `${response.status}-${lastQuery ?? ""}`
-            }
-            response={response}
-            onReSearch={() => void handleReSearch()}
+      {view === "search" ? (
+        <>
+          <SearchBar
+            onPendingChange={(pending) => {
+              setIsPending(pending);
+              if (pending) setHasSearched(true);
+            }}
+            onResponse={setResponse}
+            onQuery={setLastQuery}
           />
-        ) : (
-          <EmptyState />
-        )}
-        {isReSearching ? (
-          <p className="font-sans text-sm text-muted-foreground">
-            Updating diagnosis with reinforced memory…
-          </p>
-        ) : null}
-      </section>
 
-      <section aria-label="Upload incident memory">
-        <UploadPanel />
-      </section>
+          <section aria-live="polite" className="flex flex-col gap-8">
+            {isPending ? (
+              <DiagnosisCardSkeleton />
+            ) : hasSearched && response ? (
+              <DiagnosisCard
+                // Re-mount on every new search (fresh session_id/qa_id) so a
+                // prior card's Accept/Dismiss state never bleeds into the next
+                // search's card.
+                key={
+                  response.status === "ok"
+                    ? (response.qa_id ?? response.session_id)
+                    : `${response.status}-${lastQuery ?? ""}`
+                }
+                response={response}
+                onReSearch={() => void handleReSearch()}
+              />
+            ) : (
+              <EmptyState />
+            )}
+            {isReSearching ? (
+              <p className="font-sans text-sm text-muted-foreground">
+                Updating diagnosis with reinforced memory…
+              </p>
+            ) : null}
+          </section>
 
-      <section aria-label="Datasets">
-        <DatasetList onForgotten={() => void handleReSearch()} />
-      </section>
+          <section aria-label="Upload incident memory">
+            <UploadPanel />
+          </section>
+
+          <section aria-label="Datasets">
+            <DatasetList onForgotten={() => void handleReSearch()} />
+          </section>
+        </>
+      ) : (
+        <section aria-label="Memory graph">
+          <MemoryGraphView />
+        </section>
+      )}
     </main>
   );
 }

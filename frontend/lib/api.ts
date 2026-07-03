@@ -361,3 +361,43 @@ export async function listDatasets(): Promise<DatasetInfo[]> {
   }
   return (await res.json()) as DatasetInfo[];
 }
+
+/**
+ * Memory graph wrapper mirroring backend/graph.py's `GET /graph` contract
+ * (GRAPH-01, D-06/D-07/D-08). The backend already trims each node to
+ * id/label/group and each link to source/target/label (T-04-06) — no raw
+ * chunk text ever crosses the wire.
+ */
+
+/** One graph node — id/label/group only (backend trims everything else). */
+export interface GraphNode {
+  id: string;
+  label: string;
+  group: string;
+}
+
+/** One graph link — source/target/label only. */
+export interface GraphLink {
+  source: string;
+  target: string;
+  label: string;
+}
+
+/** The full `{nodes, links}` payload react-force-graph consumes. */
+export interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
+/**
+ * GET `${API_BASE}/graph` (GRAPH-01). Mirrors listDatasets's throw-on-!ok
+ * shape so useQuery surfaces the error state — a transient hiccup renders
+ * the graph section's error branch rather than crashing the page.
+ */
+export async function getMemoryGraph(): Promise<GraphData> {
+  const res = await fetch(`${API_BASE}/graph`);
+  if (!res.ok) {
+    throw new Error("Could not load memory graph.");
+  }
+  return (await res.json()) as GraphData;
+}
