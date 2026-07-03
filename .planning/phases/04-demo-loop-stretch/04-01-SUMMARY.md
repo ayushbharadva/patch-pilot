@@ -153,3 +153,14 @@ None - no external service configuration required. Note: the project's `uvicorn`
 ---
 *Phase: 04-demo-loop-stretch*
 *Completed: 2026-07-03*
+
+## Self-Check: PASSED
+
+- FOUND: seed/incidents/queue-backlog-incident.md
+- FOUND: seed/workarounds_v1_8/dedup-monitoring-note.md
+- FOUND: seed/workarounds_v1_9/idempotency-rollout-note.md
+- FOUND: patchpilot_memory.snapshot.tar (gitignored, verified on disk)
+- FOUND: .planning/phases/04-demo-loop-stretch/04-01-SUMMARY.md
+- FOUND commit: 7f7cc65 (Task 1)
+- FOUND commit: 8d577f2 (Task 2 + follow-up fix)
+- FOUND commit: ba5f2d1 (SUMMARY.md)
