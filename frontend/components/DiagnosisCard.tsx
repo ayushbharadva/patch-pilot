@@ -214,10 +214,20 @@ function DiagnosisCardOk({
         <h2 className="font-display text-[28px] leading-[1.2] font-semibold text-foreground">
           {response.root_cause}
         </h2>
-        <VersionTagBadge
-          dataset={response.source_dataset}
-          healthState={response.drift_state ?? undefined}
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          <VersionTagBadge
+            dataset={response.source_dataset}
+            healthState={response.drift_state ?? undefined}
+          />
+          {response.confidence != null ? (
+            <Badge
+              variant="outline"
+              className="shrink-0 font-mono text-xs font-normal text-muted-foreground"
+            >
+              {Math.round(response.confidence * 100)}% confidence
+            </Badge>
+          ) : null}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {evidence.length > 0 ? (

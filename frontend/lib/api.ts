@@ -28,6 +28,10 @@ interface SearchResponseOk {
   /** The winning source_dataset's drift state (DRIFT-01, UI-SPEC Interaction
    * Contract point 6) -- null only when no primary result was picked. */
   drift_state: DriftState | null;
+  /** STRETCH-01: real confidence in [0,1] derived from the CHUNKS
+   * retriever's similarity score, best-effort -- null when no scored
+   * evidence was available (never fails the search). */
+  confidence: number | null;
 }
 
 interface SearchResponseNoResults {
