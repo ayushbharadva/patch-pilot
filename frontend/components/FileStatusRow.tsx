@@ -39,7 +39,13 @@ interface FileStatusRowProps {
  */
 export function FileStatusRow({ filename, status, onRetry }: FileStatusRowProps) {
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-border px-3 py-2">
+    <div
+      className={cn(
+        "glass flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5 transition-colors",
+        status === "failed" && "border-destructive/40",
+        status === "ready" && "border-drift-stable/30",
+      )}
+    >
       <div className="flex items-center justify-between gap-3">
         <span className="min-w-0 flex-1 truncate font-mono text-sm text-foreground">
           {filename}
@@ -50,8 +56,12 @@ export function FileStatusRow({ filename, status, onRetry }: FileStatusRowProps)
             className={cn(
               "font-sans text-xs font-normal",
               // D-05: the Processing badge breathes while cognify runs (8-20s);
-              // uploading/ready/failed badges stay static.
-              status === "processing" && "animate-pulse",
+              // uploading/ready/failed badges stay static. (drift-pulse's
+              // keyframe glow is tuned to the drifting-red hue, so processing
+              // uses the neutral animate-pulse breathe instead.)
+              status === "processing" && "animate-pulse border-accent-violet/40 text-accent-violet",
+              status === "ready" && "border-drift-stable/40 text-drift-stable glow-drift-stable",
+              status === "failed" && "glow-drift-drifting",
             )}
           >
             {STATUS_LABEL[status]}
@@ -62,7 +72,7 @@ export function FileStatusRow({ filename, status, onRetry }: FileStatusRowProps)
               variant="outline"
               size="sm"
               onClick={onRetry}
-              className="h-11 min-h-11 px-3 font-sans text-sm font-semibold"
+              className="h-11 min-h-11 px-3 font-sans text-sm font-semibold text-destructive hover:border-destructive/50 hover:bg-destructive/10"
             >
               Retry
             </Button>

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { type DatasetInfo, type DriftState, forgetDataset, listDatasets } from "@/lib/api";
 
 /**
@@ -16,13 +17,13 @@ import { type DatasetInfo, type DriftState, forgetDataset, listDatasets } from "
  */
 export const DATASETS_QUERY_KEY = ["datasets"] as const;
 
-/** Drift-state -> dot color + text label (03-UI-SPEC.md Copywriting
+/** Drift-state -> dot color + text label + glow (03-UI-SPEC.md Copywriting
  * Contract). Color is never the only signal -- every dot pairs with the
  * literal text label. */
-const DRIFT_BADGE: Record<DriftState, { dot: string; label: string }> = {
-  stable: { dot: "bg-drift-stable", label: "🟢 Stable" },
-  aging: { dot: "bg-drift-aging", label: "🟡 Aging" },
-  drifting: { dot: "bg-drift-drifting", label: "🔴 Drifting" },
+const DRIFT_BADGE: Record<DriftState, { dot: string; glow: string; label: string }> = {
+  stable: { dot: "bg-drift-stable", glow: "glow-drift-stable", label: "🟢 Stable" },
+  aging: { dot: "bg-drift-aging", glow: "glow-drift-aging", label: "🟡 Aging" },
+  drifting: { dot: "bg-drift-drifting", glow: "glow-drift-drifting", label: "🔴 Drifting" },
 };
 
 /** D-24 short human message for a failed Forget call -- must match
@@ -75,7 +76,7 @@ function ForgetButton({
               size="sm"
               disabled={isForgetting}
               onClick={() => void handleForget()}
-              className="font-sans text-sm font-semibold"
+              className="font-sans text-sm font-semibold shadow-[0_0_14px_-4px_color-mix(in_oklch,var(--color-destructive)_70%,transparent)]"
             >
               Confirm forget?
             </Button>
@@ -96,7 +97,7 @@ function ForgetButton({
             variant="outline"
             size="sm"
             onClick={() => setConfirming(true)}
-            className="gap-1 font-sans text-sm font-semibold text-destructive"
+            className="gap-1 font-sans text-sm font-semibold text-destructive hover:border-destructive/50 hover:bg-destructive/10"
           >
             <Trash2 className="size-4" aria-hidden="true" />
             Forget
@@ -121,19 +122,39 @@ function DatasetRow({
   const isDrifting = dataset.drift_state === "drifting";
 
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-border px-3 py-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`size-2 shrink-0 rounded-full ${badge.dot}`} aria-hidden="true" />
-        <span className="font-mono text-sm text-foreground">
-          {dataset.name} · {dataset.doc_count} docs
+    <div
+      className={cn(
+        "glass flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5 transition-colors",
+        isDrifting && "border-drift-drifting/40",
+      )}
+    >
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span
+          className={cn(
+            "size-2.5 shrink-0 rounded-full",
+            badge.dot,
+            badge.glow,
+            isDrifting && "animate-drift-pulse",
+          )}
+          aria-hidden="true"
+        />
+        <span className="font-mono text-sm font-medium text-foreground">
+          {dataset.name} <span className="text-muted-foreground">· {dataset.doc_count} docs</span>
         </span>
-        <span className="font-sans text-sm font-semibold text-foreground">{badge.label}</span>
+        <span
+          className={cn(
+            "font-sans text-sm font-semibold",
+            isDrifting ? "text-drift-drifting" : "text-foreground",
+          )}
+        >
+          {badge.label}
+        </span>
         {isDrifting ? (
           <ForgetButton datasetName={dataset.name} onForgotten={onForgotten} />
         ) : null}
       </div>
       {isDrifting && dataset.drift_reason ? (
-        <p className="mt-1 font-sans text-sm leading-[1.4] font-normal text-muted-foreground">
+        <p className="mt-1 border-l-2 border-drift-drifting/40 pl-2.5 font-sans text-sm leading-[1.4] font-normal text-muted-foreground">
           {dataset.drift_reason}
         </p>
       ) : null}
@@ -158,9 +179,9 @@ export function DatasetList({ onForgotten }: { onForgotten?: () => void }) {
   });
 
   return (
-    <Card className="gap-4 p-6">
+    <Card className="glow-soft gap-4 p-6">
       <CardHeader className="p-0">
-        <h2 className="font-display text-xl font-semibold text-foreground">Datasets</h2>
+        <h2 className="font-display text-xl font-semibold text-gradient">Datasets</h2>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 p-0">
         {isLoading ? (

@@ -8,6 +8,31 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getMemoryGraph, type GraphNode } from "@/lib/api";
 
 /**
+ * Neural-dark node palette (260703-vga fan-out): pulled directly from
+ * DESIGN-SYSTEM.md's accent ramp + drift palette hex values (no new
+ * arbitrary colors). `hashGroupColor` deterministically maps each Cognee
+ * entity `group` string to one of these — same group always renders the
+ * same hue, distinct groups fan out across the ramp, purely a presentation
+ * concern layered on the existing `group` field (no new data fetched).
+ */
+const NODE_COLOR_RAMP = [
+  "#6366f1", // accent-indigo
+  "#8b5cf6", // accent-violet
+  "#22d3ee", // accent-cyan
+  "#4ade80", // drift-stable
+  "#fbbf24", // drift-aging
+] as const;
+
+function hashGroupColor(key: string): string {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash << 5) - hash + key.charCodeAt(i);
+    hash |= 0;
+  }
+  return NODE_COLOR_RAMP[Math.abs(hash) % NODE_COLOR_RAMP.length];
+}
+
+/**
  * Client-only 3D memory graph (GRAPH-01, D-06/D-07/D-08 + STRETCH-04
  * click-to-explore). Renders the REAL Cognee cognify-produced knowledge
  * graph exported by backend/graph.py's GET /graph — incidents, fixes, and
@@ -74,9 +99,9 @@ export function MemoryGraphView() {
   }, []);
 
   return (
-    <Card className="gap-4 p-6">
+    <Card className="glow-soft animate-rise-in gap-4 border-border/60 p-6">
       <CardHeader className="p-0">
-        <h2 className="font-display text-xl font-semibold text-foreground">
+        <h2 className="font-display text-2xl font-semibold text-gradient sm:text-3xl">
           Memory Graph
         </h2>
         <p className="font-sans text-sm text-muted-foreground">
@@ -97,7 +122,7 @@ export function MemoryGraphView() {
           <>
             <div
               ref={setContainer}
-              className="overflow-hidden rounded-md border border-border bg-background"
+              className="glow-primary relative overflow-hidden rounded-2xl border border-accent-indigo/25 bg-background/60"
               style={{ height: GRAPH_HEIGHT }}
             >
               {width > 0 ? (
@@ -106,9 +131,20 @@ export function MemoryGraphView() {
                   width={width}
                   height={GRAPH_HEIGHT}
                   nodeLabel="label"
-                  nodeAutoColorBy="group"
+                  nodeColor={(node) =>
+                    hashGroupColor(
+                      String((node as { group?: unknown }).group ?? "unknown"),
+                    )
+                  }
+                  nodeOpacity={0.95}
                   linkLabel="label"
-                  backgroundColor="#0b0b0f"
+                  linkColor={() => "rgba(139, 92, 246, 0.55)"}
+                  linkOpacity={0.6}
+                  linkWidth={1.1}
+                  linkDirectionalParticles={1}
+                  linkDirectionalParticleWidth={1.6}
+                  linkDirectionalParticleColor={() => "#22d3ee"}
+                  backgroundColor="rgba(7, 6, 15, 0.55)"
                   onNodeClick={(node: { id?: unknown; label?: unknown; group?: unknown }) =>
                     setSelected({
                       id: String(node.id ?? ""),
@@ -120,16 +156,23 @@ export function MemoryGraphView() {
               ) : null}
             </div>
             {selected ? (
-              <div className="flex flex-col gap-1 rounded-md border border-border px-3 py-2">
-                <span className="font-sans text-sm font-semibold text-foreground">
-                  {selected.label}
-                </span>
+              <div className="glass animate-rise-in flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: hashGroupColor(selected.group) }}
+                    aria-hidden="true"
+                  />
+                  <span className="font-sans text-sm font-semibold text-foreground">
+                    {selected.label}
+                  </span>
+                </div>
                 <span className="font-mono text-xs text-muted-foreground">
                   {selected.group} · {selected.id}
                 </span>
               </div>
             ) : (
-              <p className="font-sans text-sm text-muted-foreground">
+              <p className="font-mono text-xs tracking-wide text-accent-cyan/80">
                 {data.nodes.length} nodes · {data.links.length} links
               </p>
             )}

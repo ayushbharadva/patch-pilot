@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SearchProgress } from "@/components/SearchProgress";
 import { acceptFeedback, type EvidenceSnippet, type SearchResponse } from "@/lib/api";
 import { versionTagFromDataset } from "@/lib/version";
+import { cn } from "@/lib/utils";
 
 /** D-07: at most 3 evidence snippets shown, even if the backend ever sends more. */
 const EVIDENCE_DISPLAY_LIMIT = 3;
@@ -35,12 +36,25 @@ interface VersionTagBadgeProps {
   healthState?: HealthState;
 }
 
+// Per-state luminous halo for the drift badge. Kept in JS (rather than as
+// data-[health-state] variants) so the custom .glow-drift-* utilities resolve
+// reliably; the data-health-state hooks below still drive border/text color.
+// Drifting (🔴) additionally throbs via .animate-drift-pulse (DESIGN-SYSTEM).
+const DRIFT_GLOW: Record<HealthState, string> = {
+  stable: "glow-drift-stable",
+  aging: "glow-drift-aging",
+  drifting: "glow-drift-drifting animate-drift-pulse",
+};
+
 function VersionTagBadge({ dataset, healthState }: VersionTagBadgeProps) {
   return (
     <Badge
       variant="outline"
       data-health-state={healthState ?? "neutral"}
-      className="shrink-0 font-mono text-xs font-normal text-muted-foreground data-[health-state=aging]:border-drift-aging data-[health-state=aging]:text-drift-aging data-[health-state=drifting]:border-drift-drifting data-[health-state=drifting]:text-drift-drifting data-[health-state=stable]:border-drift-stable data-[health-state=stable]:text-drift-stable"
+      className={cn(
+        "shrink-0 font-mono text-xs font-normal text-muted-foreground transition-shadow data-[health-state=aging]:border-drift-aging data-[health-state=aging]:text-drift-aging data-[health-state=drifting]:border-drift-drifting data-[health-state=drifting]:text-drift-drifting data-[health-state=stable]:border-drift-stable data-[health-state=stable]:text-drift-stable",
+        healthState ? DRIFT_GLOW[healthState] : undefined,
+      )}
     >
       {versionTagFromDataset(dataset)}
     </Badge>
@@ -54,12 +68,15 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
     <Collapsible
       open={open}
       onOpenChange={setOpen}
-      className="rounded-md border border-border"
+      className={cn(
+        "glass rounded-xl border-foreground/10 transition-all duration-200 hover:border-foreground/25 hover:shadow-lg",
+        open && "glow-soft",
+      )}
     >
       <div className="flex items-start justify-between gap-2 p-3">
         <div className="flex-1 space-y-1">
           {snippet.source ? (
-            <p className="font-sans text-sm font-semibold text-foreground">
+            <p className="font-mono text-xs font-medium tracking-wide text-accent-cyan">
               {snippet.source}
             </p>
           ) : null}
@@ -72,15 +89,15 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
             type="button"
             aria-label={open ? "Collapse full evidence" : "Expand full evidence"}
             aria-expanded={open}
-            className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             <ChevronDown
-              className={`size-4 transition-transform ${open ? "rotate-180" : ""}`}
+              className={`size-4 transition-transform duration-200 ${open ? "rotate-180 text-accent-indigo" : ""}`}
             />
           </button>
         </CollapsibleTrigger>
       </div>
-      <CollapsibleContent className="border-t border-border px-3 pt-3 pb-3">
+      <CollapsibleContent className="border-t border-foreground/10 px-3 pt-3 pb-3">
         <p className="font-sans text-base text-foreground">{snippet.full_text}</p>
       </CollapsibleContent>
     </Collapsible>
@@ -145,7 +162,7 @@ function AcceptDismissControls({
         {accepted ? (
           <span
             aria-live="polite"
-            className="inline-flex items-center gap-1.5 font-sans text-sm font-semibold text-primary"
+            className="glass glow-drift-stable inline-flex items-center gap-1.5 rounded-full border-drift-stable/40 px-3 py-1.5 font-sans text-sm font-semibold text-drift-stable animate-rise-in"
           >
             <Check className="size-4" aria-hidden="true" />
             Reinforced ✓
@@ -195,11 +212,16 @@ function DiagnosisCardOk({
   if (dismissed) return null;
 
   return (
-    <Card className={`${CARD_SPACING} gap-6`}>
+    <Card className={`${CARD_SPACING} gap-6 glow-primary animate-rise-in`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <h2 className="font-display text-[28px] leading-[1.2] font-semibold text-foreground">
-          {response.root_cause}
-        </h2>
+        <div className="flex-1 space-y-1.5">
+          <p className="text-gradient font-mono text-[11px] font-medium tracking-[0.2em] uppercase">
+            Root cause
+          </p>
+          <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-tight text-foreground">
+            {response.root_cause}
+          </h2>
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <VersionTagBadge
             dataset={response.source_dataset}
@@ -208,7 +230,7 @@ function DiagnosisCardOk({
           {response.confidence != null ? (
             <Badge
               variant="outline"
-              className="shrink-0 font-mono text-xs font-normal text-muted-foreground"
+              className="glow-soft shrink-0 border-accent-indigo/40 font-mono text-xs font-normal text-accent-indigo"
             >
               {Math.round(response.confidence * 100)}% confidence
             </Badge>
@@ -259,7 +281,7 @@ export function DiagnosisCard({
 }) {
   if (response.status === "error") {
     return (
-      <Card className={CARD_SPACING}>
+      <Card className={`${CARD_SPACING} border-destructive/30 animate-rise-in`}>
         <CardContent>
           <p className="font-sans text-sm font-semibold text-destructive">
             {response.message}
@@ -271,7 +293,7 @@ export function DiagnosisCard({
 
   if (response.status === "no_results") {
     return (
-      <Card className={CARD_SPACING}>
+      <Card className={`${CARD_SPACING} animate-rise-in`}>
         <CardContent>
           <p className="font-sans text-base text-muted-foreground">
             No prior incidents found for this query
@@ -295,7 +317,7 @@ export function DiagnosisCard({
  */
 export function DiagnosisCardSkeleton() {
   return (
-    <Card className={`${CARD_SPACING} gap-6`}>
+    <Card className={`${CARD_SPACING} gap-6 glow-soft animate-rise-in`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <Skeleton className="h-8 w-3/4" />
         <Skeleton className="h-5 w-14 rounded-full" />

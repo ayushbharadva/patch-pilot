@@ -95,20 +95,38 @@ export function SearchProgress({
   return (
     <div
       className={cn(
-        "flex items-start gap-2 font-sans text-sm text-muted-foreground",
+        "flex items-start gap-3 font-sans text-sm text-muted-foreground",
         className,
       )}
     >
       {showSpinner ? (
-        <Loader2 className="size-4 shrink-0 animate-spin mt-0.5" aria-hidden="true" />
-      ) : null}
-      <div className="flex flex-col gap-0.5">
+        <span
+          aria-hidden="true"
+          className="glow-primary mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full"
+        >
+          <Loader2 className="size-4 animate-spin text-accent-indigo" />
+        </span>
+      ) : (
+        // Decorative pulsing brand orb for the no-spinner (skeleton) call site —
+        // aria-hidden, motion behind the reduced-motion-safe .animate-float guard.
+        <span
+          aria-hidden="true"
+          className="glow-primary animate-float mt-1 size-3 shrink-0 rounded-full"
+          style={{ backgroundImage: "var(--gradient-brand)" }}
+        />
+      )}
+      <div className="flex flex-col gap-1">
         {/* Single stable announcement — the only node in the a11y tree. */}
         <span className="sr-only">{srLabel}</span>
         {/* Cycling + reassurance copy is aria-hidden (see docblock). */}
-        <span aria-hidden="true">{messages[index]}</span>
+        <span
+          aria-hidden="true"
+          className="text-gradient font-display text-base font-semibold tracking-tight"
+        >
+          {messages[index]}
+        </span>
         {showReassurance ? (
-          <span aria-hidden="true" className="text-xs">
+          <span aria-hidden="true" className="text-xs italic text-muted-foreground/80">
             {reassuranceMessage}
           </span>
         ) : null}

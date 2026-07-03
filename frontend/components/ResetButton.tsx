@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,13 +65,21 @@ export function ResetButton() {
       }}
     >
       <DialogTrigger asChild>
-        <Button type="button" variant="destructive" size="sm">
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          className="h-9 gap-1.5 rounded-full border-destructive/30 px-4 font-sans backdrop-blur hover:shadow-[0_0_20px_-6px_color-mix(in_oklch,var(--destructive)_70%,transparent)]"
+        >
+          <RotateCcw aria-hidden="true" className="size-3.5" />
           Reset Demo
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="glass-strong">
         <DialogHeader>
-          <DialogTitle>Reset memory to demo-ready state?</DialogTitle>
+          <DialogTitle className="font-display text-lg">
+            Reset memory to demo-ready state?
+          </DialogTitle>
         </DialogHeader>
         <p className="font-sans text-sm text-muted-foreground">
           This restores the clean demo snapshot, undoing any uploads, forgets,

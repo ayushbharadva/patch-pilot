@@ -215,9 +215,9 @@ export function UploadPanel() {
   }
 
   return (
-    <Card className="gap-6 p-6">
+    <Card className="glow-soft gap-6 p-6">
       <CardHeader className="p-0">
-        <h2 className="font-display text-xl font-semibold text-foreground">Upload</h2>
+        <h2 className="font-display text-xl font-semibold text-gradient">Upload</h2>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 p-0">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -229,10 +229,10 @@ export function UploadPanel() {
               value={contentType}
               onValueChange={(value) => setContentType(value as ContentType)}
             >
-              <SelectTrigger className="h-10 w-full">
+              <SelectTrigger className="glass h-10 w-full border-border/60 hover:border-accent-violet/40">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="glass-strong">
                 {CONTENT_TYPE_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
@@ -243,7 +243,7 @@ export function UploadPanel() {
           </div>
 
           {contentType === "release_note" ? (
-            <div className="flex flex-1 flex-col gap-1.5">
+            <div className="flex flex-1 flex-col gap-1.5 animate-rise-in">
               <label className="font-sans text-sm font-semibold text-foreground">
                 Release version
               </label>
@@ -262,15 +262,17 @@ export function UploadPanel() {
 
         <div className="flex flex-col gap-1.5">
           <label className="font-sans text-sm font-semibold text-foreground">Files</label>
-          <input
-            key={fileInputKey}
-            type="file"
-            multiple
-            accept=".md,.txt,.json"
-            onChange={handleFileChange}
-            aria-label="Choose files to upload"
-            className="font-sans text-sm text-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-secondary-foreground"
-          />
+          <div className="glass rounded-lg px-3 py-2.5">
+            <input
+              key={fileInputKey}
+              type="file"
+              multiple
+              accept=".md,.txt,.json"
+              onChange={handleFileChange}
+              aria-label="Choose files to upload"
+              className="w-full font-sans text-sm text-foreground file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-secondary-foreground file:transition-colors hover:file:bg-secondary/70"
+            />
+          </div>
         </div>
 
         {formError ? (
