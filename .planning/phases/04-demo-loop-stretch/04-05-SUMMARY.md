@@ -134,3 +134,14 @@ None — no external service configuration. Operational note: the `:8000` backen
 ---
 *Phase: 04-demo-loop-stretch*
 *Completed: 2026-07-03*
+
+## Self-Check: PASSED
+
+- FOUND: backend/search.py
+- FOUND: backend/tests/test_search_helpers.py
+- FOUND: frontend/lib/api.ts
+- FOUND: frontend/components/DiagnosisCard.tsx
+- FOUND: .planning/phases/04-demo-loop-stretch/04-05-SUMMARY.md
+- FOUND commit: cd5bc12 (feat — Task 1 backend confidence extraction)
+- FOUND commit: 675b41a (feat — Task 2 frontend confidence badge)
+- FOUND commit: 6e889fa (docs — plan summary)
