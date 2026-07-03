@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Cognee verified, data persists, seed data produces a CLI before/after flip — all blocking risks retired before UI work begins (completed 2026-07-01)
 - [x] **Phase 2: Core Recall** - Full-stack ingest, evidence-grounded diagnosis card, feedback reinforcement, and release upload — the core product experience in the browser (completed 2026-07-02)
 - [x] **Phase 3: Drift + Forget** - Drift detection with human-readable badges, surgical forget, and visible before/after proof — the scoring differentiator (completed 2026-07-02)
-- [ ] **Phase 4: Demo Loop + Stretch** - 120-second loop verified on deployed instance, one-button demo reset, memory graph view, and stretch features gated behind a working loop
+- [x] **Phase 4: Demo Loop + Stretch** - 120-second loop verified on deployed instance, one-button demo reset, memory graph view, and stretch features gated behind a working loop (completed 2026-07-03)
 
 ## Phase Details
 
@@ -116,7 +116,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Memory graph view renders incidents, fixes, and component relationships as a navigable visual graph — visually proving Cognee builds a real knowledge graph, not just a search index
   4. (Stretch — cut in reverse order if time-boxed) Recall card shows a confidence score from search payload; memory health dashboard displays drift-state counts; incident timeline shows events chronologically; graph visualization supports click-to-explore nodes
 
-**Plans**: 5/6 plans executed
+**Plans**: 6/6 plans complete
 **UI hint**: yes
 
 **Wave 1**
@@ -138,7 +138,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Wave 5** *(stretch — blocked on the Wave 4 gate; cut in reverse per D-10)*
 
 - [x] 04-05-PLAN.md — STRETCH-01 confidence score (verbose CHUNKS + card badge) [wave 5]
-- [ ] 04-06-PLAN.md — STRETCH-02 health dashboard + STRETCH-03 incident timeline (timeline cut-first) [wave 5]
+- [x] 04-06-PLAN.md — STRETCH-02 health dashboard + STRETCH-03 incident timeline (timeline cut-first) [wave 5]
 
 ## Progress
 
@@ -150,4 +150,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
 | 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
 | 3. Drift + Forget | 2/2 | Complete    | 2026-07-02 |
-| 4. Demo Loop + Stretch | 5/6 | In Progress|  |
+| 4. Demo Loop + Stretch | 6/6 | Complete   | 2026-07-03 |
