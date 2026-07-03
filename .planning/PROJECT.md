@@ -43,6 +43,16 @@ Validated in Phase 3 (drift-forget) — confirmed via live UAT (search → drift
 - **DRIFT-01/02/03** — `compute_drift_states()` shared classifier flags the superseded workaround 🔴 with a live Mistral-generated reason; drift exclusion means `/search` already returns the correct fix even before forgetting (the flip happens at release-detection time, not forget time — see Key Decisions)
 - **FORGET-01/02** — `POST /forget` surgically removes only a live, drifting `workarounds_v{N}` (durable-dataset guard + drift-state guard, added during code review); UI shows two-step confirm, row removal, toast, and auto-re-search
 
+Validated in Phase 4 (demo-loop-stretch) — confirmed via live UAT (16/16 checkpoints passed, 0 issues), independent re-verification, and a same-day code-review fix-and-reverify cycle:
+
+- **DEMO-01** — One-click "Reset Demo" (confirm modal, in-flight state, success toast, dataset list restore) — round-tripped live
+- **DEMO-03** — Full search → release → drift → forget → re-search loop measured at 23.6s live (harness) / confirmed on-camera in-browser under 120s — well inside budget
+- **GRAPH-01** — 3D memory graph (`react-force-graph-3d`) renders the real aggregated Cognee graph with click-to-explore node detail; `GET /graph` trims all chunk text before it crosses to the browser
+- **STRETCH-01** — Real `[0,1]` confidence badge on the diagnosis card, derived from the CHUNKS retriever's own similarity score
+- **STRETCH-02** — Memory Health dashboard (live 🟢/🟡/🔴 drift tallies)
+- **STRETCH-03** — Incident Timeline (chronological incidents/releases)
+- **STRETCH-04** — Click-to-explore on the memory graph (see GRAPH-01)
+
 ### Active
 
 <!-- v1 scope. All hypotheses until shipped and demoed. -->
@@ -52,7 +62,7 @@ Validated in Phase 3 (drift-forget) — confirmed via live UAT (search → drift
 - [x] `remember()` ingestion — `add()` + `cognify()` build the knowledge graph — validated Phase 1 (INGEST-02)
 - [x] `recall()` with root cause + evidence — fused `search(GRAPH_COMPLETION)` + `search(CHUNKS)` — Phase 2 (RECALL-01/02/03)
 - [x] Engineer feedback → `improve(feedback_alpha=…)` reinforces accepted fixes — Phase 2 (FEEDBACK-01), but the reinforcement's visible effect on ranking (FEEDBACK-02) is not demonstrable with the current seed corpus — see Key Decisions
-- [ ] Memory Graph view — Phase 4 (GRAPH-01)
+- [x] Memory Graph view — Phase 4 (GRAPH-01)
 - [x] Release upload (per-release dataset, e.g. `workarounds_v1_9`) — Phase 2 (RELEASE-01)
 - [x] Memory Drift detection (🟢 Stable / 🟡 Aging / 🔴 Drifting) via visible heuristics — Phase 3 (DRIFT-01/02/03)
 - [x] `forget(dataset=…)` surgical removal of obsolete workarounds — Phase 1 CLI-level, now also a guarded `POST /forget` + UI trigger — Phase 3 (FORGET-01)
@@ -60,10 +70,10 @@ Validated in Phase 3 (drift-forget) — confirmed via live UAT (search → drift
 - [x] `prune.prune_data()` + `prune.prune_system()` reset/reseed for demo — implemented instead as tar snapshot save/restore (`scripts/snapshot_memory.py`) for zero-cost reseeds, a cheaper equivalent to prune+recognify
 
 **Nice-to-haves promoted to v1 (stretch — cut first if time-boxed)**
-- [ ] Confidence scoring on recall recommendations
-- [ ] Memory health dashboard (state overview across graph)
-- [ ] Incident timeline (chronological incidents/releases)
-- [ ] Richer / interactive graph visualization
+- [x] Confidence scoring on recall recommendations — Phase 4 (STRETCH-01)
+- [x] Memory health dashboard (state overview across graph) — Phase 4 (STRETCH-02)
+- [x] Incident timeline (chronological incidents/releases) — Phase 4 (STRETCH-03)
+- [x] Richer / interactive graph visualization — Phase 4 (GRAPH-01/STRETCH-04)
 
 ### Out of Scope
 
@@ -87,6 +97,7 @@ Validated in Phase 3 (drift-forget) — confirmed via live UAT (search → drift
 - **Phase 3 complete (2026-07-02):** Drift + Forget shipped and live-UAT-verified (search → 🔴 badge → Forget → re-search). Two things worth remembering for Phase 4 demo scripting:
   - The evidence (CHUNKS) panel is **not interleaved across datasets** — `backend/search.py::_flatten_and_truncate` takes the first `EVIDENCE_LIMIT=3` chunks in per-dataset return order. For the canonical "double-charged" query, `incidents` chunks rank ahead of `workarounds_v1_8`'s and fill all 3 evidence slots, so the evidence panel never visibly shows a `workarounds_v1_8` chunk disappearing on forget — the *visible* forget proof for this query is the row disappearing from the dataset list, not an evidence-panel diff. This is pre-existing Phase 1/2 behavior, not a Phase 3 defect; if Phase 4 wants the evidence-panel flip specifically, it needs either a different demo query or an interleaving change to `_flatten_and_truncate`.
   - **Landmine:** a CSS block comment containing a literal `*/` mid-sentence (e.g. `bg-drift-*/text-drift-*/border-drift-*`) closes the comment early and spills the rest as invalid CSS, crashing the entire Next.js frontend with a PostCSS `CssSyntaxError` on every route. `tsc --noEmit` and grep-based plan verify commands never catch this — only a live browser/dev-server load does. Found and fixed live during `/gsd-verify-work` UAT (`frontend/app/globals.css`, commit `d3c0291`).
+- **Phase 4 complete (2026-07-03) — milestone v1.9 fully shipped, this was the last planned phase.** Demo loop + all 4 stretch features built, UAT'd live (16/16 checkpoints, 0 issues), security-reviewed (`threats_open: 0`), and code-reviewed. Code review found 2 critical bugs post-UAT — `POST /reset` could crash the entire backend process (`sys.exit(1)` inside `snapshot_memory.restore()` raised `SystemExit`, uncaught by `except Exception:`, and asyncio does not swallow `BaseException`) and `GET /graph`'s error responses were invisible to the frontend (HTTP 200 + no `status` key on success meant a backend exception rendered as an uncaught client-side crash instead of the intended graceful message). Both fixed and independently re-verified live (crash scenario reproduced and confirmed closed) same-day, before phase completion — see commits `a5006e3`/`25090c5`. Two ROADMAP.md success-criteria wordings were superseded by explicit discuss-phase decisions (recorded as overrides in `04-VERIFICATION.md`, not silent narrowing): the demo-loop timing was measured against the local dev instance, not a deployed Render instance (no Render deploy exists for this build), and reset uses a tar snapshot save/restore instead of literal `prune_data()`+`prune_system()`+reseed (cheaper, zero-LLM-cost equivalent — see Key Decisions).
 
 ## Constraints
 
@@ -112,6 +123,8 @@ Validated in Phase 3 (drift-forget) — confirmed via live UAT (search → drift
 | Root-cause flip happens at drift-detection (release-upload) time, not forget time | `_pick_primary_result` already excludes 🔴-flagged datasets, so `/search` returns the correct fix the moment drift is detected; forgetting afterward is a *second*, separate visible change (row/evidence removal), not the root-cause flip itself | ✓ Done (Phase 3) |
 | Drift reason string is LLM-generated live via `GRAPH_COMPLETION`, not a static template | Showcases Cognee reasoning depth for judges ("Best Use of Cognee" axis); mitigated with a 10s timeout + deterministic fallback + in-process cache keyed on `(drifting_name, current_highest_name)` | ✓ Done (Phase 3) |
 | `POST /forget` requires `compute_drift_states(...).get(name) == "drifting"`, not just live-existence | Code review (CR-02) found the original guard let the backend forget the current, correct workaround via a direct API call bypassing the UI's button-hiding — closed before shipping | ✓ Done (Phase 3) |
+| Demo-loop timing measured on local dev instance, not a deployed Render instance | No Render (or other) deploy exists for this build within the timeline; discuss-phase accepted local measurement as functionally equivalent proof of the <120s budget | ✓ Done (Phase 4) — recorded as an accepted override in `04-VERIFICATION.md` |
+| Reset uses tar snapshot save/restore instead of literal `prune.prune_data()`+`prune.prune_system()`+reseed | Snapshot restore is a cheaper, zero-LLM-cost equivalent (no re-cognify needed) that still fully resets memory state; discuss-phase decision, not silent scope-narrowing | ✓ Done (Phase 1, reaffirmed Phase 4) — recorded as an accepted override in `04-VERIFICATION.md` |
 
 ## Evolution
 
@@ -131,4 +144,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-02 after Phase 3 (drift-forget) completion*
+*Last updated: 2026-07-03 after Phase 4 (demo-loop-stretch) completion — milestone v1.9 fully shipped*
