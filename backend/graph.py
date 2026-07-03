@@ -92,7 +92,17 @@ async def get_memory_graph():
                 for node_id, props in nodes
             ],
             "links": [
-                {"source": str(edge[0]), "target": str(edge[1]), "label": edge[2]}
+                # WR-01: coerce to string for parity with the node id/label
+                # handling above -- frontend/lib/api.ts's GraphLink.label is
+                # typed as a non-nullable string, and MemoryGraphView.tsx
+                # passes linkLabel="label" straight to react-force-graph-3d,
+                # so a non-string third tuple element (None, enum, dict)
+                # would silently violate that contract.
+                {
+                    "source": str(edge[0]),
+                    "target": str(edge[1]),
+                    "label": str(edge[2]) if edge[2] is not None else "",
+                }
                 for edge in edges
                 if len(edge) >= 3
             ],
