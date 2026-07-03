@@ -15,6 +15,7 @@ export interface SiteConfig {
   url: string;
   ogImage: string;
   launchHref: string;
+  appHref: string;
   nav: readonly NavItem[];
   dashboardNav: readonly NavItem[];
 }
@@ -37,6 +38,7 @@ export const SITE_CONFIG = {
   url: "https://patchpilot.dev",
   ogImage: "/opengraph-image",
   launchHref: "/#how-it-works",
+  appHref: "/app",
   nav,
   dashboardNav: [] as const,
 } as const satisfies SiteConfig;

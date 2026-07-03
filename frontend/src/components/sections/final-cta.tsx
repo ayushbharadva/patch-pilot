@@ -54,7 +54,7 @@ export function FinalCta() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
-            <CtaButton href={SITE_CONFIG.launchHref}>
+            <CtaButton href={SITE_CONFIG.appHref}>
               Launch PatchPilot
               <ArrowRight className="size-4" />
             </CtaButton>

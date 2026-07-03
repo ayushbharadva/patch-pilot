@@ -81,8 +81,8 @@ export function Hero() {
           transition={{ delay: 0.7, duration: 0.8 }}
           className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center"
         >
-          <CtaButton href={SITE_CONFIG.launchHref}>
-            Launch PatchPilot
+          <CtaButton href={SITE_CONFIG.appHref}>
+            Try Now
             <ArrowRight className="size-4" />
           </CtaButton>
           <CtaButton href="/#lifecycle" variant="outline">
