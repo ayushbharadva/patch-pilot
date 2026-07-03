@@ -393,15 +393,38 @@ export interface GraphData {
   links: GraphLink[];
 }
 
+interface GraphOkResponse extends GraphData {
+  status: "ok";
+}
+
+interface GraphErrorResponse {
+  status: "error";
+  message: string;
+}
+
+/** Discriminated union matching backend/graph.py's GET /graph response
+ * exactly (CR-02) — the success shape now carries an explicit "ok"
+ * discriminant since the endpoint always returns HTTP 200 even on error. */
+type GraphResponse = GraphOkResponse | GraphErrorResponse;
+
 /**
  * GET `${API_BASE}/graph` (GRAPH-01). Mirrors listDatasets's throw-on-!ok
  * shape so useQuery surfaces the error state — a transient hiccup renders
  * the graph section's error branch rather than crashing the page.
+ *
+ * CR-02: backend/graph.py returns `{status: "error", message}` with HTTP
+ * 200 on aggregation failure, so `res.ok` alone can't detect it -- the
+ * parsed body's `status` must be checked too, or MemoryGraphView.tsx
+ * crashes rendering `data.nodes.length` on an `undefined` `nodes`.
  */
 export async function getMemoryGraph(): Promise<GraphData> {
   const res = await fetch(`${API_BASE}/graph`);
   if (!res.ok) {
     throw new Error("Could not load memory graph.");
   }
-  return (await res.json()) as GraphData;
+  const data = (await res.json()) as GraphResponse;
+  if (data.status === "error") {
+    throw new Error(data.message);
+  }
+  return { nodes: data.nodes, links: data.links };
 }

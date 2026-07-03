@@ -54,7 +54,7 @@ async def get_memory_graph():
         # share — do not re-derive the list independently.
         names = await _active_search_datasets()
         if not names:
-            return {"nodes": [], "links": []}
+            return {"status": "ok", "nodes": [], "links": []}
 
         # Imported here (not at module top) to keep the config-before-cognee
         # import keystone intact and avoid paying the import cost unless the
@@ -77,6 +77,12 @@ async def get_memory_graph():
         # and source/target/label on links — raw chunk text/body never
         # crosses to the browser (T-04-06 / D-24).
         return {
+            # CR-02: explicit "ok" discriminant so the success shape can be
+            # told apart from the error shape below without relying on HTTP
+            # status (this endpoint always returns 200) -- matches every
+            # sibling endpoint's response union (search.py, reset.py,
+            # ingest.py, feedback.py).
+            "status": "ok",
             "nodes": [
                 {
                     "id": str(node_id),
