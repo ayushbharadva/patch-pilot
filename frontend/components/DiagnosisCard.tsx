@@ -12,6 +12,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SearchProgress } from "@/components/SearchProgress";
 import { acceptFeedback, type EvidenceSnippet, type SearchResponse } from "@/lib/api";
 import { versionTagFromDataset } from "@/lib/version";
 
@@ -287,8 +288,10 @@ export function DiagnosisCard({
  * Loading placeholder (D-20) matching DiagnosisCard's real dimensions
  * (headline block + 2-3 evidence rows) so there is no layout shift when
  * real content arrives. Plan 01 measured fused-search latency at ~7.1s
- * (above the ~5s RESEARCH assumption), so a subtle "Searching memory…"
- * label is shown beneath the skeleton rather than a bare spinner.
+ * (above the ~5s RESEARCH assumption); the loading label is now progressive
+ * (staged messages + a reassurance line for the real first-search cold-start
+ * of up to ~20s) via SearchProgress, rather than a single static line that
+ * reads as hung. The skeleton bars are unchanged so there is no layout shift.
  */
 export function DiagnosisCardSkeleton() {
   return (
@@ -302,9 +305,7 @@ export function DiagnosisCardSkeleton() {
         <Skeleton className="h-16 w-full rounded-md" />
         <Skeleton className="h-16 w-full rounded-md" />
       </CardContent>
-      <p className="px-(--card-spacing) font-sans text-sm text-muted-foreground">
-        Searching memory…
-      </p>
+      <SearchProgress className="px-(--card-spacing)" />
     </Card>
   );
 }

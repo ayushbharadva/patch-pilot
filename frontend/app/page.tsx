@@ -9,6 +9,7 @@ import { IncidentTimeline } from "@/components/IncidentTimeline";
 import { MemoryGraphView } from "@/components/MemoryGraphView";
 import { ResetButton } from "@/components/ResetButton";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
+import { SearchProgress } from "@/components/SearchProgress";
 import { UploadPanel } from "@/components/UploadPanel";
 import { Button } from "@/components/ui/button";
 import { searchIncident, type SearchResponse } from "@/lib/api";
@@ -108,9 +109,10 @@ export default function Home() {
               <EmptyState />
             )}
             {isReSearching ? (
-              <p className="font-sans text-sm text-muted-foreground">
-                Updating diagnosis with reinforced memory…
-              </p>
+              <SearchProgress
+                showSpinner
+                srLabel="Updating diagnosis with reinforced memory."
+              />
             ) : null}
           </section>
 
