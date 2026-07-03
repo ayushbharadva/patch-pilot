@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.9
 milestone_name: milestone
-current_phase: 4
-current_phase_name: Demo Loop + Stretch
-status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-07-03T03:18:38.675Z"
-last_activity: 2026-07-02
-last_activity_desc: Phase 03 complete (UAT + security verified), transitioned to Phase 4
+current_phase: 04
+current_phase_name: demo-loop-stretch
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-07-03T07:22:00.200Z"
+last_activity: 2026-07-03
+last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 75
+  total_plans: 16
+  completed_plans: 11
+  percent: 69
 ---
 
 # Project State
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-02)
 
 **Core value:** search → drift-detected → forget → re-search loop works visibly in under 120 seconds — PatchPilot is obviously impossible without Cognee's memory lifecycle
-**Current focus:** Phase 04 — demo-loop-+-stretch
+**Current focus:** Phase 04 — demo-loop-stretch
 
 ## Current Position
 
-Phase: 4 — Demo Loop + Stretch
-Plan: Not started
+Phase: 04 (demo-loop-stretch) — EXECUTING
+Plan: 2 of 6
 Next: Phase 4 (Demo Loop + Stretch) — not yet planned
-Status: Ready to plan Phase 4
-Last activity: 2026-07-02 — Phase 03 complete (UAT + security verified), transitioned to Phase 4
+Status: Ready to execute
+Last activity: 2026-07-03 — Phase 04 execution started
 
 Progress: [████████░░] 75% of milestone (3 of 4 phases)
 
@@ -65,6 +65,7 @@ Progress: [████████░░] 75% of milestone (3 of 4 phases)
 | Phase 02 P03 | 180min | 2 tasks | 12 files |
 | Phase 03 P01 | 27min | 3 tasks | 8 files |
 | Phase 03 P02 | 12min | 2 tasks | 6 files |
+| Phase 04 P01 | 63min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase 03-01]: _pick_primary_result's new drift_states param defaults to None (backward compatible) so Phase 2's test_search_helpers.py single-argument call sites kept working unmodified.
 - [Phase 03-01]: compute_drift_states is imported lazily inside search()'s function body, not at backend/search.py's module top -- avoids a circular import since backend/drift.py imports the shared version regex/sort-key FROM backend.search at its own module top.
 - [Phase 03-02]: Executed exactly as planned -- no deviations. POST /forget's durable-dataset guard (regex+denylist before any Cognee call) and the frontend ForgetButton's two-step inline confirm both matched the plan's PATTERNS-derived code verbatim.
+- [Phase 04-01]: Reworded queue-backlog-incident.md to remove customer/billing-adjacent vocabulary after live testing showed it could win the incidents dataset's GRAPH_COMPLETION retrieval over the Stripe incident for the canonical query — Live cognify + flip testing (not just static grep gates) revealed a retrieval-relevance collision independent of the #1023 entity-isolation rule
+- [Phase 04-01]: Corrected the snapshot-content verify method to grep tar member bytes of databases/cognee_db for the dataset name, since Cognee 1.2.2 paths everything by dataset UUID never by human-readable name — The plan's literal tar-member-name check could never pass against the real on-disk layout
 
 ### Pending Todos
 
@@ -126,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-03T03:18:38.659Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-demo-loop-stretch/04-CONTEXT.md
+Last session: 2026-07-03T07:22:00.163Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
