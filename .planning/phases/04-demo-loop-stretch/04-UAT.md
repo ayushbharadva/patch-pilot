@@ -1,20 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 04-demo-loop-stretch
 source: [04-01-SUMMARY.md, 04-02-SUMMARY.md, 04-03-SUMMARY.md, 04-04-SUMMARY.md, 04-05-SUMMARY.md, 04-06-SUMMARY.md]
 started: 2026-07-03T11:02:44Z
-updated: 2026-07-03T11:02:44Z
+updated: 2026-07-03T13:13:57Z
 ---
 
 ## Current Test
-<!-- OVERWRITE each test - shows where we are -->
 
-number: 4
-name: On-screen demo loop under 120s
-expected: |
-  Browser loop: search → upload release → drift badge flips 🟢→🔴 → Forget (row
-  vanishes) → re-search returns new correct fix — visibly, under 120s.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -33,15 +27,15 @@ note: "Initially failed (blank graph). Fixed in commit c87c8a1 — callback-ref 
 
 ### 4. On-screen demo loop under 120s (DEMO-03)
 expected: Perform the full loop in the browser — search → upload a release → drift badge flips (🟢→🔴) → Forget the stale workaround (its dataset row vanishes) → re-search returns the new correct fix — visibly, end to end under 120 seconds. (Automated HTTP harness already measured 57.2s; this is the on-camera human confirmation for the submission video.)
-result: [pending]
+result: pass
 
 ### 5. Confidence badge on diagnosis card (STRETCH-01)
 expected: Searching "customers double-charged" shows an "N% confidence" badge beside the version tag on the diagnosis card. An off-corpus query (e.g. a nonsense/cake query) shows no badge and no crash.
-result: [pending]
+result: pass
 
 ### 6. Memory Health dashboard + Incident Timeline (STRETCH-02, STRETCH-03)
 expected: Below the search view, a "Memory Health" card shows live 🟢/🟡/🔴 drift counts that update after upload/forget/reset. An "Incident Timeline" lists incidents/releases in chronological order. No visible PostCSS/render error on the page.
-result: [pending]
+result: pass
 
 ### 7. Seed enrichment: 3 isolated docs, isolation invariant intact (04-01 D1)
 expected: 3 new isolated seed docs added without breaking #1023 isolation or touching arc-critical docs.
@@ -106,9 +100,9 @@ coverage_id: 04-06-D2
 ## Summary
 
 total: 16
-passed: 13
+passed: 16
 issues: 0
-pending: 3
+pending: 0
 skipped: 0
 blocked: 0
 
