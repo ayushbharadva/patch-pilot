@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 
@@ -21,7 +21,12 @@ import { getMemoryGraph, type GraphNode } from "@/lib/api";
  * page.tsx keeps that boundary intact.
  */
 const ForceGraph3D = dynamic(
-  () => import("react-force-graph").then((mod) => mod.ForceGraph3D),
+  // Import the standalone 3D-only wrapper, NOT the umbrella "react-force-graph":
+  // the umbrella bundles the VR/AR builds, which reference a global `AFRAME` at
+  // module-eval time and throw `AFRAME is not defined` in a plain web app.
+  // react-force-graph-3d wraps only 3d-force-graph (→ three) and default-exports
+  // the ForceGraph3D component.
+  () => import("react-force-graph-3d").then((mod) => mod.default),
   {
     ssr: false,
     loading: () => (
@@ -49,16 +54,23 @@ export function MemoryGraphView() {
 
   // react-force-graph defaults to window dimensions; measure the container
   // instead so the canvas fits the card width and resizes with it.
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
+  const roRef = useRef<ResizeObserver | null>(null);
 
-  useEffect(() => {
-    const el = containerRef.current;
+  // Callback ref (NOT a useEffect with [] deps): the measured container lives
+  // behind the isLoading branch, so it only mounts AFTER the graph data
+  // arrives. A mount-time effect would run while the container is still absent,
+  // leave width at 0, and the `width > 0` gate below would render the canvas as
+  // null forever (empty box = "no graph visible"). A callback ref fires exactly
+  // when the node attaches/detaches, and a ResizeObserver keeps it in sync.
+  const setContainer = useCallback((el: HTMLDivElement | null) => {
+    roRef.current?.disconnect();
+    roRef.current = null;
     if (!el) return;
-    const measure = () => setWidth(el.clientWidth);
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    setWidth(el.clientWidth);
+    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    ro.observe(el);
+    roRef.current = ro;
   }, []);
 
   return (
@@ -84,7 +96,7 @@ export function MemoryGraphView() {
         ) : data && data.nodes.length > 0 ? (
           <>
             <div
-              ref={containerRef}
+              ref={setContainer}
               className="overflow-hidden rounded-md border border-border bg-background"
               style={{ height: GRAPH_HEIGHT }}
             >
