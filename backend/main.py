@@ -53,12 +53,19 @@ app = FastAPI()
 
 # Explicit single-origin allowlist — never a wildcard (T-02-01). Next.js dev
 # server only; add the deployed frontend origin here when one exists.
+#
+# WR-03: allow_headers is restricted to the one custom header
+# frontend/lib/api.ts actually sends ("Content-Type", for its JSON POST
+# bodies) rather than a "*" wildcard — a wildcard allow_headers is lower
+# risk than a wildcard allow_origins, but still inconsistent with this
+# project's least-privilege posture and lets any request header through
+# on a credentialed cross-origin request.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["GET", "POST"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type"],
 )
 
 logger = logging.getLogger(__name__)
