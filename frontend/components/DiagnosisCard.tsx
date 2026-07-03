@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { acceptFeedback, type EvidenceSnippet, type SearchResponse } from "@/lib/api";
+import { versionTagFromDataset } from "@/lib/version";
 
 /** D-07: at most 3 evidence snippets shown, even if the backend ever sends more. */
 const EVIDENCE_DISPLAY_LIMIT = 3;
@@ -21,22 +22,6 @@ const EVIDENCE_DISPLAY_LIMIT = 3;
 const CARD_SPACING = "[--card-spacing:1.5rem]";
 
 type HealthState = "stable" | "aging" | "drifting";
-
-/**
- * Derive the D-09 dataset/version tag from `source_dataset` — e.g.
- * `workarounds_v1_8` -> "v1.8". `incidents` (and anything unrecognized)
- * gets a neutral label rather than a raw internal dataset name.
- */
-export function versionTagFromDataset(datasetName: string | null): string {
-  if (!datasetName) return "Unknown source";
-  const match = /^workarounds_v(\d+)(?:_(\d+))?$/.exec(datasetName);
-  if (match) {
-    const [, major, minor] = match;
-    return minor ? `v${major}.${minor}` : `v${major}`;
-  }
-  if (datasetName === "incidents") return "Incident record";
-  return datasetName;
-}
 
 interface VersionTagBadgeProps {
   dataset: string | null;

@@ -4,21 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
-import { type DatasetInfo, type DriftState, listDatasets } from "@/lib/api";
+import { type DatasetInfo, listDatasets } from "@/lib/api";
+import { DRIFT_LABEL, WORKAROUNDS_VERSION_RE } from "@/lib/version";
 
 /** Mirrors backend/search.py's `_WORKAROUNDS_VERSION_RE` — the only
  * chronological signal available client-side without a new backend endpoint
- * (RESEARCH.md Architectural Responsibility Map, "Incident timeline" row). */
-const WORKAROUNDS_VERSION_RE = /^workarounds_v(\d+)(?:_(\d+))?$/;
-
-/** Drift-state -> text label (03-UI-SPEC.md Copywriting Contract). Duplicated
- * from DatasetList.tsx's DRIFT_BADGE map rather than imported, since only the
- * label (not the dot color) is needed here. */
-const DRIFT_LABEL: Record<DriftState, string> = {
-  stable: "🟢 Stable",
-  aging: "🟡 Aging",
-  drifting: "🔴 Drifting",
-};
+ * (RESEARCH.md Architectural Responsibility Map, "Incident timeline" row).
+ * WR-04: shared with DiagnosisCard.tsx and HealthDashboard.tsx via
+ * `@/lib/version` rather than re-implemented locally. */
 
 /** Chronological sort key: `incidents` anchors the baseline (sorts first),
  * `workarounds_v{N}` (or `v{N}_{M}`) sort ascending by release version,

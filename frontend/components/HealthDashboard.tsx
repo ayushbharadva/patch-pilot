@@ -5,15 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
 import { type DriftState, listDatasets } from "@/lib/api";
-
-/** Drift-state -> text label (03-UI-SPEC.md Copywriting Contract). Duplicated
- * from DatasetList.tsx's DRIFT_BADGE map rather than imported, since only the
- * label (not the dot color) is needed here. */
-const DRIFT_LABEL: Record<DriftState, string> = {
-  stable: "🟢 Stable",
-  aging: "🟡 Aging",
-  drifting: "🔴 Drifting",
-};
+import { DRIFT_LABEL } from "@/lib/version";
 
 /**
  * Memory health dashboard (STRETCH-02): pure client-side aggregation of the
