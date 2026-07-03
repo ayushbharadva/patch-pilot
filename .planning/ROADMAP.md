@@ -116,7 +116,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Memory graph view renders incidents, fixes, and component relationships as a navigable visual graph — visually proving Cognee builds a real knowledge graph, not just a search index
   4. (Stretch — cut in reverse order if time-boxed) Recall card shows a confidence score from search payload; memory health dashboard displays drift-state counts; incident timeline shows events chronologically; graph visualization supports click-to-explore nodes
 
-**Plans**: 1/6 plans executed
+**Plans**: 2/6 plans executed
 **UI hint**: yes
 
 **Wave 1**
@@ -125,7 +125,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 04-02-PLAN.md — Demo reset: Windows-safe snapshot-restore endpoint + modal reset button with animation (DEMO-01) [wave 2]
+- [x] 04-02-PLAN.md — Demo reset: Windows-safe snapshot-restore endpoint + modal reset button with animation (DEMO-01) [wave 2]
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -150,4 +150,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
 | 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
 | 3. Drift + Forget | 2/2 | Complete    | 2026-07-02 |
-| 4. Demo Loop + Stretch | 1/6 | In Progress|  |
+| 4. Demo Loop + Stretch | 2/6 | In Progress|  |

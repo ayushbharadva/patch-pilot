@@ -47,7 +47,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Demo & Reset
 
-- [ ] **DEMO-01**: User can reset / reseed memory (`prune_data()` + `prune_system()`) to a clean demo state
+- [x] **DEMO-01**: User can reset / reseed memory (`prune_data()` + `prune_system()`) to a clean demo state
 - [x] **DEMO-02**: Bundled seed datasets tell a clear before/after story — isolated entity names so forget visibly flips recall (mitigates Cognee #1023 cross-dataset leak)
 - [ ] **DEMO-03**: The full search → drift → forget → re-search loop completes in under 120 seconds
 
@@ -107,7 +107,7 @@ Deferred beyond the hackathon.
 | DRIFT-03 | Phase 3 | Complete |
 | FORGET-01 | Phase 3 | Complete |
 | FORGET-02 | Phase 3 | Complete |
-| DEMO-01 | Phase 4 | Pending |
+| DEMO-01 | Phase 4 | Complete |
 | DEMO-02 | Phase 1 | Complete |
 | DEMO-03 | Phase 4 | Pending |
 | PLAT-01 | Phase 1 | Complete |

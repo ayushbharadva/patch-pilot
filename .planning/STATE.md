@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 04
 current_phase_name: demo-loop-stretch
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-07-03T07:22:00.200Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-07-03T07:36:39.881Z"
 last_activity: 2026-07-03
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 16
-  completed_plans: 11
-  percent: 69
+  completed_plans: 12
+  percent: 75
 ---
 
 # Project State
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-02)
 ## Current Position
 
 Phase: 04 (demo-loop-stretch) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Next: Phase 4 (Demo Loop + Stretch) — not yet planned
 Status: Ready to execute
 Last activity: 2026-07-03 — Phase 04 execution started
@@ -66,6 +66,7 @@ Progress: [████████░░] 75% of milestone (3 of 4 phases)
 | Phase 03 P01 | 27min | 3 tasks | 8 files |
 | Phase 03 P02 | 12min | 2 tasks | 6 files |
 | Phase 04 P01 | 63min | 2 tasks | 4 files |
+| Phase 04 P02 | 12min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 03-02]: Executed exactly as planned -- no deviations. POST /forget's durable-dataset guard (regex+denylist before any Cognee call) and the frontend ForgetButton's two-step inline confirm both matched the plan's PATTERNS-derived code verbatim.
 - [Phase 04-01]: Reworded queue-backlog-incident.md to remove customer/billing-adjacent vocabulary after live testing showed it could win the incidents dataset's GRAPH_COMPLETION retrieval over the Stripe incident for the canonical query — Live cognify + flip testing (not just static grep gates) revealed a retrieval-relevance collision independent of the #1023 entity-isolation rule
 - [Phase 04-01]: Corrected the snapshot-content verify method to grep tar member bytes of databases/cognee_db for the dataset name, since Cognee 1.2.2 paths everything by dataset UUID never by human-readable name — The plan's literal tar-member-name check could never pass against the real on-disk layout
+- [Phase 04-02]: Restarted the running non-reloading uvicorn process after adding backend/reset.py -- a new router module is never picked up by a live process without a reload mechanism (confirmed via 404 before restart, {status:reset} after).
+- [Phase 04-02]: Full interactive browser click-through of the ResetButton modal (open/close/confirm animation/toast) could not be automated -- no chromium-cli/playwright tooling is installed in this Windows environment. Verified instead via tsc --noEmit, a structural grep check, and a static Chrome headless screenshot confirming no PostCSS crash (B-04). Flagged as human_judgment:true in 04-02-SUMMARY.md coverage for a human to click through once before the demo.
 
 ### Pending Todos
 
@@ -129,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-03T07:22:00.163Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-07-03T07:36:39.869Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

@@ -144,3 +144,15 @@ None — no external service configuration required. Note: the project's `uvicor
 ---
 *Phase: 04-demo-loop-stretch*
 *Completed: 2026-07-03*
+
+## Self-Check: PASSED
+
+- FOUND: backend/reset.py
+- FOUND: frontend/components/ui/dialog.tsx
+- FOUND: frontend/components/ResetButton.tsx
+- FOUND: .planning/phases/04-demo-loop-stretch/04-02-SUMMARY.md
+- FOUND: resetMemory() in frontend/lib/api.ts
+- FOUND: reset_router registered in backend/main.py
+- FOUND commit: a51dcfd (Task 1)
+- FOUND commit: 9914fe0 (Task 2)
+- FOUND commit: adaf2d8 (SUMMARY.md)
