@@ -56,10 +56,21 @@ def save() -> None:
 
 
 def restore() -> None:
-    """Extract the tarball back, replacing the live .patchpilot_memory/ tree."""
+    """Extract the tarball back, replacing the live .patchpilot_memory/ tree.
+
+    Raises FileNotFoundError (a normal Exception subclass) rather than
+    calling sys.exit() directly -- this function is called both from the
+    CLI (main(), below) and from backend/reset.py's POST /reset handler.
+    sys.exit() raises SystemExit, a BaseException that is NOT caught by
+    reset.py's `except Exception:` guard nor by asyncio's task machinery,
+    which would crash the entire running uvicorn worker (CR-01) instead of
+    returning a graceful D-24 error response. main() below translates this
+    back into a CLI-appropriate sys.exit(1).
+    """
     if not snapshot_exists():
-        print(f"No snapshot found at {SNAPSHOT_PATH}. Run --save first (after a successful --seed).")
-        sys.exit(1)
+        raise FileNotFoundError(
+            f"No snapshot found at {SNAPSHOT_PATH}. Run --save first (after a successful --seed)."
+        )
     if MEMORY_ROOT.exists():
         shutil.rmtree(MEMORY_ROOT)
     with tarfile.open(SNAPSHOT_PATH, "r") as tar:
@@ -74,10 +85,14 @@ def main() -> int:
     group.add_argument("--restore", action="store_true", help="Restore .patchpilot_memory/ from the tarball")
     args = parser.parse_args()
 
-    if args.save:
-        save()
-    else:
-        restore()
+    try:
+        if args.save:
+            save()
+        else:
+            restore()
+    except FileNotFoundError as exc:
+        print(exc)
+        return 1
     return 0
 
 

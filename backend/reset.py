@@ -96,6 +96,13 @@ async def reset_memory():
 
         snapshot_memory.restore()
         return {"status": "reset"}
-    except Exception:  # noqa: BLE001 - D-24: never leak raw exception text
+    except (Exception, SystemExit):  # noqa: BLE001 - D-24: never leak raw exception
+        # text. snapshot_memory.restore() now raises FileNotFoundError (a normal
+        # Exception) instead of calling sys.exit() directly (CR-01), but SystemExit
+        # is caught here too as defense-in-depth: SystemExit is a BaseException that
+        # asyncio's task machinery deliberately does NOT swallow, so any future
+        # CLI-style sys.exit() reintroduced anywhere in this call chain would
+        # otherwise kill the entire running uvicorn worker instead of degrading to
+        # this graceful error response.
         logger.exception("reset failed")
         return {"status": "error", "message": _MSG_ERROR}
