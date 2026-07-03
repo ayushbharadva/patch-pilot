@@ -178,15 +178,32 @@ def _pick_primary_result(results: list[dict], drift_states: dict[str, str] | Non
 def _flatten_and_truncate(results: list[dict], limit: int = EVIDENCE_LIMIT) -> list[dict]:
     """Flatten CHUNKS results (one list of chunk payloads per dataset) into
     at most `limit` evidence snippets, each with a short excerpt, the
-    retained full_text, and its source dataset (D-07/D-08)."""
+    retained full_text, and its source dataset (D-07/D-08).
+
+    STRETCH-01 (04-RESEARCH.md Pitfall 5): the CHUNKS call now passes
+    `verbose=True` to surface `ScoredResult.score` for the confidence badge,
+    which reshapes each per-dataset result from the flat `search_result`
+    list-of-dicts into `{"objects_result": [...], ...}` -- a list of
+    `ScoredResult`-shaped items exposing `.payload`/`.score`. This reads
+    `objects_result` when present, extracting each item's `payload["text"]`,
+    and FALLS BACK to the legacy `search_result` key when absent, so any
+    existing (non-verbose) caller keeps returning byte-identical output.
+    """
     flattened: list[dict] = []
     for result in results:
         source = result.get("dataset_name")
-        chunks = result.get("search_result") or []
+        objects = result.get("objects_result")
+        chunks = objects if objects is not None else (result.get("search_result") or [])
         if not isinstance(chunks, list):
             chunks = [chunks]
         for chunk in chunks:
-            text = chunk.get("text", "") if isinstance(chunk, dict) else str(chunk)
+            payload = getattr(chunk, "payload", None)
+            if payload is not None:
+                text = payload.get("text", "") if isinstance(payload, dict) else ""
+            elif isinstance(chunk, dict):
+                text = chunk.get("text", "")
+            else:
+                text = str(chunk)
             text = text.strip()
             if not text:
                 continue
@@ -195,6 +212,45 @@ def _flatten_and_truncate(results: list[dict], limit: int = EVIDENCE_LIMIT) -> l
             if len(flattened) >= limit:
                 return flattened
     return flattened
+
+
+def _confidence_from_results(results: list[dict]) -> float | None:
+    """Best-effort [0,1] confidence derived from the CHUNKS retriever's real
+    similarity score (STRETCH-01), read from the verbose `objects_result`
+    shape's `ScoredResult` items across every dataset searched.
+
+    Cognee's `ScoredResult.score` is a raw backend DISTANCE (cosine distance
+    for the built-in LanceDB adapter) where LOWER is better -- confirmed
+    against the installed
+    cognee/infrastructure/databases/vector/models/ScoredResult.py docstring
+    ("score (float): Raw backend distance score ... where a lower score
+    indicates a better match"). This takes the single best (lowest-distance)
+    score across all datasets' `objects_result` items and inverts it
+    (`1 - score`, clamped to [0, 1]) so higher = more confident, matching the
+    UI's "N% confidence" framing.
+
+    Returns None (never raises) when no scored objects are present or the
+    shape is unexpected -- confidence is a nice-to-have that must never fail
+    /search (mirrors the qa_id best-effort pattern below)."""
+    try:
+        best_score: float | None = None
+        for result in results:
+            objects = result.get("objects_result") or []
+            for item in objects:
+                score = getattr(item, "score", None)
+                if score is None and isinstance(item, dict):
+                    score = item.get("score")
+                if score is None:
+                    continue
+                score = float(score)
+                if best_score is None or score < best_score:
+                    best_score = score
+        if best_score is None:
+            return None
+        return max(0.0, min(1.0, 1.0 - best_score))
+    except Exception:  # noqa: BLE001 - best-effort, never fails /search
+        logger.warning("Could not extract confidence from search results", exc_info=True)
+        return None
 
 
 @router.post("/search")
@@ -231,6 +287,11 @@ async def search(request: SearchRequest):
             top_k=5,
             # No feedback_influence here — SearchType.CHUNKS has no such
             # parameter on its retriever path (Pitfall 3 / RESEARCH §7).
+            # STRETCH-01 (04-RESEARCH.md Pitfall 5): verbose=True is the only
+            # way to surface ScoredResult.score for the confidence badge —
+            # reshapes each per-dataset result to expose objects_result (see
+            # _flatten_and_truncate / _confidence_from_results above).
+            verbose=True,
         )
     except Exception:  # noqa: BLE001 - D-24: never leak raw exception text
         logger.exception("search failed for query=%r", query)
@@ -269,6 +330,12 @@ async def search(request: SearchRequest):
     except Exception:  # noqa: BLE001 - qa_id is best-effort; missing it must not fail the search
         logger.warning("Could not resolve qa_id for session=%s", session_id, exc_info=True)
 
+    # STRETCH-01 — real confidence derived from the CHUNKS retriever's own
+    # similarity score, attached as a flat top-level key like drift_state.
+    # Best-effort: _confidence_from_results never raises, yielding None on
+    # any parse issue rather than failing the search (T-04-12).
+    confidence = _confidence_from_results(evidence_results)
+
     return {
         "status": "ok",
         "root_cause": root_cause,
@@ -279,4 +346,5 @@ async def search(request: SearchRequest):
         # UI-SPEC Interaction Contract point 6 — the winning dataset's own
         # drift state, so DiagnosisCard's VersionTagBadge can wire healthState.
         "drift_state": drift_states.get(primary.get("dataset_name")) if primary else None,
+        "confidence": confidence,
     }
