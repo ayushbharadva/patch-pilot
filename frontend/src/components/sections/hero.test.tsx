@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Hero } from "@/components/sections/hero";
+import { Hero } from "@/components/sections/hero-3d";
 
 class IntersectionObserverStub implements IntersectionObserver {
 	readonly root: Element | null = null;

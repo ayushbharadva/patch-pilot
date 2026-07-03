@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DiagnosisPreview } from "@/components/sections/diagnosis-preview";
 import { DriftPreview } from "@/components/sections/drift-preview";
 import { FinalCta } from "@/components/sections/final-cta";
-import { Hero } from "@/components/sections/hero";
+import { Hero } from "@/components/sections/hero-3d";
 import { HowItWorks } from "@/components/sections/how-it-works";
 
 class IntersectionObserverStub implements IntersectionObserver {

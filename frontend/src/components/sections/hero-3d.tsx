@@ -85,7 +85,7 @@ export function Hero() {
             Launch PatchPilot
             <ArrowRight className="size-4" />
           </CtaButton>
-          <CtaButton href="/demo" variant="outline">
+          <CtaButton href="/#lifecycle" variant="outline">
             <Play className="size-4" />
             See the demo
           </CtaButton>

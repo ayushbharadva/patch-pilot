@@ -23,31 +23,31 @@ const STEPS: readonly LifecycleStep[] = [
     icon: Upload,
     title: 'Ingest',
     description:
-      'Feed tickets, postmortems, and changelogs in. PatchPilot links each incident to the fix and component it touched.',
+      'Feed tickets, chats, and release notes in. PatchPilot links the Stripe double-charge incident to its `dedup_sweeper` workaround and the Orders API.',
   },
   {
     icon: ScanSearch,
     title: 'Recall & diagnose',
     description:
-      'A new 401 storm lands. PatchPilot recalls the matching past incidents and proposes the root cause with confidence.',
+      'A new double-charge report lands. PatchPilot recalls INC-1042 and proposes the root cause: webhook retries duplicating order creation.',
   },
   {
     icon: Activity,
     title: 'Release & drift',
     description:
-      'Ship release 1.9 and PatchPilot flags which remembered workarounds are now aging or drifting, with a reason.',
+      'Ship release v1.9 with `idempotency_guard`. PatchPilot flags `workarounds_v1_8` as 🔴 Drifting, with a reason.',
   },
   {
     icon: Eraser,
     title: 'Forget',
     description:
-      'Retire the stale workaround so the outdated fix stops resurfacing in future diagnoses.',
+      'Retire `workarounds_v1_8` so the stale `dedup_sweeper` fix stops resurfacing in future diagnoses.',
   },
   {
     icon: RotateCcw,
     title: 'Re-search',
     description:
-      'Recall the same bug again and the answer has moved on — the new fix replaces the forgotten workaround.',
+      'Recall the same bug and the answer has moved on — `idempotency_guard` replaces the forgotten nightly sweep.',
   },
 ];
 

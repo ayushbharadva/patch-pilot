@@ -46,7 +46,7 @@ export default function NotFound() {
           )}
         >
           <Compass />
-          Open PatchPilot
+          See how it works
         </Link>
       </div>
     </div>

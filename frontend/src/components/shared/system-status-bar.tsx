@@ -4,18 +4,15 @@ import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 
 /**
- * A thin status bar showing live ticking system data artifacts:
- * - UTC timestamp updating every second
- * - Memory operations counter (slowly incrementing)
- * - Active datasets count
+ * A thin status bar showing the real tech stack PatchPilot is built on:
+ * - UTC timestamp updating every second (real clock)
+ * - Tech badges: Cognee (memory layer), Mistral (LLM), FastAPI (backend)
  * - Pulsing "live" indicator
  *
- * Creates the perception of a continuously running platform.
  * Respects prefers-reduced-motion (static values, no pulse).
  */
 export function SystemStatusBar() {
   const [time, setTime] = useState('--:--:--');
-  const [ops, setOps] = useState(1247);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -29,19 +26,10 @@ export function SystemStatusBar() {
       );
     }, 1000);
 
-    // Increment ops counter every 3-7s (simulated activity)
-    const opsInterval = setInterval(
-      () => {
-        setOps((prev) => prev + Math.floor(Math.random() * 3) + 1);
-      },
-      prefersReducedMotion ? 999999 : 4000,
-    );
-
     return () => {
       clearInterval(clockInterval);
-      clearInterval(opsInterval);
     };
-  }, [prefersReducedMotion]);
+  }, []);
 
   return (
     <div
@@ -63,11 +51,15 @@ export function SystemStatusBar() {
       <span>{time} UTC</span>
       <span className="hidden text-border sm:inline">|</span>
       <span className="hidden sm:inline">
-        <span className="text-primary">{ops.toLocaleString()}</span> ops
+        <span className="text-primary">Cognee</span>
       </span>
       <span className="hidden text-border md:inline">|</span>
       <span className="hidden md:inline">
-        <span className="text-accent-violet">3</span> datasets
+        <span className="text-accent-violet">Mistral</span>
+      </span>
+      <span className="hidden text-border lg:inline">|</span>
+      <span className="hidden lg:inline">
+        <span className="text-drift-stable">FastAPI</span>
       </span>
     </div>
   );

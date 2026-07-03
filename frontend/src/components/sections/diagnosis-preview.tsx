@@ -9,19 +9,19 @@ interface PriorIncident {
 
 const PRIOR_INCIDENTS: readonly PriorIncident[] = [
   {
-    id: 'AUTH-207',
+    id: 'INC-1042',
     summary:
-      'Clock-skew logout storm — access tokens rejected minutes after issue during a leap-second sync.',
+      'Stripe webhook retries caused the order handler to process `payment_intent.succeeded` twice, double-charging customers.',
   },
   {
-    id: 'AUTH-318',
+    id: 'INC-1042-ESC',
     summary:
-      'Refresh loop after the SSO migration left two token issuers signing with different TTLs.',
+      'Escalation: the nightly `dedup_sweeper` script refunded duplicates up to 24h later — reactive cleanup, not prevention.',
   },
   {
-    id: 'CHG-92',
+    id: 'REL-1.9',
     summary:
-      'Release 1.8 lowered token TTL to 5 minutes without extending the refresh grace window.',
+      'Release v1.9 adds `idempotency_guard` to the webhook handler, stating the v1.8 nightly sweep is now redundant.',
   },
 ];
 
@@ -50,13 +50,13 @@ export function DiagnosisPreview() {
               </span>
             </div>
             <h3 className="mt-3 font-heading text-xl font-semibold">
-              Widen the refresh grace window and pin one token issuer
+              Add an idempotency guard to the Stripe webhook handler
             </h3>
             <p className="mt-3 text-muted-foreground text-pretty">
-              Re-issue access tokens through a single signer and add a 60-second
-              overlap so a rotated refresh token is never validated against a
-              stale expiry. This resolved AUTH-207 and AUTH-318 without a
-              client-side retry hack.
+              Reject duplicate `payment_intent.succeeded` events by checking an
+              idempotency key before creating the order. This makes the nightly
+              `dedup_sweeper` cleanup redundant and prevents the double-charge
+              at the source.
             </p>
           </div>
 

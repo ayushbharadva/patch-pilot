@@ -19,27 +19,27 @@ type Phase = 0 | 1 | 2 | 3 | 4;
 const PHASES = [
   {
     label: 'Ingest',
-    subtitle: 'Feeding incidents into memory',
+    subtitle: 'Feeding the Stripe incident corpus into memory',
     color: '#22d3ee',
   },
   {
     label: 'Recall',
-    subtitle: 'Diagnosing from past evidence',
+    subtitle: "Diagnosing 'customers double-charged'",
     color: '#a78bfa',
   },
   {
     label: 'Drift',
-    subtitle: 'Flagging stale workarounds',
+    subtitle: 'workarounds_v1_8 flagged 🔴',
     color: '#fbbf24',
   },
   {
     label: 'Forget',
-    subtitle: 'Pruning outdated memory',
+    subtitle: 'Pruning workarounds_v1_8',
     color: '#f87171',
   },
   {
     label: 'Re-search',
-    subtitle: 'Confidence jumps to 96%',
+    subtitle: '`idempotency_guard` now surfaces · 96%',
     color: '#34d399',
   },
 ] as const;
@@ -52,8 +52,8 @@ const NODES = [
   { id: 'inc1', x: 200, y: 80, label: 'INC', color: '#fbbf24' },
   { id: 'inc2', x: 200, y: 150, label: 'INC', color: '#fbbf24' },
   { id: 'inc3', x: 200, y: 220, label: 'INC', color: '#fbbf24' },
-  { id: 'comp1', x: 320, y: 100, label: 'SVC', color: '#94a3b8' },
-  { id: 'comp2', x: 320, y: 200, label: 'API', color: '#94a3b8' },
+  { id: 'comp1', x: 320, y: 100, label: 'WEB', color: '#94a3b8' },
+  { id: 'comp2', x: 320, y: 200, label: 'ORD', color: '#94a3b8' },
 ];
 
 const EDGES = [

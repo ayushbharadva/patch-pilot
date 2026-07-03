@@ -17,10 +17,10 @@ interface SourceItem {
 
 const SOURCES: SourceItem[] = [
   { icon: Ticket, label: 'Tickets' },
-  { icon: FileText, label: 'Postmortems' },
+  { icon: MessageSquare, label: 'Chats' },
   { icon: GitBranch, label: 'Changelogs' },
-  { icon: MessageSquare, label: 'Chat logs' },
-  { icon: AlertTriangle, label: 'Incidents' },
+  { icon: FileText, label: 'Release notes' },
+  { icon: AlertTriangle, label: 'Postmortems' },
   { icon: BookOpen, label: 'Runbooks' },
 ];
 

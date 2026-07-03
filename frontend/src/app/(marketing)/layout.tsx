@@ -31,21 +31,6 @@ export default function MarketingLayout({
             {SITE_CONFIG.name}
           </Link>
 
-          <nav
-            aria-label="Primary"
-            className="hidden items-center gap-1 md:flex"
-          >
-            {SITE_CONFIG.dashboardNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
           <div className="flex items-center gap-3">
             <div className="hidden lg:block">
               <SystemStatusBar />
@@ -55,7 +40,7 @@ export default function MarketingLayout({
               href={SITE_CONFIG.launchHref}
               className={cn(buttonVariants({ size: 'lg' }), 'h-10 px-4')}
             >
-              Launch app
+              See how it works
             </Link>
           </div>
         </div>

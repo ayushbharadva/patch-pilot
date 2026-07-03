@@ -1,13 +1,4 @@
-import {
-  Activity,
-  Eraser,
-  House,
-  PlayCircle,
-  ScanSearch,
-  Upload,
-  Waypoints,
-  type LucideIcon,
-} from "lucide-react";
+import { House, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   label: string;
@@ -35,42 +26,6 @@ const nav = [
     icon: House,
     description: "PatchPilot overview and the living incident-memory story",
   },
-  {
-    label: "Ingest",
-    href: "/ingest",
-    icon: Upload,
-    description: "Feed incidents, postmortems, and fixes into memory",
-  },
-  {
-    label: "Recall",
-    href: "/recall",
-    icon: ScanSearch,
-    description: "Diagnose a new bug from the evidence of past incidents",
-  },
-  {
-    label: "Graph",
-    href: "/graph",
-    icon: Waypoints,
-    description: "Explore the memory graph of incidents, fixes, and components",
-  },
-  {
-    label: "Drift",
-    href: "/drift",
-    icon: Activity,
-    description: "Flag memories that are aging or drifting after a release",
-  },
-  {
-    label: "Forget",
-    href: "/forget",
-    icon: Eraser,
-    description: "Retire outdated workarounds and reset the demo",
-  },
-  {
-    label: "Demo",
-    href: "/demo",
-    icon: PlayCircle,
-    description: "Guided walkthrough of the full memory lifecycle",
-  },
 ] as const satisfies readonly NavItem[];
 
 export const SITE_CONFIG = {
@@ -78,12 +33,12 @@ export const SITE_CONFIG = {
   shortName: "PatchPilot",
   tagline: "Your incidents, remembered.",
   description:
-    "PatchPilot is a living incident-memory system built on Cognee that recalls past fixes, diagnoses new bugs from prior evidence, and forgets outdated workarounds.",
+    "PatchPilot is a living incident-memory system built on Cognee that recalls past fixes, diagnoses new bugs from prior evidence, and forgets outdated workarounds after each release.",
   url: "https://patchpilot.dev",
   ogImage: "/opengraph-image",
-  launchHref: "/ingest",
+  launchHref: "/#how-it-works",
   nav,
-  dashboardNav: nav.filter((item) => item.href !== "/"),
+  dashboardNav: [] as const,
 } as const satisfies SiteConfig;
 
 export const siteConfig = SITE_CONFIG;

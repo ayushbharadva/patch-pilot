@@ -25,7 +25,10 @@ export default function LandingPage() {
       </section>
 
       {/* Automated lifecycle demo — SVG-animated product showcase */}
-      <section className="relative z-10 bg-background mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+      <section
+        id="lifecycle"
+        className="relative z-10 bg-background mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
+      >
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold tracking-wide text-primary uppercase">
