@@ -1,6 +1,6 @@
 import { FileText, Lightbulb } from 'lucide-react';
 
-import { Reveal } from '@/components/shared/reveal';
+import { Reveal } from '@landing/components/shared/reveal';
 
 interface PriorIncident {
   id: string;

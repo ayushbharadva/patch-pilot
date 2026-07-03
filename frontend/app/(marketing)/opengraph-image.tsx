@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { SITE_CONFIG } from "@/config/site";
+import { SITE_CONFIG } from "@landing/config/site";
 
 export const alt = `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`;
 export const size = { width: 1200, height: 630 };

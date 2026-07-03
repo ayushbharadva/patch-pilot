@@ -3,9 +3,9 @@
 import { ArrowRight, Play } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
-import { CtaButton } from '@/components/shared/cta-button';
-import { Reveal } from '@/components/shared/reveal';
-import { SITE_CONFIG } from '@/config/site';
+import { CtaButton } from '@landing/components/shared/cta-button';
+import { Reveal } from '@landing/components/shared/reveal';
+import { SITE_CONFIG } from '@landing/config/site';
 
 export function FinalCta() {
   const shouldReduceMotion = useReducedMotion();

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import { fontVariables } from "@/lib/fonts";
-import { ThemeProvider } from "@/components/layouts/theme-provider";
-import { SITE_CONFIG } from "@/config/site";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import "@landing/globals.css";
+import { fontVariables } from "@landing/lib/fonts";
+import { ThemeProvider } from "@landing/components/layouts/theme-provider";
+import { SITE_CONFIG } from "@landing/config/site";
+import { Toaster } from "@landing/components/ui/sonner";
+import { TooltipProvider } from "@landing/components/ui/tooltip";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_CONFIG.url),

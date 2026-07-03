@@ -10,8 +10,8 @@ vi.mock("next/og", () => ({
   ImageResponse: class { },
 }));
 
-const { metadata } = await import("@/app/layout");
-const openGraphImage = await import("@/app/opengraph-image");
+const { metadata } = await import("./layout");
+const openGraphImage = await import("./opengraph-image");
 
 describe("root metadata", () => {
   it("defines a title with default and template", () => {

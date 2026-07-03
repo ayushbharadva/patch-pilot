@@ -1,12 +1,12 @@
-import { Hero } from '@/components/sections/hero-3d';
-import { HowItWorks } from '@/components/sections/how-it-works';
-import { LifecycleDemo } from '@/components/sections/lifecycle-demo';
-import { DiagnosisPreview } from '@/components/sections/diagnosis-preview';
-import { DriftPreview } from '@/components/sections/drift-preview';
-import { FinalCta } from '@/components/sections/final-cta';
-import { ActivityFeed } from '@/components/shared/activity-feed';
-import { SourceMarquee } from '@/components/shared/source-marquee';
-import { Reveal } from '@/components/shared/reveal';
+import { Hero } from '@landing/components/sections/hero-3d';
+import { HowItWorks } from '@landing/components/sections/how-it-works';
+import { LifecycleDemo } from '@landing/components/sections/lifecycle-demo';
+import { DiagnosisPreview } from '@landing/components/sections/diagnosis-preview';
+import { DriftPreview } from '@landing/components/sections/drift-preview';
+import { FinalCta } from '@landing/components/sections/final-cta';
+import { ActivityFeed } from '@landing/components/shared/activity-feed';
+import { SourceMarquee } from '@landing/components/shared/source-marquee';
+import { Reveal } from '@landing/components/shared/reveal';
 
 export default function LandingPage() {
   return (

@@ -5,8 +5,8 @@ import { useTheme } from "next-themes";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Moon, Sun } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@landing/components/ui/button";
+import { cn } from "@landing/lib/utils";
 
 const emptySubscribe = () => () => {};
 

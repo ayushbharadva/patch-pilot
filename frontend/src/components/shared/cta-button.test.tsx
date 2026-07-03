@@ -1,8 +1,8 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CtaButton } from "@/components/shared/cta-button";
-import { SITE_CONFIG } from "@/config/site";
+import { CtaButton } from "@landing/components/shared/cta-button";
+import { SITE_CONFIG } from "@landing/config/site";
 
 function stubMatchMedia(): void {
 	vi.stubGlobal("matchMedia", (query: string) => ({

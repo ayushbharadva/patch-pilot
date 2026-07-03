@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { SITE_CONFIG } from "@/config/site";
-import { cn } from "@/lib/utils";
+import { SITE_CONFIG } from "@landing/config/site";
+import { cn } from "@landing/lib/utils";
 
 interface WordmarkProps {
 	href?: string;

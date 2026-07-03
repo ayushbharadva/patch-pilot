@@ -1,11 +1,11 @@
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DiagnosisPreview } from "@/components/sections/diagnosis-preview";
-import { DriftPreview } from "@/components/sections/drift-preview";
-import { FinalCta } from "@/components/sections/final-cta";
-import { Hero } from "@/components/sections/hero-3d";
-import { HowItWorks } from "@/components/sections/how-it-works";
+import { DiagnosisPreview } from "@landing/components/sections/diagnosis-preview";
+import { DriftPreview } from "@landing/components/sections/drift-preview";
+import { FinalCta } from "@landing/components/sections/final-cta";
+import { Hero } from "@landing/components/sections/hero-3d";
+import { HowItWorks } from "@landing/components/sections/how-it-works";
 
 class IntersectionObserverStub implements IntersectionObserver {
 	readonly root: Element | null = null;

@@ -1,6 +1,6 @@
-import { Reveal } from '@/components/shared/reveal';
-import { cn } from '@/lib/utils';
-import type { DriftState } from '@/types/domain';
+import { Reveal } from '@landing/components/shared/reveal';
+import { cn } from '@landing/lib/utils';
+import type { DriftState } from '@landing/types/domain';
 
 interface DriftSample {
   state: DriftState;

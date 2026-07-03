@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { Compass, House } from 'lucide-react';
 
-import { Wordmark } from '@/components/layouts/wordmark';
-import { buttonVariants } from '@/components/ui/button';
-import { SITE_CONFIG } from '@/config/site';
-import { cn } from '@/lib/utils';
+import { Wordmark } from '@landing/components/layouts/wordmark';
+import { buttonVariants } from '@landing/components/ui/button';
+import { SITE_CONFIG } from '@landing/config/site';
+import { cn } from '@landing/lib/utils';
 
 export default function NotFound() {
   return (

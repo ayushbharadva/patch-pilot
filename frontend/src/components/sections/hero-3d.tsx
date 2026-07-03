@@ -4,13 +4,13 @@ import dynamic from 'next/dynamic';
 import { ArrowRight, Play } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
-import { CtaButton } from '@/components/shared/cta-button';
-import { SITE_CONFIG } from '@/config/site';
+import { CtaButton } from '@landing/components/shared/cta-button';
+import { SITE_CONFIG } from '@landing/config/site';
 
 // Lazy-load the scroll-driven 3D scene
 const ScrollScene3D = dynamic(
   () =>
-    import('@/components/three/scroll-scene-3d').then((m) => m.ScrollScene3D),
+    import('@landing/components/three/scroll-scene-3d').then((m) => m.ScrollScene3D),
   { ssr: false, loading: () => null },
 );
 

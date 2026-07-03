@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
-import { ThemeToggle } from '@/components/layouts/theme-toggle';
-import { SystemStatusBar } from '@/components/shared/system-status-bar';
-import { buttonVariants } from '@/components/ui/button';
-import { SITE_CONFIG } from '@/config/site';
-import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@landing/components/layouts/theme-toggle';
+import { SystemStatusBar } from '@landing/components/shared/system-status-bar';
+import { buttonVariants } from '@landing/components/ui/button';
+import { SITE_CONFIG } from '@landing/config/site';
+import { cn } from '@landing/lib/utils';
 
 export default function MarketingLayout({
   children,

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
-import { Reveal } from '@/components/shared/reveal';
+import { Reveal } from '@landing/components/shared/reveal';
 
 interface LifecycleStep {
   icon: LucideIcon;
