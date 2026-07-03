@@ -7,6 +7,7 @@ backend/cognee_config.py's module docstring): backend.cognee_config, then
 cognee, then backend.cognee_patches, before anything else touches Cognee.
 """
 
+import asyncio
 import logging
 
 from backend import cognee_config  # noqa: F401,E402  (must run before Cognee is touched)
@@ -55,13 +56,18 @@ async def list_datasets():
     # shared sibling helper rather than re-deriving it independently -- see
     # backend/drift.py's highest_live_version docstring.
     highest = highest_live_version(names)
-    result = []
-    for ds in display_datasets:
+
+    async def _doc_count(ds) -> int:
         try:
-            doc_count = len(await cognee.datasets.list_data(ds.id))
+            return len(await cognee.datasets.list_data(ds.id))
         except Exception:  # noqa: BLE001 - D-24: one bad dataset must not break the whole list
             logger.exception("could not resolve doc count for dataset=%s", ds.name)
-            doc_count = 0
+            return 0
+
+    doc_counts = await asyncio.gather(*(_doc_count(ds) for ds in display_datasets))
+
+    result = []
+    for ds, doc_count in zip(display_datasets, doc_counts):
         state = drift_states.get(ds.name, "stable")
         reason = None
         if state == "drifting" and highest:

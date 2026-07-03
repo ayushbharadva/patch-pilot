@@ -10,6 +10,7 @@ backend/cognee_config.py's module docstring): backend.cognee_config, then
 cognee, then backend.cognee_patches, before anything else touches Cognee.
 """
 
+import asyncio
 import logging
 import re
 
@@ -85,10 +86,16 @@ class SearchRequest(BaseModel):
     query: str = Field(..., min_length=1)
 
 
-async def _active_search_datasets() -> list[str]:
+async def _active_search_datasets(all_datasets: list | None = None) -> list[str]:
     """Durable incidents plus every currently-live workaround version that
     actually holds documents, discovered dynamically so this works both
     before and after a release upload (D-16).
+
+    `all_datasets` defaults to `None` (fetched internally via
+    `cognee.datasets.list_datasets()` when omitted) so existing no-arg
+    callers (backend/graph.py, backend/tests/test_search_helpers.py) keep
+    working unchanged. `search()` passes its own already-fetched list in to
+    avoid a second redundant `list_datasets()` round trip per request.
 
     NINTH DEVIATION (found live-testing the 02-04 checkpoint, Rule 1 bug):
     a dataset can exist and report a "completed" pipeline status while still
@@ -105,27 +112,33 @@ async def _active_search_datasets() -> list[str]:
     still reports DATASET_PROCESSING_COMPLETED, since there was nothing to
     process) -- doc_count is the only reliable signal, so this reuses the
     same list_data()-length check datasets_router.py already uses for the
-    dataset list's doc counts.
+    dataset list's doc counts. The per-dataset doc_count lookups themselves
+    run concurrently via `asyncio.gather()` (read-only Cognee calls, no
+    per-dataset error isolation needed here since the caller already wraps
+    the whole search() flow in its own try/except).
     """
-    all_datasets = await cognee.datasets.list_datasets()
+    if all_datasets is None:
+        all_datasets = await cognee.datasets.list_datasets()
     candidates = [d for d in all_datasets if d.name == INCIDENTS or d.name.startswith("workarounds_v")]
-    ready = []
-    for d in candidates:
-        doc_count = len(await cognee.datasets.list_data(d.id))
-        if doc_count > 0:
-            ready.append(d.name)
-    return ready
+    docs_lists = await asyncio.gather(*(cognee.datasets.list_data(d.id) for d in candidates))
+    return [d.name for d, docs in zip(candidates, docs_lists) if len(docs) > 0]
 
 
-async def _all_workaround_dataset_names() -> list[str]:
+async def _all_workaround_dataset_names(all_datasets: list | None = None) -> list[str]:
     """Every live `incidents`/`workarounds_v{N}` name, regardless of
     doc_count -- used ONLY for drift classification so `/search` and
     `/datasets` never disagree (CR-01). Unlike `_active_search_datasets()`,
     this intentionally includes a just-uploaded `workarounds_v{N+1}` that
     hasn't finished `cognify()` yet (doc_count still 0), since
     `compute_drift_states` needs to see it to correctly demote the prior
-    highest version to "drifting" during that transient window."""
-    all_datasets = await cognee.datasets.list_datasets()
+    highest version to "drifting" during that transient window.
+
+    `all_datasets` defaults to `None` (fetched internally when omitted) so
+    existing no-arg callers keep working unchanged; `search()` passes in the
+    same already-fetched list it gave `_active_search_datasets()` so a
+    single request never calls `list_datasets()` twice."""
+    if all_datasets is None:
+        all_datasets = await cognee.datasets.list_datasets()
     return [d.name for d in all_datasets if d.name == INCIDENTS or d.name.startswith("workarounds_v")]
 
 
@@ -262,7 +275,8 @@ async def search(request: SearchRequest):
     if not query:
         return {"status": "no_results"}
 
-    datasets = await _active_search_datasets()
+    all_datasets = await cognee.datasets.list_datasets()
+    datasets = await _active_search_datasets(all_datasets)
     if not datasets:
         # Nothing has finished ingesting yet (D-21) -- never hand an empty
         # dataset list to cognee.search(), which has no defined behavior
@@ -307,7 +321,7 @@ async def search(request: SearchRequest):
     # just-uploaded, still-cognifying workarounds_v{N+1} is invisible here
     # while GET /datasets already sees it, and the two endpoints disagree
     # about which dataset is drifting during that transient window.
-    all_names = await _all_workaround_dataset_names()
+    all_names = await _all_workaround_dataset_names(all_datasets)
     drift_states = compute_drift_states(all_names)
     primary = _pick_primary_result(root_cause_results, drift_states)
     evidence = _flatten_and_truncate(evidence_results, limit=EVIDENCE_LIMIT)
