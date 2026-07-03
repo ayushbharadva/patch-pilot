@@ -45,6 +45,7 @@ from backend.datasets_router import router as datasets_router  # noqa: E402
 from backend.feedback import router as feedback_router  # noqa: E402
 from backend.forget import router as forget_router  # noqa: E402
 from backend.ingest import router as ingest_router  # noqa: E402
+from backend.reset import router as reset_router  # noqa: E402
 from backend.search import router as search_router  # noqa: E402
 
 app = FastAPI()
@@ -108,3 +109,4 @@ app.include_router(ingest_router)
 app.include_router(feedback_router)
 app.include_router(datasets_router)
 app.include_router(forget_router)
+app.include_router(reset_router)
