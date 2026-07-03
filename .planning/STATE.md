@@ -6,14 +6,14 @@ current_phase: 04
 current_phase_name: demo-loop-stretch
 status: executing
 stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-07-03T08:55:54.438Z"
+last_updated: "2026-07-03T09:44:37.183Z"
 last_activity: 2026-07-03
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 14
   percent: 75
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-07-02)
 ## Current Position
 
 Phase: 04 (demo-loop-stretch) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Next: Phase 4 (Demo Loop + Stretch) — not yet planned
 Status: Ready to execute
 Last activity: 2026-07-03 — Phase 04 execution started
@@ -68,6 +68,7 @@ Progress: [████████░░] 75% of milestone (3 of 4 phases)
 | Phase 04 P01 | 63min | 2 tasks | 4 files |
 | Phase 04 P02 | 12min | 2 tasks | 6 files |
 | Phase 04 P03 | 35min | 3 tasks | 7 files |
+| Phase 04 P04 | 25min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,8 @@ Recent decisions affecting current work:
 - [Phase 04-02]: Full interactive browser click-through of the ResetButton modal (open/close/confirm animation/toast) could not be automated -- no chromium-cli/playwright tooling is installed in this Windows environment. Verified instead via tsc --noEmit, a structural grep check, and a static Chrome headless screenshot confirming no PostCSS crash (B-04). Flagged as human_judgment:true in 04-02-SUMMARY.md coverage for a human to click through once before the demo.
 - [Phase 04-03]: Verified GET /graph by invoking get_memory_graph() directly against live memory (read-only export) rather than HTTP — the running non-reload uvicorn had not loaded the new router and the auto-mode classifier declined to force-kill a backend not started this session. Direct call proved the real cognify graph: 174 nodes / 362 links, exact {id,label,group}+{source,target,label} shape, zero text/body fields (T-04-06). A backend restart is required before the Graph tab serves data over HTTP.
 - [Phase 04-03]: aggregate_multi_user_graphs imported via full internal path (cognee.modules.visualization.cognee_network_visualization), not top-level — the sanctioned path the public visualize_multi_user_graph wrapper uses; single-lined so the GRAPH_ROUTE_WIRED grep gate matches, kept inside the function body to preserve the config-before-cognee keystone.
+- [Phase 04-04]: backend/reset.py: cognee CACHING=true opens a separate cache.db SQLite handle via close_cache_engine() that reset must close before the snapshot filesystem swap, or shutil.rmtree() raises WinError 32.
+- [Phase 04-04]: scripts/time_demo_loop.py drives a live workarounds_v1_9 -> workarounds_v1_10 drift transition instead of v1_8 -> v1_9, since the enriched seed corpus already bakes v1_8's drift into the reset snapshot and POST /forget's CR-02 guard correctly blocks forgetting the current highest version.
 
 ### Pending Todos
 
@@ -135,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-03T08:54:51.917Z
+Last session: 2026-07-03T09:43:57.620Z
 Stopped at: Completed 04-02-PLAN.md
 Resume file: None

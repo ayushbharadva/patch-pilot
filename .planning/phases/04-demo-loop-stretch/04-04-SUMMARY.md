@@ -139,3 +139,11 @@ None — no external service configuration. Operational note: both dev servers (
 ---
 *Phase: 04-demo-loop-stretch*
 *Completed: 2026-07-03*
+
+## Self-Check: PASSED
+
+- FOUND: scripts/time_demo_loop.py
+- FOUND: .planning/phases/04-demo-loop-stretch/04-04-SUMMARY.md
+- FOUND commit: b979fc7 (fix — reset.py cache-engine fix)
+- FOUND commit: 8ac0bde (feat — Task 1 harness)
+- FOUND commit: 22f5ffe (docs — summary)
