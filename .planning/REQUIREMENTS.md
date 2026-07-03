@@ -28,7 +28,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 
 ### Memory Graph
 
-- [ ] **GRAPH-01**: User can view memory as a graph of incidents / fixes / components
+- [x] **GRAPH-01**: User can view memory as a graph of incidents / fixes / components
 
 ### Release Ingestion
 
@@ -61,7 +61,7 @@ Requirements for the hackathon submission. Each maps to a roadmap phase.
 - [ ] **STRETCH-01**: Recall recommendations display a confidence score (derived from `search()` payload scores)
 - [ ] **STRETCH-02**: Memory health dashboard shows counts / overview of memory states across the graph
 - [ ] **STRETCH-03**: Incident timeline shows incidents / releases chronologically
-- [ ] **STRETCH-04**: Richer interactive graph visualization beyond the basic memory graph
+- [x] **STRETCH-04**: Richer interactive graph visualization beyond the basic memory graph
 
 ## v2 Requirements
 
@@ -100,7 +100,7 @@ Deferred beyond the hackathon.
 | RECALL-03 | Phase 2 | Complete |
 | FEEDBACK-01 | Phase 2 | Pending |
 | FEEDBACK-02 | Phase 2 | Pending |
-| GRAPH-01 | Phase 4 | Pending |
+| GRAPH-01 | Phase 4 | Complete |
 | RELEASE-01 | Phase 2 | Complete |
 | DRIFT-01 | Phase 3 | Complete |
 | DRIFT-02 | Phase 3 | Complete |
@@ -115,7 +115,7 @@ Deferred beyond the hackathon.
 | STRETCH-01 | Phase 4 | Pending |
 | STRETCH-02 | Phase 4 | Pending |
 | STRETCH-03 | Phase 4 | Pending |
-| STRETCH-04 | Phase 4 | Pending |
+| STRETCH-04 | Phase 4 | Complete |
 
 **Coverage:**
 
