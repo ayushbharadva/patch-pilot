@@ -116,8 +116,29 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Memory graph view renders incidents, fixes, and component relationships as a navigable visual graph — visually proving Cognee builds a real knowledge graph, not just a search index
   4. (Stretch — cut in reverse order if time-boxed) Recall card shows a confidence score from search payload; memory health dashboard displays drift-state counts; incident timeline shows events chronologically; graph visualization supports click-to-explore nodes
 
-**Plans**: TBD
+**Plans**: 6 plans
 **UI hint**: yes
+
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Corpus enrichment (D-09) + fresh post-enrichment snapshot (B-03) — the data foundation for reset + graph [wave 1]
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 04-02-PLAN.md — Demo reset: Windows-safe snapshot-restore endpoint + modal reset button with animation (DEMO-01) [wave 2]
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 04-03-PLAN.md — Memory graph: GET /graph (real Cognee export) + 3D ForceGraph tab + click-to-explore (GRAPH-01, STRETCH-04) [wave 3]
+
+**Wave 4** *(GATE — blocked on Waves 2–3)*
+
+- [ ] 04-04-PLAN.md — 120-second loop timing verification; gates all stretch work (DEMO-03) [wave 4]
+
+**Wave 5** *(stretch — blocked on the Wave 4 gate; cut in reverse per D-10)*
+
+- [ ] 04-05-PLAN.md — STRETCH-01 confidence score (verbose CHUNKS + card badge) [wave 5]
+- [ ] 04-06-PLAN.md — STRETCH-02 health dashboard + STRETCH-03 incident timeline (timeline cut-first) [wave 5]
 
 ## Progress
 
@@ -129,4 +150,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 4/4 | Complete    | 2026-07-01 |
 | 2. Core Recall | 4/4 | Complete   | 2026-07-02 |
 | 3. Drift + Forget | 2/2 | Complete    | 2026-07-02 |
-| 4. Demo Loop + Stretch | 0/TBD | Not started | - |
+| 4. Demo Loop + Stretch | 0/6 | Planned | - |
