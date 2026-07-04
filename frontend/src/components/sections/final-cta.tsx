@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from 'motion/react';
 
 import { CtaButton } from '@landing/components/shared/cta-button';
 import { Reveal } from '@landing/components/shared/reveal';
-import { SITE_CONFIG } from '@landing/config/site';
 
 export function FinalCta() {
   const shouldReduceMotion = useReducedMotion();
@@ -54,11 +53,14 @@ export function FinalCta() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
-            <CtaButton href={SITE_CONFIG.appHref}>
-              Launch PatchPilot
+            <CtaButton href="/sign-up">
+              Get started free
               <ArrowRight className="size-4" />
             </CtaButton>
-            <CtaButton href="/#lifecycle" variant="outline">
+            <CtaButton href="/sign-in" variant="outline">
+              Sign in
+            </CtaButton>
+            <CtaButton href="/#lifecycle" variant="ghost">
               <Play className="size-4" />
               Watch the demo
             </CtaButton>

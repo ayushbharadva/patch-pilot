@@ -10,7 +10,9 @@ import { SITE_CONFIG } from '@landing/config/site';
 // Lazy-load the scroll-driven 3D scene
 const ScrollScene3D = dynamic(
   () =>
-    import('@landing/components/three/scroll-scene-3d').then((m) => m.ScrollScene3D),
+    import('@landing/components/three/scroll-scene-3d').then(
+      (m) => m.ScrollScene3D,
+    ),
   { ssr: false, loading: () => null },
 );
 
@@ -85,7 +87,10 @@ export function Hero() {
             Try Now
             <ArrowRight className="size-4" />
           </CtaButton>
-          <CtaButton href="/#lifecycle" variant="outline">
+          <CtaButton href="/sign-in" variant="outline">
+            Sign in
+          </CtaButton>
+          <CtaButton href="/#lifecycle" variant="ghost">
             <Play className="size-4" />
             See the demo
           </CtaButton>

@@ -1,34 +1,35 @@
-import type { Metadata } from "next";
-import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
-import "./globals.css";
-import { AuroraBackground } from "@/components/AuroraBackground";
-import { Providers } from "@/lib/providers";
-import { Toaster } from "@/components/ui/sonner";
+import type { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
+import { Space_Grotesk, Inter, IBM_Plex_Mono } from 'next/font/google';
+import './globals.css';
+import { AuroraBackground } from '@/components/AuroraBackground';
+import { Providers } from '@/lib/providers';
+import { Toaster } from '@/components/ui/sonner';
 
 // Locked typefaces (CLAUDE.md / PROJECT.md / 02-UI-SPEC.md "Typography"):
 // Space Grotesk (display/headings), Inter (body/UI), IBM Plex Mono
 // (technical strings). Weights are strictly 400/600 — no 300/500/700.
 const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "600"],
+  variable: '--font-space-grotesk',
+  subsets: ['latin'],
+  weight: ['400', '600'],
 });
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "600"],
+  variable: '--font-inter',
+  subsets: ['latin'],
+  weight: ['400', '600'],
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
-  subsets: ["latin"],
-  weight: ["400", "600"],
+  variable: '--font-ibm-plex-mono',
+  subsets: ['latin'],
+  weight: ['400', '600'],
 });
 
 export const metadata: Metadata = {
-  title: "PatchPilot",
-  description: "Every bug remembers its history.",
+  title: 'PatchPilot',
+  description: 'Every bug remembers its history.',
 };
 
 export default function RootLayout({
@@ -47,12 +48,14 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="relative min-h-full flex flex-col font-sans">
-        {/* Global aurora/particle atmosphere — fixed, behind all content,
-            pointer-events-none. Mounted once here so it persists across the
-            search/graph views. */}
-        <AuroraBackground />
-        <Providers>{children}</Providers>
-        <Toaster />
+        <ClerkProvider>
+          {/* Global aurora/particle atmosphere — fixed, behind all content,
+              pointer-events-none. Mounted once here so it persists across the
+              search/graph views. */}
+          <AuroraBackground />
+          <Providers>{children}</Providers>
+          <Toaster />
+        </ClerkProvider>
       </body>
     </html>
   );
