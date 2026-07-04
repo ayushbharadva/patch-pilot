@@ -4,8 +4,10 @@ const isProtectedRoute = createRouteMatcher(["/app(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
+    // Next.js 16 requires middleware redirect targets to be absolute URLs
+    // ("URL is malformed" otherwise) — resolve against the incoming request.
     await auth.protect({
-      unauthenticatedUrl: "/sign-in",
+      unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
     });
   }
 });
