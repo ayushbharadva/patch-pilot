@@ -17,6 +17,7 @@ import {
 import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
 import { FileStatusRow, type FileStatus } from "@/components/FileStatusRow";
 import {
+  ingestGithub,
   loadSampleData,
   pollIngestStatus,
   uploadFiles,
@@ -49,6 +50,8 @@ interface UploadRow {
   /** Retained for Retry (D-23) on real uploads; null for /sample/load rows
    * (no individual File object -- the seed docs live server-side). */
   file: File | null;
+  /** Retained for Retry on GitHub imports (GIT-01); null for file/sample rows. */
+  githubUrl: string | null;
 }
 
 let rowIdCounter = 0;
@@ -79,6 +82,8 @@ export function UploadPanel() {
   const [rows, setRows] = useState<UploadRow[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingSample, setIsLoadingSample] = useState(false);
+  const [githubUrl, setGithubUrl] = useState("");
+  const [isImportingGithub, setIsImportingGithub] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   // D-05/D-22: poll every "processing" row's dataset until it flips to
@@ -137,6 +142,7 @@ export function UploadPanel() {
       dataset: "",
       status: "uploading",
       file,
+      githubUrl: null,
     }));
     setRows((prev) => [...prev, ...uploadingRows]);
     const uploadingIds = new Set(uploadingRows.map((r) => r.id));
@@ -204,8 +210,42 @@ export function UploadPanel() {
       dataset,
       status: "processing",
       file: null,
+      githubUrl: null,
     }));
     setRows((prev) => [...prev, ...newRows]);
+    void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
+  }
+
+  async function submitGithub(url: string) {
+    setFormError(null);
+    if (!url.trim()) {
+      setFormError("Enter a GitHub repository or issue URL.");
+      return;
+    }
+
+    setIsImportingGithub(true);
+    const response = await ingestGithub(url.trim());
+    setIsImportingGithub(false);
+
+    if (response.status === "error") {
+      setFormError(response.message);
+      return;
+    }
+
+    toast.success(UPLOAD_ACCEPTED_TOAST);
+    // The backend fetched the issues synchronously, so each returned
+    // filename is already queued -- rows start at "processing" directly
+    // (no optimistic "uploading" phase like file uploads).
+    const newRows: UploadRow[] = response.files.map((filename) => ({
+      id: nextRowId(),
+      filename,
+      dataset: response.dataset,
+      status: "processing",
+      file: null,
+      githubUrl: url.trim(),
+    }));
+    setRows((prev) => [...prev, ...newRows]);
+    setGithubUrl("");
     void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
   }
 
@@ -213,6 +253,8 @@ export function UploadPanel() {
     setRows((prev) => prev.filter((r) => r.id !== row.id));
     if (row.file) {
       void submitUpload([row.file]);
+    } else if (row.githubUrl) {
+      void submitGithub(row.githubUrl);
     } else {
       void handleLoadSample();
     }
@@ -277,6 +319,32 @@ export function UploadPanel() {
               className="w-full font-sans text-sm text-foreground file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-secondary-foreground file:transition-colors hover:file:bg-secondary/70"
             />
           </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="font-sans text-sm font-semibold text-foreground">
+            Or import from GitHub
+          </label>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              value={githubUrl}
+              onChange={(event) => setGithubUrl(event.target.value)}
+              placeholder="https://github.com/owner/repo or .../issues/123"
+              aria-label="GitHub repository or issue URL"
+              className="h-10 flex-1"
+            />
+            <Button
+              type="button"
+              onClick={() => void submitGithub(githubUrl)}
+              disabled={isImportingGithub}
+              className="font-sans text-sm font-semibold"
+            >
+              {isImportingGithub ? "Importing…" : "Import Issues"}
+            </Button>
+          </div>
+          <p className="font-mono text-xs text-muted-foreground">
+            Fetches up to 10 issues as tickets into incidents
+          </p>
         </div>
 
         {formError ? (
