@@ -8,19 +8,21 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getMemoryGraph, type GraphNode } from "@/lib/api";
 
 /**
- * Neural-dark node palette (260703-vga fan-out): pulled directly from
- * DESIGN-SYSTEM.md's accent ramp + drift palette hex values (no new
- * arbitrary colors). `hashGroupColor` deterministically maps each Cognee
- * entity `group` string to one of these — same group always renders the
- * same hue, distinct groups fan out across the ramp, purely a presentation
- * concern layered on the existing `group` field (no new data fetched).
+ * Node palette: sRGB-hex equivalents of the landing-theme accent ramp +
+ * drift tokens in app/(mvp)/globals.css (three.js cannot parse oklch(), so
+ * these are precomputed hex conversions of the same OKLCH values — keep in
+ * sync if the tokens change). `hashGroupColor` deterministically maps each
+ * Cognee entity `group` string to one of these — same group always renders
+ * the same hue, distinct groups fan out across the ramp, purely a
+ * presentation concern layered on the existing `group` field (no new data
+ * fetched).
  */
 const NODE_COLOR_RAMP = [
-  "#6366f1", // accent-indigo
-  "#8b5cf6", // accent-violet
-  "#22d3ee", // accent-cyan
-  "#4ade80", // drift-stable
-  "#fbbf24", // drift-aging
+  "#0aa0d2", // accent-indigo slot — oklch(0.66 0.13 230)
+  "#927eec", // accent-violet — oklch(0.66 0.16 290)
+  "#28c2be", // accent-cyan — oklch(0.74 0.12 192)
+  "#43c07a", // drift-stable — oklch(0.72 0.15 155)
+  "#edb345", // drift-aging — oklch(0.8 0.14 80)
 ] as const;
 
 function hashGroupColor(key: string): string {
@@ -138,13 +140,13 @@ export function MemoryGraphView() {
                   }
                   nodeOpacity={0.95}
                   linkLabel="label"
-                  linkColor={() => "rgba(139, 92, 246, 0.55)"}
+                  linkColor={() => "rgba(146, 126, 236, 0.55)"}
                   linkOpacity={0.6}
                   linkWidth={1.1}
                   linkDirectionalParticles={1}
                   linkDirectionalParticleWidth={1.6}
-                  linkDirectionalParticleColor={() => "#22d3ee"}
-                  backgroundColor="rgba(7, 6, 15, 0.55)"
+                  linkDirectionalParticleColor={() => "#28c2be"}
+                  backgroundColor="rgba(10, 16, 23, 0.55)"
                   onNodeClick={(node: { id?: unknown; label?: unknown; group?: unknown }) =>
                     setSelected({
                       id: String(node.id ?? ""),

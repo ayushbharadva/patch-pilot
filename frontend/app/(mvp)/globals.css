@@ -70,105 +70,116 @@
 }
 
 /* ============================================================================
-   NEURAL DARK theme (260703-vga full redesign).
+   NEURAL MEMORY dark theme — token values ported verbatim from the landing
+   page's dark palette (src/globals.css `.dark` block, the second/winning
+   declaration) so /app and the marketing site read as one product.
 
    The app is dark-by-default: <html class="dark"> is hardcoded in layout.tsx
-   AND the neural-dark palette lives directly on :root, so the look is
-   guaranteed with zero JS/hydration dependency, while the `dark` class keeps
-   every component's `dark:` utility variants active.
+   AND the palette lives directly on :root, so the look is guaranteed with
+   zero JS/hydration dependency, while the `dark` class keeps every
+   component's `dark:` utility variants active.
 
-   Deep space-black canvas with a violet undertone; indigo->violet->cyan
-   accent ramp; luminous drift badges. Redefining these existing token *values*
-   (names unchanged) instantly re-skins every component that uses bg-background,
-   bg-card, text-foreground, border-border, bg-primary, the drift-* utilities,
-   etc. — no per-component edit required.
+   Deep slate-blue canvas; cyan primary; cyan->blue->violet accent ramp
+   matching the landing's gradient-start/mid/end. Redefining these existing
+   token *values* (names unchanged) instantly re-skins every component that
+   uses bg-background, bg-card, text-foreground, border-border, bg-primary,
+   the drift-* utilities, etc. — no per-component edit required.
    ========================================================================== */
 :root {
   color-scheme: dark;
 
-  --background: #07060f; /* deep space-black, faint violet undertone */
-  --foreground: #e8e9f5;
-  --card: #100e1c; /* elevated surface (solid fallback; .glass overrides the visual) */
-  --card-foreground: #e8e9f5;
-  --popover: #131126; /* opaque enough for dropdowns/selects to stay readable */
-  --popover-foreground: #e8e9f5;
-  --primary: #6366f1; /* indigo — CTAs, focus, active chip */
-  --primary-foreground: #ffffff;
-  --secondary: #171628;
-  --secondary-foreground: #e8e9f5;
-  --muted: #171628;
-  --muted-foreground: #9fa2c0; /* readable muted on dark */
-  --accent: #1c1a30; /* neutral hover state (distinct from brand accent ramp) */
-  --accent-foreground: #f2f2fb;
-  --destructive: #f87171;
-  --border: #272641; /* hairline (solid fallback; glass uses white/8 directly) */
-  --input: #272641;
-  --ring: #818cf8; /* bright indigo focus ring, visible on dark glass */
-  --chart-1: #6366f1;
-  --chart-2: #8b5cf6;
-  --chart-3: #22d3ee;
-  --chart-4: #a78bfa;
-  --chart-5: #38bdf8;
+  --background: oklch(0.17 0.018 255); /* deep slate-blue (landing dark bg) */
+  --foreground: oklch(0.95 0.006 220);
+  --card: oklch(0.21 0.02 255); /* elevated surface (solid fallback; .glass overrides the visual) */
+  --card-foreground: oklch(0.95 0.006 220);
+  --popover: oklch(0.21 0.02 255); /* opaque enough for dropdowns/selects to stay readable */
+  --popover-foreground: oklch(0.95 0.006 220);
+  --primary: oklch(0.74 0.12 192); /* electric cyan — CTAs, focus, active chip (landing CTA color) */
+  --primary-foreground: oklch(0.16 0.03 220);
+  --secondary: oklch(0.27 0.02 255);
+  --secondary-foreground: oklch(0.95 0.006 220);
+  --muted: oklch(0.26 0.018 255);
+  --muted-foreground: oklch(0.72 0.015 220); /* readable muted on dark */
+  --accent: oklch(0.31 0.04 200); /* neutral hover state (distinct from brand accent ramp) */
+  --accent-foreground: oklch(0.95 0.02 195);
+  --destructive: oklch(0.63 0.19 20);
+  --border: oklch(0.31 0.02 255 / 60%); /* hairline (glass uses foreground-mix directly) */
+  --input: oklch(0.31 0.02 255 / 50%);
+  --ring: oklch(0.74 0.12 192); /* cyan focus ring, visible on dark glass */
+  --chart-1: oklch(0.74 0.12 192);
+  --chart-2: oklch(0.66 0.13 230);
+  --chart-3: oklch(0.66 0.16 290);
+  --chart-4: oklch(0.72 0.15 155);
+  --chart-5: oklch(0.8 0.14 80);
   --radius: 0.75rem;
 
-  --sidebar: #07060f;
-  --sidebar-foreground: #e8e9f5;
-  --sidebar-primary: #6366f1;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1c1a30;
-  --sidebar-accent-foreground: #f2f2fb;
-  --sidebar-border: #272641;
-  --sidebar-ring: #818cf8;
+  --sidebar: oklch(0.19 0.019 255);
+  --sidebar-foreground: oklch(0.95 0.006 220);
+  --sidebar-primary: oklch(0.74 0.12 192);
+  --sidebar-primary-foreground: oklch(0.16 0.03 220);
+  --sidebar-accent: oklch(0.31 0.04 200);
+  --sidebar-accent-foreground: oklch(0.95 0.02 195);
+  --sidebar-border: oklch(0.31 0.02 255 / 60%);
+  --sidebar-ring: oklch(0.74 0.12 192);
 
-  /* Brand accent ramp + master gradient (reused by .text-gradient / .border-gradient). */
-  --accent-indigo: #6366f1;
-  --accent-violet: #8b5cf6;
-  --accent-cyan: #22d3ee;
-  --gradient-brand: linear-gradient(100deg, #818cf8 0%, #a78bfa 42%, #22d3ee 100%);
+  /* Brand accent ramp + master gradient (reused by .text-gradient /
+     .border-gradient). Variable names kept (components reference them);
+     values now map onto the landing ramp: indigo slot -> landing blue,
+     violet slot -> landing violet, cyan slot -> landing primary cyan. */
+  --accent-indigo: oklch(0.66 0.13 230);
+  --accent-violet: oklch(0.66 0.16 290);
+  --accent-cyan: oklch(0.74 0.12 192);
+  --gradient-brand: linear-gradient(
+    135deg,
+    oklch(0.72 0.13 192) 0%,
+    oklch(0.6 0.13 225) 50%,
+    oklch(0.52 0.15 290) 100%
+  ); /* identical stops/angle to the landing's dark .text-gradient */
 
-  /* Luminous drift palette (names unchanged so DatasetList/DiagnosisCard keep working). */
-  --color-drift-stable: #4ade80;
-  --color-drift-aging: #fbbf24;
-  --color-drift-drifting: #f87171;
+  /* Drift palette — landing dark drift tokens (names unchanged so
+     DatasetList/DiagnosisCard keep working). */
+  --color-drift-stable: oklch(0.72 0.15 155);
+  --color-drift-aging: oklch(0.8 0.14 80);
+  --color-drift-drifting: oklch(0.68 0.19 15);
 }
 
 /* Kept for robustness: <html> always carries `.dark`, so re-declare the same
    tokens here — identical to :root — in case anything toggles the class. */
 .dark {
-  --background: #07060f;
-  --foreground: #e8e9f5;
-  --card: #100e1c;
-  --card-foreground: #e8e9f5;
-  --popover: #131126;
-  --popover-foreground: #e8e9f5;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --secondary: #171628;
-  --secondary-foreground: #e8e9f5;
-  --muted: #171628;
-  --muted-foreground: #9fa2c0;
-  --accent: #1c1a30;
-  --accent-foreground: #f2f2fb;
-  --destructive: #f87171;
-  --border: #272641;
-  --input: #272641;
-  --ring: #818cf8;
-  --chart-1: #6366f1;
-  --chart-2: #8b5cf6;
-  --chart-3: #22d3ee;
-  --chart-4: #a78bfa;
-  --chart-5: #38bdf8;
-  --sidebar: #07060f;
-  --sidebar-foreground: #e8e9f5;
-  --sidebar-primary: #6366f1;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1c1a30;
-  --sidebar-accent-foreground: #f2f2fb;
-  --sidebar-border: #272641;
-  --sidebar-ring: #818cf8;
-  --color-drift-stable: #4ade80;
-  --color-drift-aging: #fbbf24;
-  --color-drift-drifting: #f87171;
+  --background: oklch(0.17 0.018 255);
+  --foreground: oklch(0.95 0.006 220);
+  --card: oklch(0.21 0.02 255);
+  --card-foreground: oklch(0.95 0.006 220);
+  --popover: oklch(0.21 0.02 255);
+  --popover-foreground: oklch(0.95 0.006 220);
+  --primary: oklch(0.74 0.12 192);
+  --primary-foreground: oklch(0.16 0.03 220);
+  --secondary: oklch(0.27 0.02 255);
+  --secondary-foreground: oklch(0.95 0.006 220);
+  --muted: oklch(0.26 0.018 255);
+  --muted-foreground: oklch(0.72 0.015 220);
+  --accent: oklch(0.31 0.04 200);
+  --accent-foreground: oklch(0.95 0.02 195);
+  --destructive: oklch(0.63 0.19 20);
+  --border: oklch(0.31 0.02 255 / 60%);
+  --input: oklch(0.31 0.02 255 / 50%);
+  --ring: oklch(0.74 0.12 192);
+  --chart-1: oklch(0.74 0.12 192);
+  --chart-2: oklch(0.66 0.13 230);
+  --chart-3: oklch(0.66 0.16 290);
+  --chart-4: oklch(0.72 0.15 155);
+  --chart-5: oklch(0.8 0.14 80);
+  --sidebar: oklch(0.19 0.019 255);
+  --sidebar-foreground: oklch(0.95 0.006 220);
+  --sidebar-primary: oklch(0.74 0.12 192);
+  --sidebar-primary-foreground: oklch(0.16 0.03 220);
+  --sidebar-accent: oklch(0.31 0.04 200);
+  --sidebar-accent-foreground: oklch(0.95 0.02 195);
+  --sidebar-border: oklch(0.31 0.02 255 / 60%);
+  --sidebar-ring: oklch(0.74 0.12 192);
+  --color-drift-stable: oklch(0.72 0.15 155);
+  --color-drift-aging: oklch(0.8 0.14 80);
+  --color-drift-drifting: oklch(0.68 0.19 15);
 }
 
 @layer base {
