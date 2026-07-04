@@ -1,6 +1,6 @@
 # PatchPilot Seed Corpus
 
-This directory is the **human-authored source of truth** for PatchPilot's demo memory. Cognee never authors content here — it only ingests (`add()` + `cognify()`) what these 8 Markdown documents already say, then builds the knowledge graph from them.
+This directory is the **human-authored source of truth** for PatchPilot's demo memory. Cognee never authors content here — it only ingests (`add()` + `cognify()`) what these 11 Markdown documents already say, then builds the knowledge graph from them.
 
 ## Folder -> Dataset mapping (INGEST-03 / PROJECT.md D-02)
 
@@ -34,7 +34,7 @@ For the forget flip to work cleanly, the v1.8 fix's identifying artifact names m
 
 Neither the durable `incidents` docs nor the opposite workaround dataset ever name the other dataset's fix artifact. Shared, stable vocabulary ("customers double-charged", "Stripe webhook retries") ties all three datasets together for recall, while the fix-specific proper nouns stay isolated per dataset. This isolation is what lets `forget(dataset="workarounds_v1_8")` cleanly remove the old answer without leaking into or breaking any other dataset (mitigates Cognee #1023's cross-dataset leak risk).
 
-## Document inventory (8 docs + this README)
+## Document inventory (11 docs + this README)
 
 | File | Dataset | Role |
 |------|---------|------|
@@ -42,9 +42,12 @@ Neither the durable `incidents` docs nor the opposite workaround dataset ever na
 | `incidents/stripe-double-charge-escalation.md` | `incidents` | Escalation chat — durable, shared vocab |
 | `incidents/login-timeout-incident.md` | `incidents` | Decoy — never mentions double-charging |
 | `incidents/api-latency-spike-incident.md` | `incidents` | Decoy — never mentions double-charging |
+| `incidents/queue-backlog-incident.md` | `incidents` | Decoy — never mentions double-charging |
 | `workarounds_v1_8/nightly-dedup-workaround.md` | `workarounds_v1_8` | Old fix — introduces `dedup_sweeper` / `nightly-dedup-cron` |
 | `workarounds_v1_8/dedup-runbook-thread.md` | `workarounds_v1_8` | Runbook thread reinforcing the same isolated entity |
+| `workarounds_v1_8/dedup-monitoring-note.md` | `workarounds_v1_8` | Monitoring note reinforcing the same isolated entity |
 | `workarounds_v1_9/release-v1.9.md` | `workarounds_v1_9` | Release note — introduces `idempotency_guard`, states v1.8 fix is redundant |
 | `workarounds_v1_9/idempotency-fix-thread.md` | `workarounds_v1_9` | Engineering thread confirming the new fix |
+| `workarounds_v1_9/idempotency-rollout-note.md` | `workarounds_v1_9` | Rollout note reinforcing the new fix |
 
 Any seed CLI or ingestion script must add + cognify each folder into its matching dataset name from `backend/datasets.py` — never mix folders into a single dataset, or the isolation this README documents is lost.
