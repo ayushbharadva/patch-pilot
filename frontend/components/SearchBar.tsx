@@ -71,7 +71,7 @@ export function SearchBar({ onPendingChange, onResponse, onQuery }: SearchBarPro
   }
 
   return (
-    <div className="sticky top-0 z-10 -mx-6 flex flex-col gap-3 border-b border-border/60 bg-background/70 px-6 pt-6 pb-4 backdrop-blur-xl supports-[backdrop-filter]:bg-background/50">
+    <div className="sticky top-14 z-10 -mx-6 flex flex-col gap-3 border-b border-border/60 bg-background/70 px-6 pt-6 pb-4 backdrop-blur-xl supports-[backdrop-filter]:bg-background/50">
       <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <div className="group relative flex-1">
           <Search
