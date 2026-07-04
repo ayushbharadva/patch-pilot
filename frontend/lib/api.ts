@@ -144,6 +144,36 @@ export async function uploadFiles({
 }
 
 /**
+ * POST {url} to `${API_BASE}/ingest/github` (GIT-01) -- fetches GitHub
+ * issue(s) server-side and ingests them as tickets. The response reuses
+ * IngestResponse exactly (same {status, dataset, files} accepted shape as
+ * POST /ingest), so callers share the status-polling + row-rendering path.
+ */
+export async function ingestGithub(url: string): Promise<IngestResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/ingest/github`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Couldn't fetch from GitHub. Please try again.",
+      };
+    }
+
+    return (await res.json()) as IngestResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Couldn't fetch from GitHub. Please try again.",
+    };
+  }
+}
+
+/**
  * GET `${API_BASE}/ingest/status?dataset=...` (D-05/D-22 polling). Network
  * failures resolve to "processing" rather than throwing, so a transient
  * hiccup doesn't flip a row to Failed on its own.
