@@ -1,0 +1,54 @@
+"use client";
+
+import { useSearchSession, type LifecycleOp } from "@/lib/search-session";
+import { cn } from "@/lib/utils";
+
+const NODES: { op: LifecycleOp; label: string }[] = [
+  { op: "remember", label: "remember" },
+  { op: "recall", label: "recall" },
+  { op: "improve", label: "improve" },
+  { op: "forget", label: "forget" },
+];
+
+/**
+ * Topbar lifecycle strip (depth kit): remember → recall → improve → forget,
+ * one node per Cognee memory-lifecycle verb, mono labels with a connecting
+ * line. A node lights the first time its op fires at least once
+ * (`stats[op] > 0`) and stays lit for the rest of the session — a running
+ * visual proof that every memory verb has actually been exercised.
+ */
+export function LifecycleStrip({ className }: { className?: string }) {
+  const { stats } = useSearchSession();
+
+  return (
+    <div className={cn("items-center gap-1.5 font-mono text-xs", className)}>
+      {NODES.map(({ op, label }, index) => {
+        const lit = stats[op] > 0;
+        return (
+          <div key={op} className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 tracking-wide uppercase transition-colors",
+                lit
+                  ? "glow-soft animate-rise-in bg-foreground/[0.08] text-accent-cyan"
+                  : "bg-foreground/10 text-muted-foreground",
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "size-1.5 rounded-full",
+                  lit ? "bg-accent-cyan" : "bg-foreground/30",
+                )}
+              />
+              {label}
+            </span>
+            {index < NODES.length - 1 ? (
+              <span aria-hidden="true" className="h-px w-4 bg-foreground/15" />
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}

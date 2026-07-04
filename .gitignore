@@ -1,0 +1,18 @@
+# Secrets
+.env
+.claude
+# Cognee persistent memory (binary, machine-specific, rebuildable via seed)
+.patchpilot_memory/
+
+# Python virtual environment
+.venv/
+
+# Python bytecode/cache
+__pycache__/
+*.pyc
+
+# Snapshot tarballs (reseed artifacts)
+*.snapshot.tar
+
+# Editor/OS cruft
+.DS_Store
