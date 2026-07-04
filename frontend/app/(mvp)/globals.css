@@ -62,6 +62,13 @@
   --color-accent-violet: var(--accent-violet);
   --color-accent-cyan: var(--accent-cyan);
 
+  /* Landing gradient stop tokens — registered so the shared Wordmark's
+     from-gradient-start/via-gradient-mid/to-gradient-end utilities work
+     identically in both worlds. */
+  --color-gradient-start: var(--gradient-start);
+  --color-gradient-mid: var(--gradient-mid);
+  --color-gradient-end: var(--gradient-end);
+
   /* Drift-badge palette (03-UI-SPEC.md) -- registers the :root values below so
      Tailwind v4 generates bg-drift-, text-drift-, and border-drift- utilities. */
   --color-drift-stable: var(--color-drift-stable);
@@ -143,6 +150,9 @@
   /* Depth shadow for .glass surfaces — soft in light, deep in dark. */
   --shadow-depth: rgba(15, 23, 42, 0.14);
   --shadow-depth-strong: rgba(15, 23, 42, 0.18);
+
+  /* Brand-mark halo (landing token). */
+  --glow: oklch(0.56 0.12 195 / 30%);
 }
 
 /* Landing dark palette — active when next-themes sets `dark` on <html>
@@ -201,6 +211,8 @@
 
   --shadow-depth: rgba(0, 0, 0, 0.85);
   --shadow-depth-strong: rgba(0, 0, 0, 0.9);
+
+  --glow: oklch(0.74 0.12 192 / 45%);
 }
 
 @layer base {

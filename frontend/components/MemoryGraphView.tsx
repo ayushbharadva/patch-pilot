@@ -5,7 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 
+import { Share2 } from "lucide-react";
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/EmptyState";
 import { getMemoryGraph, type GraphNode } from "@/lib/api";
 
 /**
@@ -266,10 +269,11 @@ export function MemoryGraphView() {
             )}
           </>
         ) : (
-          <p className="font-sans text-sm text-muted-foreground">
-            No memory graph yet. Load sample data or upload incidents to build
-            the graph.
-          </p>
+          <EmptyState
+            icon={Share2}
+            title="No memory graph yet"
+            hint="Load sample data or upload incidents to build the graph."
+          />
         )}
       </CardContent>
     </Card>

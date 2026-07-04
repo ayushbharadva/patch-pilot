@@ -1,9 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { History } from "lucide-react";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
+import { EmptyState } from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
 import { type DatasetInfo, type DriftState, listDatasets } from "@/lib/api";
 import { DRIFT_LABEL, WORKAROUNDS_VERSION_RE } from "@/lib/version";
@@ -127,9 +129,11 @@ export function IncidentTimeline() {
             );
           })
         ) : (
-          <p className="font-sans text-sm text-muted-foreground">
-            No incidents or releases yet. Upload files or load sample data to get started.
-          </p>
+          <EmptyState
+            icon={History}
+            title="No incidents or releases yet"
+            hint="Upload files or load sample data to get started."
+          />
         )}
       </CardContent>
     </Card>

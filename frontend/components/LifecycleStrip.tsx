@@ -3,11 +3,31 @@
 import { useSearchSession, type LifecycleOp } from "@/lib/search-session";
 import { cn } from "@/lib/utils";
 
-const NODES: { op: LifecycleOp; label: string }[] = [
-  { op: "remember", label: "remember" },
-  { op: "recall", label: "recall" },
-  { op: "improve", label: "improve" },
-  { op: "forget", label: "forget" },
+const NODES: { op: LifecycleOp; label: string; description: string }[] = [
+  {
+    op: "remember",
+    label: "remember",
+    description:
+      "Remember — ingest new memory: file uploads, GitHub issue imports, release notes (cognee.add + cognify).",
+  },
+  {
+    op: "recall",
+    label: "recall",
+    description:
+      "Recall — search prior incidents for an evidence-backed diagnosis (cognee.search).",
+  },
+  {
+    op: "improve",
+    label: "improve",
+    description:
+      "Improve — accepting a fix reinforces its source dataset (cognee.improve).",
+  },
+  {
+    op: "forget",
+    label: "forget",
+    description:
+      "Forget — surgically remove a drifting workaround dataset (cognee.forget).",
+  },
 ];
 
 /**
@@ -22,11 +42,12 @@ export function LifecycleStrip({ className }: { className?: string }) {
 
   return (
     <div className={cn("items-center gap-1.5 font-mono text-xs", className)}>
-      {NODES.map(({ op, label }, index) => {
+      {NODES.map(({ op, label, description }, index) => {
         const lit = stats[op] > 0;
         return (
           <div key={op} className="flex items-center gap-1.5">
             <span
+              title={description}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 tracking-wide uppercase transition-colors",
                 lit

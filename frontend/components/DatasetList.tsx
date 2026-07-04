@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Database, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
 import { type DatasetInfo, type DriftState, forgetDataset, listDatasets } from "@/lib/api";
 
@@ -198,9 +199,11 @@ export function DatasetList({ onForgotten }: { onForgotten?: () => void }) {
             <DatasetRow key={dataset.name} dataset={dataset} onForgotten={onForgotten} />
           ))
         ) : (
-          <p className="font-sans text-sm text-muted-foreground">
-            No datasets yet. Upload files or load sample data to get started.
-          </p>
+          <EmptyState
+            icon={Database}
+            title="No datasets yet"
+            hint="Upload files, import GitHub issues, or load sample data to get started."
+          />
         )}
       </CardContent>
     </Card>

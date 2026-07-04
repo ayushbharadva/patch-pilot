@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Database, History, Menu, Search, Share2, X } from "lucide-react";
 
+import { LogoMark } from "@landing/components/layouts/wordmark";
 import { LifecycleStrip } from "@/components/LifecycleStrip";
 import { ResetButton } from "@/components/ResetButton";
 import { SidebarUserCard } from "@/components/SidebarUserCard";
@@ -20,11 +21,21 @@ const NAV = [
   { href: "/app/activity", label: "Activity", icon: History },
 ] as const;
 
+/** Brand lockup — same SVG memory-graph mark + gradient tile as the landing
+ * header (shared LogoMark), so the logo is identical across both worlds. */
 function Wordmark() {
   return (
-    <span className="font-display text-lg font-semibold tracking-tight text-gradient">
-      PatchPilot
-    </span>
+    <Link
+      href="/app"
+      className="group inline-flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      <span className="flex size-8 items-center justify-center rounded-xl bg-linear-to-br from-gradient-start via-gradient-mid to-gradient-end text-primary-foreground shadow-[0_0_20px_-4px_var(--glow)] transition-transform duration-200 group-hover:scale-105">
+        <LogoMark className="size-4.5" />
+      </span>
+      <span className="font-display text-lg font-semibold tracking-tight text-gradient">
+        PatchPilot
+      </span>
+    </Link>
   );
 }
 
@@ -164,6 +175,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             <ResetButton onReset={resetSession} />
           </div>
         </header>
+
+        {/* Compact lifecycle strip for phones — the topbar center slot is
+            hidden below md, so surface the four-verb proof here instead. */}
+        <div className="glass-strong flex justify-center overflow-x-auto border-b border-border/60 px-4 py-2 md:hidden">
+          <LifecycleStrip className="flex" />
+        </div>
 
         <div className="flex-1">{children}</div>
       </div>

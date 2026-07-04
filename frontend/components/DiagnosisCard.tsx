@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, SearchX } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { SearchProgress } from "@/components/SearchProgress";
 import { acceptFeedback, type EvidenceSnippet, type SearchResponse } from "@/lib/api";
 import { versionTagFromDataset } from "@/lib/version";
@@ -332,9 +333,11 @@ export function DiagnosisCard({
     return (
       <Card className={`${CARD_SPACING} animate-rise-in`}>
         <CardContent>
-          <p className="font-sans text-base text-muted-foreground">
-            No prior incidents found for this query
-          </p>
+          <EmptyState
+            icon={SearchX}
+            title="No prior incidents found for this query"
+            hint="Try different words, or grow the memory by importing GitHub issues or uploading tickets."
+          />
         </CardContent>
       </Card>
     );
