@@ -434,11 +434,14 @@ export async function listDatasets(): Promise<DatasetInfo[]> {
  * chunk text ever crosses the wire.
  */
 
-/** One graph node — id/label/group only (backend trims everything else). */
+/** One graph node — id/label/group + owning dataset and its drift state
+ * (GRAPH-02; backend trims everything else). */
 export interface GraphNode {
   id: string;
   label: string;
   group: string;
+  dataset: string;
+  drift_state: DriftState;
 }
 
 /** One graph link — source/target/label only. */

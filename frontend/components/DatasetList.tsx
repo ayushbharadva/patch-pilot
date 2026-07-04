@@ -57,6 +57,9 @@ function ForgetButton({
 
     if (result.status === "forgotten") {
       await queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
+      // GRAPH-02: the forgotten dataset's nodes are gone — refetch the 3D
+      // graph so its red (drifting) cluster visibly disappears.
+      await queryClient.invalidateQueries({ queryKey: ["graph"] });
       toast.success("Forgotten — updating results…");
       onForgotten?.();
     } else {

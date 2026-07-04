@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 
@@ -8,31 +8,41 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getMemoryGraph, type GraphNode } from "@/lib/api";
 
 /**
- * Node palette: sRGB-hex equivalents of the landing-theme accent ramp +
- * drift tokens in app/(mvp)/globals.css (three.js cannot parse oklch(), so
- * these are precomputed hex conversions of the same OKLCH values — keep in
- * sync if the tokens change). `hashGroupColor` deterministically maps each
- * Cognee entity `group` string to one of these — same group always renders
- * the same hue, distinct groups fan out across the ramp, purely a
- * presentation concern layered on the existing `group` field (no new data
- * fetched).
+ * GRAPH-02: node color now MEANS something — it encodes the drift state of
+ * the node's owning dataset, using the same 🟢/🟡/🔴 language as
+ * DatasetList/HealthDashboard, so forgetting a drifting dataset visibly
+ * removes the red cluster. Hexes are precomputed sRGB equivalents of the
+ * drift tokens in app/(mvp)/globals.css (three.js cannot parse oklch() —
+ * keep in sync if the tokens change). The durable `incidents` dataset gets
+ * the accent cyan so ground truth reads distinctly from versioned
+ * workarounds.
  */
-const NODE_COLOR_RAMP = [
-  "#0aa0d2", // accent-indigo slot — oklch(0.66 0.13 230)
-  "#927eec", // accent-violet — oklch(0.66 0.16 290)
-  "#28c2be", // accent-cyan — oklch(0.74 0.12 192)
-  "#43c07a", // drift-stable — oklch(0.72 0.15 155)
-  "#edb345", // drift-aging — oklch(0.8 0.14 80)
+const DRIFT_NODE_COLORS: Record<string, string> = {
+  stable: "#43c07a", // drift-stable — oklch(0.72 0.15 155)
+  aging: "#edb345", // drift-aging — oklch(0.8 0.14 80)
+  drifting: "#e9555a", // drift-drifting — oklch(0.68 0.19 15)
+};
+const INCIDENTS_NODE_COLOR = "#28c2be"; // accent-cyan — oklch(0.74 0.12 192)
+const FALLBACK_NODE_COLOR = "#927eec"; // accent-violet — oklch(0.66 0.16 290)
+
+function nodeColorFor(node: Pick<GraphNode, "dataset" | "drift_state">): string {
+  if (node.dataset === "incidents") return INCIDENTS_NODE_COLOR;
+  return DRIFT_NODE_COLORS[node.drift_state] ?? FALLBACK_NODE_COLOR;
+}
+
+/** Legend chips mirroring DatasetList's color+label pairing (color is never
+ * the sole signal — a11y). */
+const LEGEND = [
+  { label: "Incidents (durable)", color: INCIDENTS_NODE_COLOR },
+  { label: "🟢 Stable", color: DRIFT_NODE_COLORS.stable },
+  { label: "🟡 Aging", color: DRIFT_NODE_COLORS.aging },
+  { label: "🔴 Drifting", color: DRIFT_NODE_COLORS.drifting },
 ] as const;
 
-function hashGroupColor(key: string): string {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash << 5) - hash + key.charCodeAt(i);
-    hash |= 0;
-  }
-  return NODE_COLOR_RAMP[Math.abs(hash) % NODE_COLOR_RAMP.length];
-}
+/** Render cap — beyond this a Cognee graph becomes an illegible hairball and
+ * the force sim burns frames. Nodes keep backend order; links are filtered
+ * to surviving endpoints. */
+const MAX_RENDERED_NODES = 300;
 
 /**
  * Client-only 3D memory graph (GRAPH-01, D-06/D-07/D-08 + STRETCH-04
@@ -79,6 +89,19 @@ export function MemoryGraphView() {
   // STRETCH-04 click-to-explore: the last node the operator clicked.
   const [selected, setSelected] = useState<GraphNode | null>(null);
 
+  // GRAPH-02 render cap: memoized so the sliced arrays keep a stable identity
+  // across re-renders (react-force-graph re-heats the sim on new graphData).
+  const renderData = useMemo(() => {
+    if (!data) return null;
+    if (data.nodes.length <= MAX_RENDERED_NODES) {
+      return { nodes: data.nodes, links: data.links, total: data.nodes.length };
+    }
+    const nodes = data.nodes.slice(0, MAX_RENDERED_NODES);
+    const kept = new Set(nodes.map((n) => n.id));
+    const links = data.links.filter((l) => kept.has(l.source) && kept.has(l.target));
+    return { nodes, links, total: data.nodes.length };
+  }, [data]);
+
   // react-force-graph defaults to window dimensions; measure the container
   // instead so the canvas fits the card width and resizes with it.
   const [width, setWidth] = useState(0);
@@ -120,8 +143,26 @@ export function MemoryGraphView() {
           <p className="font-sans text-sm font-semibold text-destructive">
             Could not load memory graph. Please try again.
           </p>
-        ) : data && data.nodes.length > 0 ? (
+        ) : renderData && renderData.nodes.length > 0 ? (
           <>
+            <div
+              className="flex flex-wrap items-center gap-x-4 gap-y-1"
+              aria-label="Graph color legend"
+            >
+              {LEGEND.map((entry) => (
+                <span
+                  key={entry.label}
+                  className="flex items-center gap-1.5 font-sans text-xs text-muted-foreground"
+                >
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: entry.color }}
+                    aria-hidden="true"
+                  />
+                  {entry.label}
+                </span>
+              ))}
+            </div>
             <div
               ref={setContainer}
               className="glow-primary relative overflow-hidden rounded-2xl border border-accent-indigo/25 bg-background/60"
@@ -129,15 +170,12 @@ export function MemoryGraphView() {
             >
               {width > 0 ? (
                 <ForceGraph3D
-                  graphData={data}
+                  graphData={renderData}
                   width={width}
                   height={GRAPH_HEIGHT}
+                  cooldownTicks={200}
                   nodeLabel="label"
-                  nodeColor={(node) =>
-                    hashGroupColor(
-                      String((node as { group?: unknown }).group ?? "unknown"),
-                    )
-                  }
+                  nodeColor={(node) => nodeColorFor(node as GraphNode)}
                   nodeOpacity={0.95}
                   linkLabel="label"
                   linkColor={() => "rgba(146, 126, 236, 0.55)"}
@@ -147,13 +185,18 @@ export function MemoryGraphView() {
                   linkDirectionalParticleWidth={1.6}
                   linkDirectionalParticleColor={() => "#28c2be"}
                   backgroundColor="rgba(10, 16, 23, 0.55)"
-                  onNodeClick={(node: { id?: unknown; label?: unknown; group?: unknown }) =>
+                  onNodeClick={(node) => {
+                    const n = node as Partial<GraphNode> & {
+                      id?: string | number;
+                    };
                     setSelected({
-                      id: String(node.id ?? ""),
-                      label: String(node.label ?? node.id ?? ""),
-                      group: String(node.group ?? "unknown"),
-                    })
-                  }
+                      id: String(n.id ?? ""),
+                      label: String(n.label ?? n.id ?? ""),
+                      group: String(n.group ?? "unknown"),
+                      dataset: String(n.dataset ?? ""),
+                      drift_state: n.drift_state ?? "stable",
+                    });
+                  }}
                 />
               ) : null}
             </div>
@@ -162,7 +205,7 @@ export function MemoryGraphView() {
                 <div className="flex items-center gap-2">
                   <span
                     className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: hashGroupColor(selected.group) }}
+                    style={{ backgroundColor: nodeColorFor(selected) }}
                     aria-hidden="true"
                   />
                   <span className="font-sans text-sm font-semibold text-foreground">
@@ -170,12 +213,15 @@ export function MemoryGraphView() {
                   </span>
                 </div>
                 <span className="font-mono text-xs text-muted-foreground">
-                  {selected.group} · {selected.id}
+                  {selected.group} · {selected.dataset || "unknown dataset"} ·{" "}
+                  {selected.drift_state}
                 </span>
               </div>
             ) : (
               <p className="font-mono text-xs tracking-wide text-accent-cyan/80">
-                {data.nodes.length} nodes · {data.links.length} links
+                {renderData.total > renderData.nodes.length
+                  ? `Showing ${renderData.nodes.length} of ${renderData.total} nodes · ${renderData.links.length} links`
+                  : `${renderData.nodes.length} nodes · ${renderData.links.length} links`}
               </p>
             )}
           </>
