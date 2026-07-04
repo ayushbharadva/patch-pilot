@@ -143,6 +143,37 @@ export async function uploadFiles({
   }
 }
 
+/** One repo row from GET /github/repos (GIT-02 repo picker). */
+export interface GithubRepo {
+  full_name: string;
+  description: string;
+  open_issues: number;
+  pushed_at: string | null;
+}
+
+export type GithubReposResponse =
+  | { status: "ok"; repos: GithubRepo[] }
+  | { status: "error"; message: string };
+
+/**
+ * GET `${API_BASE}/github/repos?username=...` (GIT-02) -- lists a user's
+ * public repos for the in-app picker. Network/parse failures normalize to
+ * the `error` variant (D-24), same convention as every other call here.
+ */
+export async function getGithubRepos(username: string): Promise<GithubReposResponse> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/github/repos?username=${encodeURIComponent(username)}`,
+    );
+    if (!res.ok) {
+      return { status: "error", message: "Couldn't load repositories. Please try again." };
+    }
+    return (await res.json()) as GithubReposResponse;
+  } catch {
+    return { status: "error", message: "Couldn't load repositories. Please try again." };
+  }
+}
+
 /**
  * POST {url} to `${API_BASE}/ingest/github` (GIT-01) -- fetches GitHub
  * issue(s) server-side and ingests them as tickets. The response reuses

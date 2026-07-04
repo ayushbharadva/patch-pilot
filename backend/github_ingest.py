@@ -50,6 +50,8 @@ GITHUB_API = "https://api.github.com"
 MAX_GITHUB_ISSUES = 10
 # Comments fetched only in single-issue mode -- keeps list mode at one API call.
 MAX_ISSUE_COMMENTS = 10
+# Repo picker (GIT-02): most-recently-pushed repos shown in the dropdown.
+MAX_GITHUB_REPOS = 30
 
 FETCH_TIMEOUT_SECONDS = 15.0
 
@@ -80,6 +82,8 @@ _MSG_NOT_FOUND = "GitHub repository or issue not found (is it private?)."
 _MSG_RATE_LIMITED = "GitHub rate limit reached. Try again later or set GITHUB_TOKEN."
 _MSG_FETCH_FAILED = "Couldn't fetch from GitHub. Please try again."
 _MSG_NO_ISSUES = "No open or closed issues found in that repository."
+_MSG_INVALID_USERNAME = "Enter a valid GitHub username."
+_MSG_USER_NOT_FOUND = "GitHub user not found."
 
 
 class GithubIngestRequest(BaseModel):
@@ -180,6 +184,54 @@ async def _fetch_issues(
                 continue  # the issues list endpoint includes PRs -- skip them
             items.append((f"issue-{issue.get('number')}.md", _format_issue(issue)))
         return items
+
+
+@router.get("/github/repos")
+async def list_github_repos(username: str):
+    """GIT-02: list a user's public repos for the in-app repo picker, so
+    issues are imported by SELECTING a repo -- never by pasting a URL.
+
+    Same T-05-01 posture as ingest: the client-supplied username is
+    allowlist-validated and the outbound request is always built against the
+    fixed api.github.com host. Response is {status:"ok", repos:[...]} or the
+    D-24 short-message error shape."""
+    candidate = (username or "").strip()
+    if not _OWNER_RE.match(candidate):
+        return {"status": "error", "message": _MSG_INVALID_USERNAME}
+
+    try:
+        async with httpx.AsyncClient(
+            headers=_github_headers(), timeout=FETCH_TIMEOUT_SECONDS
+        ) as client:
+            res = await client.get(
+                f"{GITHUB_API}/users/{candidate}/repos",
+                params={"sort": "pushed", "per_page": MAX_GITHUB_REPOS},
+            )
+            res.raise_for_status()
+            payload = res.json()
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        logger.warning("GitHub repo list failed for %s: HTTP %s", candidate, status)
+        if status == 404:
+            return {"status": "error", "message": _MSG_USER_NOT_FOUND}
+        if status in (403, 429):
+            return {"status": "error", "message": _MSG_RATE_LIMITED}
+        return {"status": "error", "message": _MSG_FETCH_FAILED}
+    except httpx.HTTPError:
+        logger.exception("GitHub repo list failed for %s", candidate)
+        return {"status": "error", "message": _MSG_FETCH_FAILED}
+
+    repos = [
+        {
+            "full_name": repo.get("full_name", ""),
+            "description": (repo.get("description") or "")[:140],
+            "open_issues": repo.get("open_issues_count", 0),
+            "pushed_at": repo.get("pushed_at"),
+        }
+        for repo in payload
+        if repo.get("full_name")
+    ]
+    return {"status": "ok", "repos": repos}
 
 
 @router.post("/ingest/github")

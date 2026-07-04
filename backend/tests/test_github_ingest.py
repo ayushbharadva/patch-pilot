@@ -9,7 +9,12 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from backend.github_ingest import _format_issue, _parse_github_url  # noqa: E402
+from backend.github_ingest import (  # noqa: E402
+    _MSG_INVALID_USERNAME,
+    _format_issue,
+    _parse_github_url,
+    list_github_repos,
+)
 
 
 def test_parse_accepts_full_repo_url_forms():
@@ -80,3 +85,11 @@ def test_format_issue_handles_missing_body_and_appends_comments():
     assert "## Comment by alice" in text
     assert "Fixed by upgrading the SDK." in text
     assert text.count("## Comment by") == 1
+
+
+async def test_list_repos_rejects_invalid_usernames_without_network():
+    # T-05-01: allowlist runs BEFORE any outbound request is built, so these
+    # return the D-24 message instantly -- no httpx call, no network needed.
+    for bad in ("", "   ", "evil.com", "../../etc", "o w n e r", "a/b"):
+        result = await list_github_repos(bad)
+        assert result == {"status": "error", "message": _MSG_INVALID_USERNAME}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
 import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
 import { FileStatusRow, type FileStatus } from "@/components/FileStatusRow";
 import {
+  getGithubRepos,
   ingestGithub,
   loadSampleData,
   pollIngestStatus,
@@ -50,8 +52,9 @@ interface UploadRow {
   /** Retained for Retry (D-23) on real uploads; null for /sample/load rows
    * (no individual File object -- the seed docs live server-side). */
   file: File | null;
-  /** Retained for Retry on GitHub imports (GIT-01); null for file/sample rows. */
-  githubUrl: string | null;
+  /** owner/repo retained for Retry on GitHub imports (GIT-01/GIT-02);
+   * null for file/sample rows. */
+  githubRepo: string | null;
 }
 
 let rowIdCounter = 0;
@@ -82,9 +85,41 @@ export function UploadPanel() {
   const [rows, setRows] = useState<UploadRow[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingSample, setIsLoadingSample] = useState(false);
-  const [githubUrl, setGithubUrl] = useState("");
+  const [githubUsername, setGithubUsername] = useState("");
+  const [repoOwner, setRepoOwner] = useState("");
+  const [selectedRepo, setSelectedRepo] = useState("");
   const [isImportingGithub, setIsImportingGithub] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // GIT-02: auto-detect the GitHub username from the Clerk session when the
+  // user signed in with GitHub OAuth -- no pasting anything. Editable input
+  // stays as the fallback for Google/email sign-ins.
+  const { user } = useUser();
+  const clerkGithubUsername =
+    user?.externalAccounts?.find(
+      (account) =>
+        account.provider === "github" ||
+        (account.provider as string) === "oauth_github",
+    )?.username ?? "";
+  useEffect(() => {
+    if (clerkGithubUsername && !githubUsername && !repoOwner) {
+      setGithubUsername(clerkGithubUsername);
+      setRepoOwner(clerkGithubUsername);
+    }
+    // Seed once when Clerk resolves; user edits win afterwards.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clerkGithubUsername]);
+
+  const reposQuery = useQuery({
+    queryKey: ["github-repos", repoOwner],
+    queryFn: () => getGithubRepos(repoOwner),
+    enabled: repoOwner.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+  const repos =
+    reposQuery.data?.status === "ok" ? reposQuery.data.repos : [];
+  const reposError =
+    reposQuery.data?.status === "error" ? reposQuery.data.message : null;
 
   // D-05/D-22: poll every "processing" row's dataset until it flips to
   // ready/failed. Cognee reports status per dataset, not per file, so every
@@ -142,7 +177,7 @@ export function UploadPanel() {
       dataset: "",
       status: "uploading",
       file,
-      githubUrl: null,
+      githubRepo: null,
     }));
     setRows((prev) => [...prev, ...uploadingRows]);
     const uploadingIds = new Set(uploadingRows.map((r) => r.id));
@@ -210,21 +245,23 @@ export function UploadPanel() {
       dataset,
       status: "processing",
       file: null,
-      githubUrl: null,
+      githubRepo: null,
     }));
     setRows((prev) => [...prev, ...newRows]);
     void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
   }
 
-  async function submitGithub(url: string) {
+  async function submitGithub(repoFullName: string) {
     setFormError(null);
-    if (!url.trim()) {
-      setFormError("Enter a GitHub repository or issue URL.");
+    if (!repoFullName.trim()) {
+      setFormError("Pick a repository to import.");
       return;
     }
 
     setIsImportingGithub(true);
-    const response = await ingestGithub(url.trim());
+    // Backend accepts owner/repo shorthand -- the picker submits exactly
+    // that, so no URL is ever pasted or transmitted (GIT-02).
+    const response = await ingestGithub(repoFullName.trim());
     setIsImportingGithub(false);
 
     if (response.status === "error") {
@@ -233,6 +270,7 @@ export function UploadPanel() {
     }
 
     toast.success(UPLOAD_ACCEPTED_TOAST);
+    recordLifecycleEvent("remember");
     // The backend fetched the issues synchronously, so each returned
     // filename is already queued -- rows start at "processing" directly
     // (no optimistic "uploading" phase like file uploads).
@@ -242,10 +280,9 @@ export function UploadPanel() {
       dataset: response.dataset,
       status: "processing",
       file: null,
-      githubUrl: url.trim(),
+      githubRepo: repoFullName.trim(),
     }));
     setRows((prev) => [...prev, ...newRows]);
-    setGithubUrl("");
     void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
   }
 
@@ -253,8 +290,8 @@ export function UploadPanel() {
     setRows((prev) => prev.filter((r) => r.id !== row.id));
     if (row.file) {
       void submitUpload([row.file]);
-    } else if (row.githubUrl) {
-      void submitGithub(row.githubUrl);
+    } else if (row.githubRepo) {
+      void submitGithub(row.githubRepo);
     } else {
       void handleLoadSample();
     }
@@ -327,23 +364,75 @@ export function UploadPanel() {
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
-              value={githubUrl}
-              onChange={(event) => setGithubUrl(event.target.value)}
-              placeholder="https://github.com/owner/repo or .../issues/123"
-              aria-label="GitHub repository or issue URL"
-              className="h-10 flex-1"
+              value={githubUsername}
+              onChange={(event) => setGithubUsername(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  setSelectedRepo("");
+                  setRepoOwner(githubUsername.trim());
+                }
+              }}
+              placeholder="GitHub username"
+              aria-label="GitHub username"
+              className="h-10 sm:max-w-52"
             />
             <Button
               type="button"
-              onClick={() => void submitGithub(githubUrl)}
-              disabled={isImportingGithub}
+              variant="secondary"
+              onClick={() => {
+                setSelectedRepo("");
+                setRepoOwner(githubUsername.trim());
+              }}
+              disabled={!githubUsername.trim() || reposQuery.isFetching}
               className="font-sans text-sm font-semibold"
             >
-              {isImportingGithub ? "Importing…" : "Import Issues"}
+              {reposQuery.isFetching ? "Loading…" : "Load repos"}
             </Button>
           </div>
+          {repoOwner && !reposQuery.isFetching ? (
+            <div className="flex flex-col gap-2 pt-1 sm:flex-row">
+              <Select value={selectedRepo} onValueChange={setSelectedRepo}>
+                <SelectTrigger
+                  aria-label="Pick a repository to import"
+                  className="glass h-10 flex-1 border-border/60 hover:border-accent-violet/40"
+                >
+                  <SelectValue
+                    placeholder={
+                      repos.length > 0
+                        ? "Pick a repository"
+                        : "No public repositories found"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="glass-strong">
+                  {repos.map((repo) => (
+                    <SelectItem key={repo.full_name} value={repo.full_name}>
+                      {repo.full_name} · {repo.open_issues} open issues
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                onClick={() => void submitGithub(selectedRepo)}
+                disabled={isImportingGithub || !selectedRepo}
+                className="font-sans text-sm font-semibold"
+              >
+                {isImportingGithub ? "Importing…" : "Import Issues"}
+              </Button>
+            </div>
+          ) : null}
+          {reposError ? (
+            <p className="font-sans text-sm font-semibold text-destructive">
+              {reposError}
+            </p>
+          ) : null}
           <p className="font-mono text-xs text-muted-foreground">
-            Fetches up to 10 issues as tickets into incidents
+            {clerkGithubUsername
+              ? "Username detected from your GitHub sign-in. "
+              : "Sign in with GitHub to auto-detect your username. "}
+            Imports up to 10 issues as tickets into incidents.
           </p>
         </div>
 
