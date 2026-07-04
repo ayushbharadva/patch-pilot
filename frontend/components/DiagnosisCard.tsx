@@ -195,12 +195,41 @@ function AcceptDismissControls({
   );
 }
 
+/** Renders the F1 confidence-delta badge: "62% → 78% after reinforcement"
+ * when a prior confidence is known, or "Reinforced · 78% confidence" when it
+ * isn't. Reuses the same drift-stable treatment as the "Reinforced ✓" chip
+ * so the two read as one visual language. */
+function ReinforcementBadge({
+  reinforcedFrom,
+  confidence,
+}: {
+  reinforcedFrom: number | null;
+  confidence: number;
+}) {
+  const currentPct = Math.round(confidence * 100);
+  const label =
+    reinforcedFrom != null
+      ? `${Math.round(reinforcedFrom * 100)}% → ${currentPct}% after reinforcement`
+      : `Reinforced · ${currentPct}% confidence`;
+
+  return (
+    <Badge
+      variant="outline"
+      className="glow-drift-stable shrink-0 border-drift-stable/40 font-mono text-xs font-normal text-drift-stable"
+    >
+      {label}
+    </Badge>
+  );
+}
+
 function DiagnosisCardOk({
   response,
   onReSearch,
+  reinforcedFrom,
 }: {
   response: SearchResponseOk;
   onReSearch?: () => void;
+  reinforcedFrom?: number | null;
 }) {
   const [dismissed, setDismissed] = useState(false);
   const evidence = response.evidence.slice(0, EVIDENCE_DISPLAY_LIMIT);
@@ -234,6 +263,12 @@ function DiagnosisCardOk({
             >
               {Math.round(response.confidence * 100)}% confidence
             </Badge>
+          ) : null}
+          {reinforcedFrom !== undefined && response.confidence != null ? (
+            <ReinforcementBadge
+              reinforcedFrom={reinforcedFrom}
+              confidence={response.confidence}
+            />
           ) : null}
         </div>
       </CardHeader>
@@ -275,9 +310,11 @@ function DiagnosisCardOk({
 export function DiagnosisCard({
   response,
   onReSearch,
+  reinforcedFrom,
 }: {
   response: SearchResponse;
   onReSearch?: () => void;
+  reinforcedFrom?: number | null;
 }) {
   if (response.status === "error") {
     return (
@@ -303,7 +340,13 @@ export function DiagnosisCard({
     );
   }
 
-  return <DiagnosisCardOk response={response} onReSearch={onReSearch} />;
+  return (
+    <DiagnosisCardOk
+      response={response}
+      onReSearch={onReSearch}
+      reinforcedFrom={reinforcedFrom}
+    />
+  );
 }
 
 /**

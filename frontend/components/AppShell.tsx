@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Database, History, Search, Share2 } from "lucide-react";
 
+import { LifecycleStrip } from "@/components/LifecycleStrip";
 import { ResetButton } from "@/components/ResetButton";
 import { useSearchSession } from "@/lib/search-session";
 import { cn } from "@/lib/utils";
@@ -25,8 +26,6 @@ const NAV = [
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  // Not wired into ResetButton yet — that lands once ResetButton grows an
-  // `onReset` prop (depth-kit pass); imported here so it's ready then.
   const { resetSession } = useSearchSession();
 
   return (
@@ -64,7 +63,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <ResetButton />
+          <LifecycleStrip className="hidden lg:flex" />
+
+          <ResetButton onReset={resetSession} />
         </div>
       </header>
 

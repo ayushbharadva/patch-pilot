@@ -22,6 +22,7 @@ import {
   uploadFiles,
   type ContentType,
 } from "@/lib/api";
+import { useSearchSession } from "@/lib/search-session";
 
 /** Content-type selector options + labels (D-01, copy from 02-UI-SPEC.md). */
 const CONTENT_TYPE_OPTIONS: { value: ContentType; label: string }[] = [
@@ -70,6 +71,7 @@ function hasAllowedExtension(filename: string): boolean {
  */
 export function UploadPanel() {
   const queryClient = useQueryClient();
+  const { recordLifecycleEvent } = useSearchSession();
   const [contentType, setContentType] = useState<ContentType>("ticket");
   const [releaseVersion, setReleaseVersion] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -160,6 +162,7 @@ export function UploadPanel() {
     }
 
     toast.success(UPLOAD_ACCEPTED_TOAST);
+    recordLifecycleEvent("remember");
     setRows((prev) =>
       prev.map((r) =>
         uploadingIds.has(r.id) ? { ...r, status: "processing", dataset: response.dataset } : r,
@@ -194,6 +197,7 @@ export function UploadPanel() {
     }
 
     toast.success(UPLOAD_ACCEPTED_TOAST);
+    recordLifecycleEvent("remember");
     const newRows: UploadRow[] = response.datasets.map((dataset) => ({
       id: nextRowId(),
       filename: dataset,

@@ -3,6 +3,7 @@
 import { DiagnosisCard, DiagnosisCardSkeleton } from "@/components/DiagnosisCard";
 import { EXAMPLE_QUERY, SearchBar } from "@/components/SearchBar";
 import { SearchProgress } from "@/components/SearchProgress";
+import { SessionStats } from "@/components/SessionStats";
 import { useSearchSession } from "@/lib/search-session";
 
 /**
@@ -13,6 +14,21 @@ import { useSearchSession } from "@/lib/search-session";
  */
 export default function DiagnosePage() {
   const session = useSearchSession();
+
+  // Only shows the F1 delta badge on the card it actually applies to — a
+  // fresh search (setLastQuery) or a forget re-search both clear
+  // `reinforcement`, so this naturally becomes `undefined` (no badge) then.
+  const reinforcedFrom =
+    session.reinforcement && session.reinforcement.query === session.lastQuery
+      ? session.reinforcement.fromConfidence
+      : undefined;
+
+  function handleReSearchAfterAccept() {
+    const priorConfidence =
+      session.response?.status === "ok" ? session.response.confidence : null;
+    session.markReinforced(priorConfidence);
+    void session.reSearch("reinforce");
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-10">
@@ -37,7 +53,8 @@ export default function DiagnosePage() {
                   : `${session.response.status}-${session.lastQuery ?? ""}`
               }
               response={session.response}
-              onReSearch={() => void session.reSearch("reinforce")}
+              onReSearch={handleReSearchAfterAccept}
+              reinforcedFrom={reinforcedFrom}
             />
           </div>
         ) : (
@@ -50,6 +67,8 @@ export default function DiagnosePage() {
           />
         ) : null}
       </section>
+
+      <SessionStats />
     </main>
   );
 }

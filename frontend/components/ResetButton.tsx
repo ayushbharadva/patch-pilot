@@ -34,7 +34,7 @@ const RESET_ERROR_FALLBACK = "Could not reset memory. Please try again.";
  * (not just DATASETS_QUERY_KEY) since a reset changes every dataset/graph
  * state at once.
  */
-export function ResetButton() {
+export function ResetButton({ onReset }: { onReset?: () => void }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -50,6 +50,7 @@ export function ResetButton() {
       setOpen(false);
       await queryClient.invalidateQueries();
       toast.success("Memory reset to demo-ready state");
+      onReset?.();
     } else {
       setError(result.message || RESET_ERROR_FALLBACK);
     }
