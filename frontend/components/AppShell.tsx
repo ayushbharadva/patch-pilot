@@ -7,6 +7,8 @@ import { Database, History, Menu, Search, Share2, X } from "lucide-react";
 
 import { LifecycleStrip } from "@/components/LifecycleStrip";
 import { ResetButton } from "@/components/ResetButton";
+import { SidebarUserCard } from "@/components/SidebarUserCard";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useSearchSession } from "@/lib/search-session";
 import { cn } from "@/lib/utils";
@@ -97,6 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Wordmark />
         </div>
         <NavLinks />
+        <SidebarUserCard />
       </aside>
 
       {/* Mobile drawer + backdrop. */}
@@ -128,6 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Button>
             </div>
             <NavLinks onNavigate={() => setDrawerOpen(false)} />
+            <SidebarUserCard onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>
       ) : null}
@@ -155,7 +159,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <LifecycleStrip className="hidden md:flex" />
 
-          <div className="justify-self-end">
+          <div className="flex items-center gap-1.5 justify-self-end">
+            <ThemeToggle />
             <ResetButton onReset={resetSession} />
           </div>
         </header>

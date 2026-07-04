@@ -70,82 +70,85 @@
 }
 
 /* ============================================================================
-   NEURAL MEMORY dark theme — token values ported verbatim from the landing
-   page's dark palette (src/globals.css `.dark` block, the second/winning
-   declaration) so /app and the marketing site read as one product.
+   NEURAL MEMORY theme — token values ported verbatim from the landing page's
+   palette (src/globals.css second/winning declaration blocks) so /app and the
+   marketing site read as one product in BOTH schemes.
 
-   The app is dark-by-default: <html class="dark"> is hardcoded in layout.tsx
-   AND the palette lives directly on :root, so the look is guaranteed with
-   zero JS/hydration dependency, while the `dark` class keeps every
-   component's `dark:` utility variants active.
-
-   Deep slate-blue canvas; cyan primary; cyan->blue->violet accent ramp
-   matching the landing's gradient-start/mid/end. Redefining these existing
-   token *values* (names unchanged) instantly re-skins every component that
-   uses bg-background, bg-card, text-foreground, border-border, bg-primary,
-   the drift-* utilities, etc. — no per-component edit required.
+   :root = landing light palette; .dark = landing dark palette. Theme is
+   toggled by next-themes flipping the `dark` class on <html> (same
+   attribute="class" convention as the marketing site). Redefining these
+   existing token *values* (names unchanged) instantly re-skins every
+   component that uses bg-background, bg-card, text-foreground, border-border,
+   bg-primary, the drift-* utilities, etc. — no per-component edit required.
    ========================================================================== */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --background: oklch(0.17 0.018 255); /* deep slate-blue (landing dark bg) */
-  --foreground: oklch(0.95 0.006 220);
-  --card: oklch(0.21 0.02 255); /* elevated surface (solid fallback; .glass overrides the visual) */
-  --card-foreground: oklch(0.95 0.006 220);
-  --popover: oklch(0.21 0.02 255); /* opaque enough for dropdowns/selects to stay readable */
-  --popover-foreground: oklch(0.95 0.006 220);
-  --primary: oklch(0.74 0.12 192); /* electric cyan — CTAs, focus, active chip (landing CTA color) */
-  --primary-foreground: oklch(0.16 0.03 220);
-  --secondary: oklch(0.27 0.02 255);
-  --secondary-foreground: oklch(0.95 0.006 220);
-  --muted: oklch(0.26 0.018 255);
-  --muted-foreground: oklch(0.72 0.015 220); /* readable muted on dark */
-  --accent: oklch(0.31 0.04 200); /* neutral hover state (distinct from brand accent ramp) */
-  --accent-foreground: oklch(0.95 0.02 195);
-  --destructive: oklch(0.63 0.19 20);
-  --border: oklch(0.31 0.02 255 / 60%); /* hairline (glass uses foreground-mix directly) */
-  --input: oklch(0.31 0.02 255 / 50%);
-  --ring: oklch(0.74 0.12 192); /* cyan focus ring, visible on dark glass */
-  --chart-1: oklch(0.74 0.12 192);
-  --chart-2: oklch(0.66 0.13 230);
-  --chart-3: oklch(0.66 0.16 290);
-  --chart-4: oklch(0.72 0.15 155);
-  --chart-5: oklch(0.8 0.14 80);
+  --background: oklch(0.99 0.004 220);
+  --foreground: oklch(0.21 0.02 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 255);
+  --primary: oklch(0.56 0.12 195);
+  --primary-foreground: oklch(0.99 0.01 195);
+  --secondary: oklch(0.96 0.01 220);
+  --secondary-foreground: oklch(0.25 0.02 255);
+  --muted: oklch(0.96 0.01 220);
+  --muted-foreground: oklch(0.48 0.02 255);
+  --accent: oklch(0.93 0.03 195);
+  --accent-foreground: oklch(0.25 0.03 220);
+  --destructive: oklch(0.58 0.2 20);
+  --border: oklch(0.9 0.01 220);
+  --input: oklch(0.9 0.01 220);
+  --ring: oklch(0.56 0.12 195);
+  --chart-1: oklch(0.58 0.12 195);
+  --chart-2: oklch(0.55 0.13 230);
+  --chart-3: oklch(0.55 0.16 285);
+  --chart-4: oklch(0.6 0.14 155);
+  --chart-5: oklch(0.74 0.15 75);
   --radius: 0.75rem;
 
-  --sidebar: oklch(0.19 0.019 255);
-  --sidebar-foreground: oklch(0.95 0.006 220);
-  --sidebar-primary: oklch(0.74 0.12 192);
-  --sidebar-primary-foreground: oklch(0.16 0.03 220);
-  --sidebar-accent: oklch(0.31 0.04 200);
-  --sidebar-accent-foreground: oklch(0.95 0.02 195);
-  --sidebar-border: oklch(0.31 0.02 255 / 60%);
-  --sidebar-ring: oklch(0.74 0.12 192);
+  --sidebar: oklch(0.98 0.006 220);
+  --sidebar-foreground: oklch(0.21 0.02 255);
+  --sidebar-primary: oklch(0.56 0.12 195);
+  --sidebar-primary-foreground: oklch(0.99 0.01 195);
+  --sidebar-accent: oklch(0.93 0.03 195);
+  --sidebar-accent-foreground: oklch(0.25 0.03 220);
+  --sidebar-border: oklch(0.9 0.01 220);
+  --sidebar-ring: oklch(0.56 0.12 195);
 
   /* Brand accent ramp + master gradient (reused by .text-gradient /
-     .border-gradient). Variable names kept (components reference them);
-     values now map onto the landing ramp: indigo slot -> landing blue,
-     violet slot -> landing violet, cyan slot -> landing primary cyan. */
-  --accent-indigo: oklch(0.66 0.13 230);
-  --accent-violet: oklch(0.66 0.16 290);
-  --accent-cyan: oklch(0.74 0.12 192);
+     .border-gradient) — landing LIGHT ramp values (deeper, for contrast on
+     the light canvas). */
+  --accent-indigo: oklch(0.55 0.13 230);
+  --accent-violet: oklch(0.55 0.16 285);
+  --accent-cyan: oklch(0.56 0.12 195);
+  --gradient-start: oklch(0.62 0.13 195);
+  --gradient-mid: oklch(0.55 0.13 225);
+  --gradient-end: oklch(0.5 0.15 285);
   --gradient-brand: linear-gradient(
     135deg,
-    oklch(0.72 0.13 192) 0%,
-    oklch(0.6 0.13 225) 50%,
-    oklch(0.52 0.15 290) 100%
-  ); /* identical stops/angle to the landing's dark .text-gradient */
+    var(--gradient-start) 0%,
+    var(--gradient-mid) 50%,
+    var(--gradient-end) 100%
+  );
 
-  /* Drift palette — landing dark drift tokens (names unchanged so
+  /* Drift palette — landing light drift tokens (names unchanged so
      DatasetList/DiagnosisCard keep working). */
-  --color-drift-stable: oklch(0.72 0.15 155);
-  --color-drift-aging: oklch(0.8 0.14 80);
-  --color-drift-drifting: oklch(0.68 0.19 15);
+  --color-drift-stable: oklch(0.6 0.14 155);
+  --color-drift-aging: oklch(0.75 0.15 75);
+  --color-drift-drifting: oklch(0.58 0.2 15);
+
+  /* Depth shadow for .glass surfaces — soft in light, deep in dark. */
+  --shadow-depth: rgba(15, 23, 42, 0.14);
+  --shadow-depth-strong: rgba(15, 23, 42, 0.18);
 }
 
-/* Kept for robustness: <html> always carries `.dark`, so re-declare the same
-   tokens here — identical to :root — in case anything toggles the class. */
+/* Landing dark palette — active when next-themes sets `dark` on <html>
+   (defaultTheme="dark", so this remains the app's default look). */
 .dark {
+  color-scheme: dark;
   --background: oklch(0.17 0.018 255);
   --foreground: oklch(0.95 0.006 220);
   --card: oklch(0.21 0.02 255);
@@ -177,9 +180,27 @@
   --sidebar-accent-foreground: oklch(0.95 0.02 195);
   --sidebar-border: oklch(0.31 0.02 255 / 60%);
   --sidebar-ring: oklch(0.74 0.12 192);
+
+  /* Brand accent ramp + master gradient — landing DARK ramp values. */
+  --accent-indigo: oklch(0.66 0.13 230);
+  --accent-violet: oklch(0.66 0.16 290);
+  --accent-cyan: oklch(0.74 0.12 192);
+  --gradient-start: oklch(0.72 0.13 192);
+  --gradient-mid: oklch(0.6 0.13 225);
+  --gradient-end: oklch(0.52 0.15 290);
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--gradient-start) 0%,
+    var(--gradient-mid) 50%,
+    var(--gradient-end) 100%
+  );
+
   --color-drift-stable: oklch(0.72 0.15 155);
   --color-drift-aging: oklch(0.8 0.14 80);
   --color-drift-drifting: oklch(0.68 0.19 15);
+
+  --shadow-depth: rgba(0, 0, 0, 0.85);
+  --shadow-depth-strong: rgba(0, 0, 0, 0.9);
 }
 
 @layer base {
@@ -216,7 +237,7 @@
     border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
     box-shadow:
       inset 0 1px 0 0 color-mix(in oklch, var(--foreground) 10%, transparent),
-      0 24px 60px -28px rgba(0, 0, 0, 0.85);
+      0 24px 60px -28px var(--shadow-depth);
   }
 
   /* More opaque glass for popovers/dropdowns/menus where legibility matters. */
@@ -229,7 +250,7 @@
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     border: 1px solid color-mix(in oklch, var(--foreground) 12%, transparent);
-    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 30px 70px -30px var(--shadow-depth-strong);
   }
 
   /* Brand gradient text (headlines, brand marks). Pair with a font-display class. */

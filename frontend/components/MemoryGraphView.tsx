@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getMemoryGraph, type GraphNode } from "@/lib/api";
@@ -12,32 +13,64 @@ import { getMemoryGraph, type GraphNode } from "@/lib/api";
  * the node's owning dataset, using the same 🟢/🟡/🔴 language as
  * DatasetList/HealthDashboard, so forgetting a drifting dataset visibly
  * removes the red cluster. Hexes are precomputed sRGB equivalents of the
- * drift tokens in app/(mvp)/globals.css (three.js cannot parse oklch() —
- * keep in sync if the tokens change). The durable `incidents` dataset gets
- * the accent cyan so ground truth reads distinctly from versioned
- * workarounds.
+ * drift tokens in app/(mvp)/globals.css per theme (three.js cannot parse
+ * oklch() or CSS vars — keep in sync if the tokens change). The durable
+ * `incidents` dataset gets the accent cyan so ground truth reads distinctly
+ * from versioned workarounds.
  */
-const DRIFT_NODE_COLORS: Record<string, string> = {
-  stable: "#43c07a", // drift-stable — oklch(0.72 0.15 155)
-  aging: "#edb345", // drift-aging — oklch(0.8 0.14 80)
-  drifting: "#e9555a", // drift-drifting — oklch(0.68 0.19 15)
-};
-const INCIDENTS_NODE_COLOR = "#28c2be"; // accent-cyan — oklch(0.74 0.12 192)
-const FALLBACK_NODE_COLOR = "#927eec"; // accent-violet — oklch(0.66 0.16 290)
+interface GraphPalette {
+  drift: Record<string, string>;
+  incidents: string;
+  fallback: string;
+  background: string;
+  link: string;
+  particle: string;
+}
 
-function nodeColorFor(node: Pick<GraphNode, "dataset" | "drift_state">): string {
-  if (node.dataset === "incidents") return INCIDENTS_NODE_COLOR;
-  return DRIFT_NODE_COLORS[node.drift_state] ?? FALLBACK_NODE_COLOR;
+const DARK_PALETTE: GraphPalette = {
+  drift: {
+    stable: "#43c07a", // drift-stable — oklch(0.72 0.15 155)
+    aging: "#edb345", // drift-aging — oklch(0.8 0.14 80)
+    drifting: "#e9555a", // drift-drifting — oklch(0.68 0.19 15)
+  },
+  incidents: "#28c2be", // accent-cyan — oklch(0.74 0.12 192)
+  fallback: "#927eec", // accent-violet — oklch(0.66 0.16 290)
+  background: "rgba(10, 16, 23, 0.55)",
+  link: "rgba(146, 126, 236, 0.55)",
+  particle: "#28c2be",
+};
+
+const LIGHT_PALETTE: GraphPalette = {
+  drift: {
+    stable: "#109659", // drift-stable — oklch(0.6 0.14 155)
+    aging: "#cf9b1d", // drift-aging — oklch(0.75 0.15 75)
+    drifting: "#cc3944", // drift-drifting — oklch(0.58 0.2 15)
+  },
+  incidents: "#0e8fa5", // accent-cyan — oklch(0.56 0.12 195)
+  fallback: "#6e57da", // accent-violet — oklch(0.55 0.16 285)
+  background: "rgba(246, 249, 252, 0.92)",
+  link: "rgba(110, 87, 218, 0.4)",
+  particle: "#0e8fa5",
+};
+
+function nodeColorFor(
+  palette: GraphPalette,
+  node: Pick<GraphNode, "dataset" | "drift_state">,
+): string {
+  if (node.dataset === "incidents") return palette.incidents;
+  return palette.drift[node.drift_state] ?? palette.fallback;
 }
 
 /** Legend chips mirroring DatasetList's color+label pairing (color is never
  * the sole signal — a11y). */
-const LEGEND = [
-  { label: "Incidents (durable)", color: INCIDENTS_NODE_COLOR },
-  { label: "🟢 Stable", color: DRIFT_NODE_COLORS.stable },
-  { label: "🟡 Aging", color: DRIFT_NODE_COLORS.aging },
-  { label: "🔴 Drifting", color: DRIFT_NODE_COLORS.drifting },
-] as const;
+function legendFor(palette: GraphPalette) {
+  return [
+    { label: "Incidents (durable)", color: palette.incidents },
+    { label: "🟢 Stable", color: palette.drift.stable },
+    { label: "🟡 Aging", color: palette.drift.aging },
+    { label: "🔴 Drifting", color: palette.drift.drifting },
+  ] as const;
+}
 
 /** Render cap — beyond this a Cognee graph becomes an illegible hairball and
  * the force sim burns frames. Nodes keep backend order; links are filtered
@@ -85,6 +118,13 @@ export function MemoryGraphView() {
     queryKey: GRAPH_QUERY_KEY,
     queryFn: getMemoryGraph,
   });
+
+  // three.js needs concrete colors (no CSS vars), so pick the palette from
+  // the resolved next-themes value. Defaults to dark pre-hydration — matches
+  // defaultTheme="dark".
+  const { resolvedTheme } = useTheme();
+  const palette = resolvedTheme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const legend = legendFor(palette);
 
   // STRETCH-04 click-to-explore: the last node the operator clicked.
   const [selected, setSelected] = useState<GraphNode | null>(null);
@@ -149,7 +189,7 @@ export function MemoryGraphView() {
               className="flex flex-wrap items-center gap-x-4 gap-y-1"
               aria-label="Graph color legend"
             >
-              {LEGEND.map((entry) => (
+              {legend.map((entry) => (
                 <span
                   key={entry.label}
                   className="flex items-center gap-1.5 font-sans text-xs text-muted-foreground"
@@ -175,16 +215,16 @@ export function MemoryGraphView() {
                   height={GRAPH_HEIGHT}
                   cooldownTicks={200}
                   nodeLabel="label"
-                  nodeColor={(node) => nodeColorFor(node as GraphNode)}
+                  nodeColor={(node) => nodeColorFor(palette, node as GraphNode)}
                   nodeOpacity={0.95}
                   linkLabel="label"
-                  linkColor={() => "rgba(146, 126, 236, 0.55)"}
+                  linkColor={() => palette.link}
                   linkOpacity={0.6}
                   linkWidth={1.1}
                   linkDirectionalParticles={1}
                   linkDirectionalParticleWidth={1.6}
-                  linkDirectionalParticleColor={() => "#28c2be"}
-                  backgroundColor="rgba(10, 16, 23, 0.55)"
+                  linkDirectionalParticleColor={() => palette.particle}
+                  backgroundColor={palette.background}
                   onNodeClick={(node) => {
                     const n = node as Partial<GraphNode> & {
                       id?: string | number;
@@ -205,7 +245,7 @@ export function MemoryGraphView() {
                 <div className="flex items-center gap-2">
                   <span
                     className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: nodeColorFor(selected) }}
+                    style={{ backgroundColor: nodeColorFor(palette, selected) }}
                     aria-hidden="true"
                   />
                   <span className="font-sans text-sm font-semibold text-foreground">
