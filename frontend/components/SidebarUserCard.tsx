@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useClerk, useUser } from "@clerk/nextjs";
-import { ArrowLeft, LogOut, UserRound } from "lucide-react";
+import Link from 'next/link';
+import { useClerk, useUser } from '@clerk/nextjs';
+import { ArrowLeft, LogOut, UserRound } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 /**
  * Sidebar footer: signed-in user identity + Profile / Sign out / Back-to-site
@@ -20,8 +20,8 @@ export function SidebarUserCard({ onNavigate }: { onNavigate?: () => void }) {
     user?.fullName ||
     user?.username ||
     user?.primaryEmailAddress?.emailAddress ||
-    "Account";
-  const email = user?.primaryEmailAddress?.emailAddress ?? "";
+    'Account';
+  const email = user?.primaryEmailAddress?.emailAddress ?? '';
 
   return (
     <div className="mt-auto flex flex-col gap-1 border-t border-border/60 p-3">
@@ -38,8 +38,8 @@ export function SidebarUserCard({ onNavigate }: { onNavigate?: () => void }) {
         href="/app/profile"
         onClick={onNavigate}
         className={cn(
-          "flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors",
-          "hover:bg-foreground/[0.06]",
+          'flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors',
+          'hover:bg-foreground/[0.06]',
         )}
         aria-label="Open profile"
       >
@@ -73,10 +73,10 @@ export function SidebarUserCard({ onNavigate }: { onNavigate?: () => void }) {
         type="button"
         variant="ghost"
         size="sm"
-        onClick={() => void signOut({ redirectUrl: "/" })}
+        onClick={() => void signOut({ redirectUrl: '/' })}
         className="h-9 justify-start gap-2.5 rounded-xl px-3 font-sans text-sm font-normal text-muted-foreground hover:text-destructive"
       >
-        <LogOut aria-hidden="true" className="size-4" />
+        <LogOut aria-hidden="true" className="size-4 cursor-pointer" />
         Sign out
       </Button>
     </div>

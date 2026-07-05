@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import '@landing/globals.css';
 import { fontVariables } from '@landing/lib/fonts';
+import { AnimatedFavicon } from '@landing/components/layouts/animated-favicon';
 import { ThemeProvider } from '@landing/components/layouts/theme-provider';
 import { SITE_CONFIG } from '@landing/config/site';
 import { Toaster } from '@landing/components/ui/sonner';
@@ -50,6 +51,7 @@ export default function RootLayout({
       className={`${fontVariables} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <AnimatedFavicon />
         <ClerkProvider>
           <ThemeProvider>
             <TooltipProvider delay={200}>

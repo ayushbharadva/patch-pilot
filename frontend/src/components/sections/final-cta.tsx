@@ -5,9 +5,11 @@ import { motion, useReducedMotion } from 'motion/react';
 
 import { CtaButton } from '@landing/components/shared/cta-button';
 import { Reveal } from '@landing/components/shared/reveal';
+import { useUser } from '@clerk/nextjs';
 
 export function FinalCta() {
   const shouldReduceMotion = useReducedMotion();
+  const { isSignedIn } = useUser();
 
   return (
     <section className="relative z-10 bg-background mx-auto w-full max-w-7xl px-4 pt-8 pb-24 sm:px-6 lg:px-8">
@@ -19,7 +21,7 @@ export function FinalCta() {
             aria-hidden
             className="absolute inset-0 -z-10"
             initial={shouldReduceMotion ? undefined : { opacity: 0.4 }}
-            whileInView={{ opacity: 0.7 }}
+            whileInView={{ opacity: 0.3 }}
             viewport={{ once: true }}
             transition={{ duration: 1 }}
           >
@@ -53,17 +55,14 @@ export function FinalCta() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
-            <CtaButton href="/sign-up">
-              Get started free
-              <ArrowRight className="size-4" />
-            </CtaButton>
-            <CtaButton href="/sign-in" variant="outline">
-              Sign in
-            </CtaButton>
-            <CtaButton href="/#lifecycle" variant="ghost">
-              <Play className="size-4" />
-              Watch the demo
-            </CtaButton>
+            {!isSignedIn ? (
+              <>
+                <CtaButton href="/sign-up">
+                  Get started free
+                  <ArrowRight className="size-4" />
+                </CtaButton>
+              </>
+            ) : null}
           </motion.div>
         </div>
       </Reveal>

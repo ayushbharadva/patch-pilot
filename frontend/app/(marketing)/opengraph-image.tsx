@@ -36,15 +36,16 @@ export default function Image() {
 						position: "relative",
 					}}
 				>
-					{/* Memory graph logo */}
+					{/* Faceted memory-crystal — the PatchPilot "Prism" */}
 					<svg viewBox="0 0 36 36" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
-						<line x1="18" y1="18" x2="8" y2="9" stroke="#0b0f17" strokeWidth="1.5" strokeOpacity="0.5" />
-						<line x1="18" y1="18" x2="28" y2="9" stroke="#0b0f17" strokeWidth="1.5" strokeOpacity="0.5" />
-						<line x1="18" y1="18" x2="18" y2="30" stroke="#0b0f17" strokeWidth="1.5" strokeOpacity="0.5" />
-						<circle cx="8" cy="9" r="3" fill="#0b0f17" fillOpacity="0.7" />
-						<circle cx="28" cy="9" r="3" fill="#0b0f17" fillOpacity="0.7" />
-						<circle cx="18" cy="30" r="3" fill="#0b0f17" fillOpacity="0.7" />
-						<circle cx="18" cy="18" r="5" fill="#0b0f17" />
+						<polygon points="18,4 6,13.5 18,18.6" fill="#0b0f17" fillOpacity="0.92" />
+						<polygon points="18,4 30,13.5 18,18.6" fill="#0b0f17" fillOpacity="0.66" />
+						<polygon points="18,32 6,13.5 18,18.6" fill="#0b0f17" fillOpacity="0.4" />
+						<polygon points="18,32 30,13.5 18,18.6" fill="#0b0f17" fillOpacity="0.26" />
+						<polygon points="18,4 30,13.5 18,32 6,13.5" fill="none" stroke="#0b0f17" strokeWidth="1" strokeOpacity="0.95" strokeLinejoin="round" />
+						<line x1="18" y1="4" x2="18" y2="32" stroke="#0b0f17" strokeWidth="1" strokeOpacity="0.55" />
+						<line x1="6" y1="13.5" x2="18" y2="18.6" stroke="#0b0f17" strokeWidth="1" strokeOpacity="0.55" />
+						<line x1="30" y1="13.5" x2="18" y2="18.6" stroke="#0b0f17" strokeWidth="1" strokeOpacity="0.55" />
 					</svg>
 				</div>
 				<div

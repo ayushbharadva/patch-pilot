@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
+import { AnimatedFavicon } from '@landing/components/layouts/animated-favicon';
 import { ThemeProvider } from '@landing/components/layouts/theme-provider';
 import { AuroraBackground } from '@/components/AuroraBackground';
 import { Providers } from '@/lib/providers';
@@ -49,6 +50,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="relative min-h-full flex flex-col font-sans">
+        <AnimatedFavicon />
         <ThemeProvider>
           <ClerkProvider>
             {/* Global aurora/particle atmosphere — fixed, behind all content,

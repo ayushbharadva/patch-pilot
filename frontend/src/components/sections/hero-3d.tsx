@@ -87,9 +87,7 @@ export function Hero() {
             Try Now
             <ArrowRight className="size-4" />
           </CtaButton>
-          <CtaButton href="/sign-in" variant="outline">
-            Sign in
-          </CtaButton>
+
           <CtaButton href="/#lifecycle" variant="ghost">
             <Play className="size-4" />
             See the demo

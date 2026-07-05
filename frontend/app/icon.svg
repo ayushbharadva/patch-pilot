@@ -1,19 +1,25 @@
-<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22d3ee"/>
-      <stop offset="0.5" stop-color="#4aa3f0"/>
-      <stop offset="1" stop-color="#8b7bf0"/>
+    <linearGradient id="front" x1="16" y1="5.3" x2="15" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0feff"/>
+      <stop offset="1" stop-color="#6fdcea"/>
     </linearGradient>
   </defs>
-  <rect width="36" height="36" rx="8" fill="url(#bg)"/>
-  <g fill="#0b0f17">
-    <line x1="18" y1="18" x2="8" y2="9" stroke="#0b0f17" stroke-width="1.5" stroke-opacity="0.5"/>
-    <line x1="18" y1="18" x2="28" y2="9" stroke="#0b0f17" stroke-width="1.5" stroke-opacity="0.5"/>
-    <line x1="18" y1="18" x2="18" y2="30" stroke="#0b0f17" stroke-width="1.5" stroke-opacity="0.5"/>
-    <circle cx="8" cy="9" r="3" fill="#0b0f17" fill-opacity="0.7"/>
-    <circle cx="28" cy="9" r="3" fill="#0b0f17" fill-opacity="0.7"/>
-    <circle cx="18" cy="30" r="3" fill="#0b0f17" fill-opacity="0.7"/>
-    <circle cx="18" cy="18" r="5" fill="#0b0f17"/>
+
+  <!-- Transparent background — just the crystal, so the tab icon adapts. -->
+  <!-- Faceted memory-crystal at the same 3/4 pose as the animated 3D logo.
+       Vertices: A(+Y) top, B(+X) right, C(+Z) front, D(-Y) bottom,
+       E(-X) left, F(-Z) upper-left. -->
+  <polygon points="6.2,18.3 16,5.3 23.4,19.5" fill="url(#front)"/>
+  <polygon points="16,5.3 23.5,14.2 23.4,19.5" fill="#5eead4"/>
+  <polygon points="6.2,18.3 16,5.3 10.9,13.6" fill="#38bdf8"/>
+  <polygon points="6.2,18.3 23.4,19.5 16,25.2" fill="#6366f1"/>
+
+  <!-- Glowing hairline cuts -->
+  <g stroke="#e0fbff" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round" fill="none">
+    <polygon points="23.5,14.2 16,5.3 10.9,13.6 6.2,18.3 16,25.2 23.4,19.5" stroke-opacity="0.9"/>
+    <line x1="16" y1="5.3" x2="23.4" y2="19.5" stroke-opacity="0.5"/>
+    <line x1="16" y1="5.3" x2="6.2" y2="18.3" stroke-opacity="0.5"/>
+    <line x1="23.4" y1="19.5" x2="6.2" y2="18.3" stroke-opacity="0.5"/>
   </g>
 </svg>

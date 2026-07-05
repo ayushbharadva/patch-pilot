@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 import { AuthNavLinks } from '@landing/components/layouts/auth-nav-links';
+import { LogoCrystal } from '@landing/components/layouts/logo-crystal';
 import { ThemeToggle } from '@landing/components/layouts/theme-toggle';
-import { LogoMark } from '@landing/components/layouts/wordmark';
 import { SystemStatusBar } from '@landing/components/shared/system-status-bar';
 import { buttonVariants } from '@landing/components/ui/button';
 import { SITE_CONFIG } from '@landing/config/site';
@@ -19,9 +19,7 @@ export default function MarketingLayout({
             href="/"
             className="group flex items-center gap-2.5 font-heading text-lg font-bold tracking-tight"
           >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-linear-to-br from-gradient-start via-gradient-mid to-gradient-end text-primary-foreground transition-transform duration-200 group-hover:scale-105 group-active:scale-95">
-              <LogoMark className="size-4" />
-            </span>
+            <LogoCrystal className="size-9 transition-transform duration-200 group-hover:scale-105 group-active:scale-95" />
             {SITE_CONFIG.name}
           </Link>
 
@@ -49,9 +47,7 @@ export default function MarketingLayout({
       <footer className="border-t border-border/60 bg-surface-sunken/40">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-6 items-center justify-center rounded-md bg-linear-to-br from-gradient-start via-gradient-mid to-gradient-end text-primary-foreground">
-              <LogoMark className="size-3.5" />
-            </span>
+            <LogoCrystal className="size-7" />
             <span className="font-medium text-foreground">
               {SITE_CONFIG.name}
             </span>
