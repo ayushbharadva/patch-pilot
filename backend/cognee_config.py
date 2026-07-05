@@ -32,6 +32,15 @@ MEMORY_ROOT = Path(__file__).resolve().parent.parent / ".patchpilot_memory"
 
 os.environ.setdefault("SYSTEM_ROOT_DIRECTORY", str(MEMORY_ROOT))
 os.environ.setdefault("DATA_ROOT_DIRECTORY", str(MEMORY_ROOT / "data"))
+
+# On a fresh filesystem (e.g. Render's ephemeral disk with no snapshot
+# restored yet), neither directory exists, so SQLAlchemy's sqlite3.connect()
+# fails with "unable to open database file" the first time any Cognee call
+# touches its relational store. Create both roots unconditionally so a
+# brand-new deploy can initialize its own storage rather than depending on
+# render_boot.py having restored a snapshot first.
+Path(os.environ["SYSTEM_ROOT_DIRECTORY"]).mkdir(parents=True, exist_ok=True)
+Path(os.environ["DATA_ROOT_DIRECTORY"]).mkdir(parents=True, exist_ok=True)
 # Override Cognee's current default (openai/gpt-5-mini) to stay within the
 # $10 budget cap. .env may still override this via LLM_MODEL if a different
 # provider (e.g. the Gemini free-tier fallback) is configured.
