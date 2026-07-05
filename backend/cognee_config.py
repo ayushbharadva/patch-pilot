@@ -17,10 +17,13 @@ This module itself never pulls in the `cognee` package — it only prepares
 the environment ahead of that later step.
 """
 
+import logging
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Pull LLM_API_KEY / LLM_PROVIDER / LLM_MODEL / root-dir overrides from .env
 # (gitignored). Safe to call even if .env is absent — falls through to the
@@ -33,19 +36,41 @@ MEMORY_ROOT = Path(__file__).resolve().parent.parent / ".patchpilot_memory"
 os.environ.setdefault("SYSTEM_ROOT_DIRECTORY", str(MEMORY_ROOT))
 os.environ.setdefault("DATA_ROOT_DIRECTORY", str(MEMORY_ROOT / "data"))
 
-# On a fresh filesystem (e.g. Render's ephemeral disk with no snapshot
-# restored yet), none of these directories exist, so SQLAlchemy's
-# sqlite3.connect() fails with "unable to open database file" the first time
-# any Cognee call touches its relational store. Cognee's own
-# create_relational_engine() builds the sqlite connection string as
-# "{db_path}/{db_name}" (db_path = SYSTEM_ROOT_DIRECTORY/databases, per
-# RelationalConfig.fill_derived()) without ever creating that directory
+
+def _ensure_writable_root(env_key: str, fallback: Path) -> None:
+    """Create the directory os.environ[env_key] points at; if that path isn't
+    creatable (e.g. a stray dashboard env var left over from a local dev
+    machine, pointing at something like /Users/... on a Linux container),
+    fall back to the repo-relative default instead of crashing the whole
+    process at import time. On a fresh filesystem (e.g. Render's ephemeral
+    disk with no snapshot restored yet) these directories don't exist yet,
+    so SQLAlchemy's sqlite3.connect() would otherwise fail with "unable to
+    open database file" the first time any Cognee call touches its
+    relational store.
+    """
+    configured = Path(os.environ[env_key])
+    try:
+        configured.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        logger.warning(
+            "%s=%s is not writable in this environment; falling back to %s",
+            env_key,
+            configured,
+            fallback,
+        )
+        fallback.mkdir(parents=True, exist_ok=True)
+        os.environ[env_key] = str(fallback)
+
+
+_ensure_writable_root("SYSTEM_ROOT_DIRECTORY", MEMORY_ROOT)
+_ensure_writable_root("DATA_ROOT_DIRECTORY", MEMORY_ROOT / "data")
+
+# Cognee's own create_relational_engine() builds the sqlite connection
+# string as "{db_path}/{db_name}" (db_path = SYSTEM_ROOT_DIRECTORY/databases,
+# per RelationalConfig.fill_derived()) without ever creating that directory
 # itself, so it must be created here too -- not just SYSTEM_ROOT_DIRECTORY
-# and DATA_ROOT_DIRECTORY. Create all three unconditionally so a brand-new
-# deploy can initialize its own storage rather than depending on
-# render_boot.py having restored a snapshot first.
-Path(os.environ["SYSTEM_ROOT_DIRECTORY"]).mkdir(parents=True, exist_ok=True)
-Path(os.environ["DATA_ROOT_DIRECTORY"]).mkdir(parents=True, exist_ok=True)
+# and DATA_ROOT_DIRECTORY. Graph (Kuzu) and vector (LanceDB) configs resolve
+# to the same "databases" subfolder, so this one mkdir covers all three.
 (Path(os.environ["SYSTEM_ROOT_DIRECTORY"]) / "databases").mkdir(parents=True, exist_ok=True)
 # Override Cognee's current default (openai/gpt-5-mini) to stay within the
 # $10 budget cap. .env may still override this via LLM_MODEL if a different
