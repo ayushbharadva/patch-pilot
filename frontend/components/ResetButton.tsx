@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { RotateCcw } from "lucide-react";
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { RotateCcw } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,12 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { resetMemory } from "@/lib/api";
+} from '@/components/ui/dialog';
+import { resetMemory } from '@/lib/api';
 
 /** D-24 short human message for a failed Reset call -- must match
  * backend/reset.py's `_MSG_ERROR` exactly. */
-const RESET_ERROR_FALLBACK = "Could not reset memory. Please try again.";
+const RESET_ERROR_FALLBACK = 'Could not reset memory. Please try again.';
 
 /**
  * One-click, modal-guarded demo reset (DEMO-01, D-03/D-04/D-05). Unlike
@@ -46,10 +46,10 @@ export function ResetButton({ onReset }: { onReset?: () => void }) {
     const result = await resetMemory();
     setIsResetting(false);
 
-    if (result.status === "reset") {
+    if (result.status === 'reset') {
       setOpen(false);
       await queryClient.invalidateQueries();
-      toast.success("Memory reset to demo-ready state");
+      toast.success('Memory reset to demo-ready state');
       onReset?.();
     } else {
       setError(result.message || RESET_ERROR_FALLBACK);
@@ -70,15 +70,15 @@ export function ResetButton({ onReset }: { onReset?: () => void }) {
           type="button"
           variant="destructive"
           size="sm"
-          className="h-9 gap-1.5 rounded-full border-destructive/30 px-4 font-sans backdrop-blur hover:shadow-[0_0_20px_-6px_color-mix(in_oklch,var(--destructive)_70%,transparent)]"
+          className="h-9 gap-1.5 rounded-lg px-4 font-sans"
         >
           <RotateCcw aria-hidden="true" className="size-3.5" />
           Reset Demo
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-strong">
+      <DialogContent className="bg-popover">
         <DialogHeader>
-          <DialogTitle className="font-display text-lg">
+          <DialogTitle className="font-heading text-lg font-semibold">
             Reset memory to demo-ready state?
           </DialogTitle>
         </DialogHeader>
@@ -87,7 +87,9 @@ export function ResetButton({ onReset }: { onReset?: () => void }) {
           or feedback made during this session.
         </p>
         {error ? (
-          <p className="font-sans text-sm font-semibold text-destructive">{error}</p>
+          <p className="font-sans text-sm font-semibold text-destructive">
+            {error}
+          </p>
         ) : null}
         <DialogFooter>
           <Button
@@ -104,7 +106,7 @@ export function ResetButton({ onReset }: { onReset?: () => void }) {
             onClick={() => void handleReset()}
             disabled={isResetting}
           >
-            {isResetting ? "Resetting…" : "Confirm Reset"}
+            {isResetting ? 'Resetting…' : 'Confirm Reset'}
           </Button>
         </DialogFooter>
       </DialogContent>

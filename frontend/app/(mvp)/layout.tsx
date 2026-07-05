@@ -4,7 +4,6 @@ import { Space_Grotesk, Inter, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { AnimatedFavicon } from '@landing/components/layouts/animated-favicon';
 import { ThemeProvider } from '@landing/components/layouts/theme-provider';
-import { AuroraBackground } from '@/components/AuroraBackground';
 import { Providers } from '@/lib/providers';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -53,10 +52,6 @@ export default function RootLayout({
         <AnimatedFavicon />
         <ThemeProvider>
           <ClerkProvider>
-            {/* Global aurora/particle atmosphere — fixed, behind all content,
-                pointer-events-none. Mounted once here so it persists across the
-                search/graph views. */}
-            <AuroraBackground />
             <Providers>{children}</Providers>
             <Toaster />
           </ClerkProvider>

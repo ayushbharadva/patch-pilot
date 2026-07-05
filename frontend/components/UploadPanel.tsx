@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useEffect, useState, type ChangeEvent } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@clerk/nextjs";
-import { toast } from "sonner";
+import { useEffect, useState, type ChangeEvent } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
-import { FileStatusRow, type FileStatus } from "@/components/FileStatusRow";
+} from '@/components/ui/select';
+import { DATASETS_QUERY_KEY } from '@/components/DatasetList';
+import { FileStatusRow, type FileStatus } from '@/components/FileStatusRow';
 import {
   getGithubRepos,
   ingestGithub,
@@ -24,23 +24,23 @@ import {
   pollIngestStatus,
   uploadFiles,
   type ContentType,
-} from "@/lib/api";
-import { useSearchSession } from "@/lib/search-session";
+} from '@/lib/api';
+import { useSearchSession } from '@/lib/search-session';
 
 /** Content-type selector options + labels (D-01, copy from 02-UI-SPEC.md). */
 const CONTENT_TYPE_OPTIONS: { value: ContentType; label: string }[] = [
-  { value: "ticket", label: "Ticket" },
-  { value: "chat", label: "Chat log" },
-  { value: "changelog", label: "Changelog" },
-  { value: "release_note", label: "Release note" },
+  { value: 'ticket', label: 'Ticket' },
+  { value: 'chat', label: 'Chat log' },
+  { value: 'changelog', label: 'Changelog' },
+  { value: 'release_note', label: 'Release note' },
 ];
 
-const ALLOWED_EXTENSIONS = [".md", ".txt", ".json"];
+const ALLOWED_EXTENSIONS = ['.md', '.txt', '.json'];
 /** D-24 copy, exact string from 02-UI-SPEC.md's Copywriting Contract. */
 const UNSUPPORTED_FILE_MESSAGE =
   "That file type isn't supported. Upload a .md, .txt, or .json file.";
 /** D-05 toast copy, exact string from 02-UI-SPEC.md's Copywriting Contract. */
-const UPLOAD_ACCEPTED_TOAST = "Upload received — processing…";
+const UPLOAD_ACCEPTED_TOAST = 'Upload received — processing…';
 
 const POLL_INTERVAL_MS = 2000;
 
@@ -78,16 +78,16 @@ function hasAllowedExtension(filename: string): boolean {
 export function UploadPanel() {
   const queryClient = useQueryClient();
   const { recordLifecycleEvent } = useSearchSession();
-  const [contentType, setContentType] = useState<ContentType>("ticket");
-  const [releaseVersion, setReleaseVersion] = useState("");
+  const [contentType, setContentType] = useState<ContentType>('ticket');
+  const [releaseVersion, setReleaseVersion] = useState('');
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [rows, setRows] = useState<UploadRow[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingSample, setIsLoadingSample] = useState(false);
-  const [githubUsername, setGithubUsername] = useState("");
-  const [repoOwner, setRepoOwner] = useState("");
-  const [selectedRepo, setSelectedRepo] = useState("");
+  const [githubUsername, setGithubUsername] = useState('');
+  const [repoOwner, setRepoOwner] = useState('');
+  const [selectedRepo, setSelectedRepo] = useState('');
   const [isImportingGithub, setIsImportingGithub] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -98,9 +98,9 @@ export function UploadPanel() {
   const clerkGithubUsername =
     user?.externalAccounts?.find(
       (account) =>
-        account.provider === "github" ||
-        (account.provider as string) === "oauth_github",
-    )?.username ?? "";
+        account.provider === 'github' ||
+        (account.provider as string) === 'oauth_github',
+    )?.username ?? '';
   useEffect(() => {
     if (clerkGithubUsername && !githubUsername && !repoOwner) {
       setGithubUsername(clerkGithubUsername);
@@ -111,39 +111,44 @@ export function UploadPanel() {
   }, [clerkGithubUsername]);
 
   const reposQuery = useQuery({
-    queryKey: ["github-repos", repoOwner],
+    queryKey: ['github-repos', repoOwner],
     queryFn: () => getGithubRepos(repoOwner),
     enabled: repoOwner.length > 0,
     staleTime: 5 * 60 * 1000,
   });
-  const repos =
-    reposQuery.data?.status === "ok" ? reposQuery.data.repos : [];
+  const repos = reposQuery.data?.status === 'ok' ? reposQuery.data.repos : [];
   const reposError =
-    reposQuery.data?.status === "error" ? reposQuery.data.message : null;
+    reposQuery.data?.status === 'error' ? reposQuery.data.message : null;
 
   // D-05/D-22: poll every "processing" row's dataset until it flips to
   // ready/failed. Cognee reports status per dataset, not per file, so every
   // row sharing a dataset flips together.
   useEffect(() => {
     const processingDatasets = Array.from(
-      new Set(rows.filter((r) => r.status === "processing").map((r) => r.dataset)),
+      new Set(
+        rows.filter((r) => r.status === 'processing').map((r) => r.dataset),
+      ),
     );
     if (processingDatasets.length === 0) return;
 
     const interval = setInterval(() => {
       processingDatasets.forEach((dataset) => {
         void pollIngestStatus(dataset).then((status) => {
-          if (status === "ready" || status === "failed") {
+          if (status === 'ready' || status === 'failed') {
             setRows((prev) =>
               prev.map((r) =>
-                r.dataset === dataset && r.status === "processing" ? { ...r, status } : r,
+                r.dataset === dataset && r.status === 'processing'
+                  ? { ...r, status }
+                  : r,
               ),
             );
-            if (status === "ready") {
+            if (status === 'ready') {
               // Cognify has finished for this dataset -- refresh the
               // dataset list so its doc count reflects the completed
               // ingest (D-15), e.g. a newly uploaded workarounds_v{N}.
-              void queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
+              void queryClient.invalidateQueries({
+                queryKey: DATASETS_QUERY_KEY,
+              });
             }
           }
         });
@@ -165,8 +170,8 @@ export function UploadPanel() {
       setFormError(UNSUPPORTED_FILE_MESSAGE);
       return;
     }
-    if (contentType === "release_note" && !releaseVersion.trim()) {
-      setFormError("Enter a release version, e.g. 1.9.");
+    if (contentType === 'release_note' && !releaseVersion.trim()) {
+      setFormError('Enter a release version, e.g. 1.9.');
       return;
     }
 
@@ -174,8 +179,8 @@ export function UploadPanel() {
     const uploadingRows: UploadRow[] = filesToUpload.map((file) => ({
       id: nextRowId(),
       filename: file.name,
-      dataset: "",
-      status: "uploading",
+      dataset: '',
+      status: 'uploading',
       file,
       githubRepo: null,
     }));
@@ -187,13 +192,13 @@ export function UploadPanel() {
       files: filesToUpload,
       contentType,
       releaseVersion:
-        contentType === "release_note"
-          ? releaseVersion.trim().replace(/\./g, "_")
+        contentType === 'release_note'
+          ? releaseVersion.trim().replace(/\./g, '_')
           : undefined,
     });
     setIsUploading(false);
 
-    if (response.status === "error") {
+    if (response.status === 'error') {
       // Whole-batch rejection (validation failure) -- these files were
       // never queued at all, so drop the optimistic rows and surface a
       // single inline message rather than marking individual files Failed.
@@ -203,10 +208,12 @@ export function UploadPanel() {
     }
 
     toast.success(UPLOAD_ACCEPTED_TOAST);
-    recordLifecycleEvent("remember");
+    recordLifecycleEvent('remember');
     setRows((prev) =>
       prev.map((r) =>
-        uploadingIds.has(r.id) ? { ...r, status: "processing", dataset: response.dataset } : r,
+        uploadingIds.has(r.id)
+          ? { ...r, status: 'processing', dataset: response.dataset }
+          : r,
       ),
     );
     setPendingFiles([]);
@@ -220,7 +227,7 @@ export function UploadPanel() {
 
   function handleUploadClick() {
     if (pendingFiles.length === 0) {
-      setFormError("Choose at least one file to upload.");
+      setFormError('Choose at least one file to upload.');
       return;
     }
     void submitUpload(pendingFiles);
@@ -232,18 +239,18 @@ export function UploadPanel() {
     const response = await loadSampleData();
     setIsLoadingSample(false);
 
-    if (response.status === "error") {
+    if (response.status === 'error') {
       setFormError(response.message);
       return;
     }
 
     toast.success(UPLOAD_ACCEPTED_TOAST);
-    recordLifecycleEvent("remember");
+    recordLifecycleEvent('remember');
     const newRows: UploadRow[] = response.datasets.map((dataset) => ({
       id: nextRowId(),
       filename: dataset,
       dataset,
-      status: "processing",
+      status: 'processing',
       file: null,
       githubRepo: null,
     }));
@@ -254,7 +261,7 @@ export function UploadPanel() {
   async function submitGithub(repoFullName: string) {
     setFormError(null);
     if (!repoFullName.trim()) {
-      setFormError("Pick a repository to import.");
+      setFormError('Pick a repository to import.');
       return;
     }
 
@@ -264,13 +271,13 @@ export function UploadPanel() {
     const response = await ingestGithub(repoFullName.trim());
     setIsImportingGithub(false);
 
-    if (response.status === "error") {
+    if (response.status === 'error') {
       setFormError(response.message);
       return;
     }
 
     toast.success(UPLOAD_ACCEPTED_TOAST);
-    recordLifecycleEvent("remember");
+    recordLifecycleEvent('remember');
     // The backend fetched the issues synchronously, so each returned
     // filename is already queued -- rows start at "processing" directly
     // (no optimistic "uploading" phase like file uploads).
@@ -278,7 +285,7 @@ export function UploadPanel() {
       id: nextRowId(),
       filename,
       dataset: response.dataset,
-      status: "processing",
+      status: 'processing',
       file: null,
       githubRepo: repoFullName.trim(),
     }));
@@ -298,9 +305,11 @@ export function UploadPanel() {
   }
 
   return (
-    <Card className="glow-soft gap-6 p-6">
+    <Card className="gap-6 p-6">
       <CardHeader className="p-0">
-        <h2 className="font-display text-xl font-semibold text-gradient">Upload</h2>
+        <h2 className="font-display text-xl font-semibold text-foreground">
+          Upload
+        </h2>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 p-0">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -312,10 +321,10 @@ export function UploadPanel() {
               value={contentType}
               onValueChange={(value) => setContentType(value as ContentType)}
             >
-              <SelectTrigger className="glass h-10 w-full border-border/60 hover:border-accent-violet/40">
+              <SelectTrigger className="h-10 w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="glass-strong">
+              <SelectContent>
                 {CONTENT_TYPE_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
@@ -325,8 +334,8 @@ export function UploadPanel() {
             </Select>
           </div>
 
-          {contentType === "release_note" ? (
-            <div className="flex flex-1 flex-col gap-1.5 animate-rise-in">
+          {contentType === 'release_note' ? (
+            <div className="flex flex-1 flex-col gap-1.5">
               <label className="font-sans text-sm font-semibold text-foreground">
                 Release version
               </label>
@@ -344,8 +353,10 @@ export function UploadPanel() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-sm font-semibold text-foreground">Files</label>
-          <div className="glass rounded-lg px-3 py-2.5">
+          <label className="font-sans text-sm font-semibold text-foreground">
+            Files
+          </label>
+          <div className="bg-card ring-1 ring-foreground/10 rounded-lg px-3 py-2.5">
             <input
               key={fileInputKey}
               type="file"
@@ -367,9 +378,9 @@ export function UploadPanel() {
               value={githubUsername}
               onChange={(event) => setGithubUsername(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter") {
+                if (event.key === 'Enter') {
                   event.preventDefault();
-                  setSelectedRepo("");
+                  setSelectedRepo('');
                   setRepoOwner(githubUsername.trim());
                 }
               }}
@@ -381,13 +392,13 @@ export function UploadPanel() {
               type="button"
               variant="secondary"
               onClick={() => {
-                setSelectedRepo("");
+                setSelectedRepo('');
                 setRepoOwner(githubUsername.trim());
               }}
               disabled={!githubUsername.trim() || reposQuery.isFetching}
               className="font-sans text-sm font-semibold"
             >
-              {reposQuery.isFetching ? "Loading…" : "Load repos"}
+              {reposQuery.isFetching ? 'Loading…' : 'Load repos'}
             </Button>
           </div>
           {repoOwner && !reposQuery.isFetching ? (
@@ -395,17 +406,17 @@ export function UploadPanel() {
               <Select value={selectedRepo} onValueChange={setSelectedRepo}>
                 <SelectTrigger
                   aria-label="Pick a repository to import"
-                  className="glass h-10 flex-1 border-border/60 hover:border-accent-violet/40"
+                  className="h-10 flex-1"
                 >
                   <SelectValue
                     placeholder={
                       repos.length > 0
-                        ? "Pick a repository"
-                        : "No public repositories found"
+                        ? 'Pick a repository'
+                        : 'No public repositories found'
                     }
                   />
                 </SelectTrigger>
-                <SelectContent className="glass-strong">
+                <SelectContent>
                   {repos.map((repo) => (
                     <SelectItem key={repo.full_name} value={repo.full_name}>
                       {repo.full_name} · {repo.open_issues} open issues
@@ -419,7 +430,7 @@ export function UploadPanel() {
                 disabled={isImportingGithub || !selectedRepo}
                 className="font-sans text-sm font-semibold"
               >
-                {isImportingGithub ? "Importing…" : "Import Issues"}
+                {isImportingGithub ? 'Importing…' : 'Import Issues'}
               </Button>
             </div>
           ) : null}
@@ -430,14 +441,16 @@ export function UploadPanel() {
           ) : null}
           <p className="font-mono text-xs text-muted-foreground">
             {clerkGithubUsername
-              ? "Username detected from your GitHub sign-in. "
-              : "Sign in with GitHub to auto-detect your username. "}
+              ? 'Username detected from your GitHub sign-in. '
+              : 'Sign in with GitHub to auto-detect your username. '}
             Imports up to 10 issues as tickets into incidents.
           </p>
         </div>
 
         {formError ? (
-          <p className="font-sans text-sm font-semibold text-destructive">{formError}</p>
+          <p className="font-sans text-sm font-semibold text-destructive">
+            {formError}
+          </p>
         ) : null}
 
         <div className="flex flex-wrap gap-3">
@@ -466,7 +479,9 @@ export function UploadPanel() {
                 key={row.id}
                 filename={row.filename}
                 status={row.status}
-                onRetry={row.status === "failed" ? () => handleRetry(row) : undefined}
+                onRetry={
+                  row.status === 'failed' ? () => handleRetry(row) : undefined
+                }
               />
             ))}
           </div>

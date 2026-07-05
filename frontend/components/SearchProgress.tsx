@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /**
  * Shared progressive loading indicator for the LLM-bound (5–20s) search
@@ -28,9 +28,9 @@ import { cn } from "@/lib/utils";
  * render. Callers must NOT pass an inline array literal as `messages`.
  */
 const SEARCH_PROGRESS_MESSAGES = [
-  "Searching incident memory…",
-  "Analyzing root cause…",
-  "Gathering supporting evidence…",
+  'Searching incident memory…',
+  'Analyzing root cause…',
+  'Gathering supporting evidence…',
 ] as const;
 
 /** Advance the visible message every ~4s. */
@@ -41,11 +41,11 @@ const SEARCH_PROGRESS_REASSURANCE_DELAY_MS = 12000;
 
 /** Persistent reassurance — the first search warms the memory graph (real cold-start on the Mistral free tier). */
 const SEARCH_PROGRESS_REASSURANCE =
-  "Still working — the first search warms up the memory graph.";
+  'Still working — the first search warms up the memory graph.';
 
 /** One stable screen-reader sentence (never cycled) so the aria-live region announces once. */
 const DEFAULT_SR_LABEL =
-  "Searching incident memory. This can take up to 20 seconds.";
+  'Searching incident memory. This can take up to 20 seconds.';
 
 interface SearchProgressProps {
   /**
@@ -95,14 +95,14 @@ export function SearchProgress({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 font-sans text-sm text-muted-foreground",
+        'flex items-start gap-3 font-sans text-sm text-muted-foreground',
         className,
       )}
     >
       {showSpinner ? (
         <span
           aria-hidden="true"
-          className="glow-primary mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full"
+          className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full"
         >
           <Loader2 className="size-4 animate-spin text-accent-indigo" />
         </span>
@@ -111,8 +111,8 @@ export function SearchProgress({
         // aria-hidden, motion behind the reduced-motion-safe .animate-float guard.
         <span
           aria-hidden="true"
-          className="glow-primary animate-float mt-1 size-3 shrink-0 rounded-full"
-          style={{ backgroundImage: "var(--gradient-brand)" }}
+          className="mt-1 size-3 shrink-0 rounded-full"
+          style={{ backgroundImage: 'var(--gradient-brand)' }}
         />
       )}
       <div className="flex flex-col gap-1">
@@ -121,12 +121,15 @@ export function SearchProgress({
         {/* Cycling + reassurance copy is aria-hidden (see docblock). */}
         <span
           aria-hidden="true"
-          className="text-gradient font-display text-base font-semibold tracking-tight"
+          className="text-foreground font-display text-base font-semibold tracking-tight"
         >
           {messages[index]}
         </span>
         {showReassurance ? (
-          <span aria-hidden="true" className="text-xs italic text-muted-foreground/80">
+          <span
+            aria-hidden="true"
+            className="text-xs italic text-muted-foreground/80"
+          >
             {reassuranceMessage}
           </span>
         ) : null}

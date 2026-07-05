@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
-import { DatasetList } from "@/components/DatasetList";
-import { HealthDashboard } from "@/components/HealthDashboard";
-import { UploadPanel } from "@/components/UploadPanel";
-import { useSearchSession } from "@/lib/search-session";
+import { DatasetList } from '@/components/DatasetList';
+import { HealthDashboard } from '@/components/HealthDashboard';
+import { RouteHeader } from '@/components/RouteHeader';
+import { UploadPanel } from '@/components/UploadPanel';
+import { useSearchSession } from '@/lib/search-session';
 
 /**
  * Memory route: upload/ingest controls, the dataset list (with the
@@ -24,28 +25,34 @@ export default function MemoryPage() {
   const router = useRouter();
 
   async function handleForgotten() {
-    session.recordLifecycleEvent("forget");
+    session.recordLifecycleEvent('forget');
     if (!session.lastQuery) return;
-    await session.reSearch("forget");
-    toast.success("Diagnosis updated with current memory", {
+    await session.reSearch('forget');
+    toast.success('Diagnosis updated with current memory', {
       action: {
-        label: "View diagnosis",
-        onClick: () => router.push("/app"),
+        label: 'View diagnosis',
+        onClick: () => router.push('/app'),
       },
     });
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-10">
-      <section aria-label="Upload incident memory" className="animate-rise-in">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
+      <RouteHeader
+        eyebrow="Remember · Forget"
+        title="Memory"
+        description="Upload incidents, import GitHub issues, or load sample data. Manage datasets and forget stale workarounds after each release."
+      />
+
+      <section aria-label="Upload incident memory">
         <UploadPanel />
       </section>
 
-      <section aria-label="Datasets" className="animate-rise-in">
+      <section aria-label="Datasets">
         <DatasetList onForgotten={() => void handleForgotten()} />
       </section>
 
-      <section aria-label="Memory health" className="animate-rise-in">
+      <section aria-label="Memory health">
         <HealthDashboard />
       </section>
     </main>
