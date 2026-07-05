@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Database, History, Menu, Search, Share2, X } from "lucide-react";
+import { Database, History, Menu, MessageCircleQuestion, Search, Share2, X } from "lucide-react";
 
 import { LogoCrystal } from "@landing/components/layouts/logo-crystal";
 import { LifecycleStrip } from "@/components/LifecycleStrip";
@@ -18,6 +18,7 @@ const NAV = [
   { href: "/app", label: "Diagnose", icon: Search },
   { href: "/app/memory", label: "Memory", icon: Database },
   { href: "/app/graph", label: "Graph", icon: Share2 },
+  { href: "/app/ask", label: "Ask", icon: MessageCircleQuestion },
   { href: "/app/activity", label: "Activity", icon: History },
 ] as const;
 

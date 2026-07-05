@@ -48,6 +48,7 @@ from backend.forget import router as forget_router  # noqa: E402
 from backend.github_ingest import router as github_ingest_router  # noqa: E402
 from backend.graph import router as graph_router  # noqa: E402
 from backend.ingest import router as ingest_router  # noqa: E402
+from backend.qa import router as qa_router  # noqa: E402
 from backend.reset import router as reset_router  # noqa: E402
 from backend.search import router as search_router  # noqa: E402
 
@@ -123,3 +124,4 @@ app.include_router(forget_router)
 app.include_router(reset_router)
 app.include_router(graph_router)
 app.include_router(events_router)
+app.include_router(qa_router)

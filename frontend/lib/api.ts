@@ -485,6 +485,38 @@ export async function getOpsEvents(after = 0): Promise<OpsEventsResponse> {
   return (await res.json()) as OpsEventsResponse;
 }
 
+/**
+ * Repo Q&A wrapper mirroring backend/qa.py's `POST /qa` contract (QA-01):
+ * conversational recall over incident memory + synced GitHub issues, with a
+ * per-conversation session id so follow-ups see earlier turns.
+ */
+export type QaResponse =
+  | { status: "ok"; answer: string; session_id: string }
+  | { status: "no_answer"; message: string }
+  | { status: "error"; message: string };
+
+export async function askRepo({
+  question,
+  sessionId,
+}: {
+  question: string;
+  sessionId: string | null;
+}): Promise<QaResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/qa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, session_id: sessionId }),
+    });
+    if (!res.ok) {
+      return { status: "error", message: "Could not answer that. Please try again." };
+    }
+    return (await res.json()) as QaResponse;
+  } catch {
+    return { status: "error", message: "Could not answer that. Please try again." };
+  }
+}
+
 /** One dataset-list row (D-15): `{name}` mono + doc count, plus its
  * DRIFT-01/02/03 health state and (drifting rows only) a generated reason. */
 export interface DatasetInfo {
