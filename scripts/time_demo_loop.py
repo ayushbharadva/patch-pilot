@@ -8,42 +8,21 @@ payloads), timing the full search -> release upload -> drift badge ->
 forget -> re-search loop and asserting it lands under 120 seconds
 (DEMO-03).
 
-Canonical query: "customers double-charged" (locked in 01-03-PLAN.md; the
-Stripe arc, absent from decoy incidents).
+Canonical query: the SendGrid/forgot-password arc's flip query
+(seed/README.md B-02).
 
-DEVIATION FROM THE PLAN'S LITERAL v1_8 -> v1_9 SCRIPT (Rule 1 — found
-live-testing this task): 04-01-PLAN.md enriched the seed corpus so
-`seed_cli.py --seed` ingests BOTH `workarounds_v1_8` AND `workarounds_v1_9`
-from the start (not just v1_8) — verified live: immediately after a fresh
-`POST /reset`, `GET /datasets` already shows `workarounds_v1_8` as
-`"drifting"` and `workarounds_v1_9` as `"stable"`, and `POST /search`
-already answers with the v1.9 `idempotency_guard` fix. The release-upload
-step this plan's task description imagined (a fresh `workarounds_v1_9`
-being created live, flipping v1_8 to drifting for the first time) already
-happened at seed/snapshot time, not during the timed demo — this matches
-`.planning/STATE.md`'s Key Decisions ("root-cause flip happens at
-drift-detection/release-upload time, not forget time"), which Phase 3
-already validated live with exactly this baked-in-corpus shape. There is no
-way to reach a genuine "before v1_9 exists" state through the public HTTP
-API: `POST /forget` refuses to forget the current non-drifting highest
-version by design (CR-02 guard, `backend/forget.py`), and this harness
-deliberately stays HTTP-only rather than reaching for cognee's internals to
-bypass that guard.
-
-To still genuinely exercise EVERY piece of the named loop — a LIVE release
-upload that flips a dataset from stable to drifting, not just a rehash of a
-transition that already happened — this harness uploads a NEW release,
-`workarounds_v1_10` (a distinct, isolated fabricated "hardening" note, safe
-per the Cognee #1023 entity-isolation rule), which makes the *previously
-stable* `workarounds_v1_9` become the newly-drifting dataset the moment it
-finishes cognifying. The harness then forgets `workarounds_v1_9` and
-re-searches, proving the exact same code paths (ingest -> drift
-classification -> forget guard -> re-search-survives-forget) the plan's
-v1_8/v1_9 narrative describes, just shifted one version up because v1_8's
-transition is already baked into the reset snapshot. `workarounds_v1_8`
-itself is left untouched throughout (still drifting throughout, as it is at
-every reset) — the harness's own trailing `POST /reset` restores the
-canonical demo snapshot regardless of what this run created.
+SNAPSHOT REDESIGN (Jul 5, demo-dataset validation): the reset snapshot is
+now the PRE-RELEASE state — `incidents` (🟢) + `workarounds_v1_8` (🟢)
+only, `workarounds_v1_9` absent. This makes the timed loop the *literal*
+Core Value arc with a TRUE answer flip: the initial search answers with the
+old `flush_mail_queue` workaround (v1_8 is the highest live version, so it
+is stable and wins as primary); uploading the real
+`seed/workarounds_v1_9/sendgrid-release.md` as release 1.9 flips v1_8 to
+drifting live; forgetting v1_8 flips the re-search answer to the SendGrid
+API fix. No fabricated release note is needed anymore — the harness drives
+the exact same documents and datasets the recorded demo uses. The trailing
+`POST /reset` restores the canonical pre-release snapshot regardless of
+what this run created.
 
 NINTH DEVIATION (Rule 1 bug, fixed in `backend/reset.py`, not this script):
 `POST /reset` was failing with `{"status":"error"}` before this harness
@@ -66,22 +45,18 @@ import time
 import requests
 
 BASE_URL = "http://localhost:8000"
-QUERY = "customers double-charged"
+QUERY = "What is the fix for forgot password emails not sending?"
 BUDGET_SECONDS = 120.0
 
-# A fresh, isolated "hardening" release — distinct entity name
-# (webhook_dedup_lock) from every existing seed doc, so it cannot leak
-# across datasets or collide with the incidents/workarounds_v1_8/
-# workarounds_v1_9 corpus (Cognee #1023 mitigation, 01-03-PLAN.md rule).
-RELEASE_1_10_CONTENT = """# Release 1.10 -- idempotency_guard hardening
+# The REAL v1.9 release note (seed/README.md's before/after arc) — uploaded
+# live so the harness exercises the exact ingest -> drift -> forget ->
+# re-search loop the recorded demo performs, with the same document.
+from pathlib import Path  # noqa: E402
 
-The v1.9 idempotency_guard fix for duplicate Stripe webhook charges has been
-hardened in this release. A new distributed lock, webhook_dedup_lock, now
-guarantees exactly-once order creation even under concurrent webhook
-retries across multiple app instances, closing a narrow race window
-idempotency_guard alone could not cover. idempotency_guard is superseded by
-webhook_dedup_lock; no manual workaround is required.
-"""
+_RELEASE_1_9_PATH = (
+    Path(__file__).resolve().parent.parent / "seed" / "workarounds_v1_9" / "sendgrid-release.md"
+)
+RELEASE_1_9_CONTENT = _RELEASE_1_9_PATH.read_text()
 
 INGEST_POLL_INTERVAL_SECONDS = 1.0
 INGEST_POLL_TIMEOUT_SECONDS = 90.0
@@ -125,8 +100,8 @@ def step_search_initial() -> dict:
 
 
 def step_upload_release() -> None:
-    files = [("files", ("release-1_10.md", RELEASE_1_10_CONTENT, "text/markdown"))]
-    form = {"content_type": "release_note", "release_version": "1_10"}
+    files = [("files", ("sendgrid-release.md", RELEASE_1_9_CONTENT, "text/markdown"))]
+    form = {"content_type": "release_note", "release_version": "1_9"}
     resp = requests.post(f"{BASE_URL}/ingest", files=files, data=form, timeout=30)
     resp.raise_for_status()
     data = resp.json()
@@ -135,32 +110,32 @@ def step_upload_release() -> None:
 
     deadline = time.perf_counter() + INGEST_POLL_TIMEOUT_SECONDS
     while time.perf_counter() < deadline:
-        status_data = _get_json("/ingest/status", {"dataset": "workarounds_v1_10"})
+        status_data = _get_json("/ingest/status", {"dataset": "workarounds_v1_9"})
         if status_data.get("status") == "ready":
             return
         if status_data.get("status") == "failed":
             raise LoopFailure(f"ingest/status: dataset failed to process: {status_data!r}")
         time.sleep(INGEST_POLL_INTERVAL_SECONDS)
-    raise LoopFailure("ingest/status: timed out waiting for workarounds_v1_10 to become ready")
+    raise LoopFailure("ingest/status: timed out waiting for workarounds_v1_9 to become ready")
 
 
 def step_confirm_drift() -> None:
     datasets = _get_json("/datasets")
     by_name = {d["name"]: d for d in datasets}
-    v1_9 = by_name.get("workarounds_v1_9")
-    if v1_9 is None:
-        raise LoopFailure("datasets: workarounds_v1_9 missing after release upload")
-    if v1_9.get("drift_state") != "drifting":
+    v1_8 = by_name.get("workarounds_v1_8")
+    if v1_8 is None:
+        raise LoopFailure("datasets: workarounds_v1_8 missing after release upload")
+    if v1_8.get("drift_state") != "drifting":
         raise LoopFailure(
-            f"datasets: expected workarounds_v1_9 drift_state=drifting after v1_10 "
-            f"upload, got {v1_9.get('drift_state')!r}"
+            f"datasets: expected workarounds_v1_8 drift_state=drifting after v1_9 "
+            f"upload, got {v1_8.get('drift_state')!r}"
         )
-    if not v1_9.get("drift_reason"):
-        raise LoopFailure("datasets: workarounds_v1_9 is drifting but has no drift_reason")
+    if not v1_8.get("drift_reason"):
+        raise LoopFailure("datasets: workarounds_v1_8 is drifting but has no drift_reason")
 
 
 def step_forget() -> None:
-    data = _post_json("/forget", {"dataset": "workarounds_v1_9"})
+    data = _post_json("/forget", {"dataset": "workarounds_v1_8"})
     if data.get("status") != "forgotten":
         raise LoopFailure(f"forget: expected status=forgotten, got {data!r}")
 
@@ -174,8 +149,8 @@ def step_search_after_forget() -> dict:
         )
     datasets = _get_json("/datasets")
     names = {d["name"] for d in datasets}
-    if "workarounds_v1_9" in names:
-        raise LoopFailure("datasets: workarounds_v1_9 still present after forget")
+    if "workarounds_v1_8" in names:
+        raise LoopFailure("datasets: workarounds_v1_8 still present after forget")
     return data
 
 

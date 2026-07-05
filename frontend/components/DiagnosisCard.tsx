@@ -1,29 +1,40 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { useState } from 'react';
+import { Check, ChevronDown, SearchX } from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SearchProgress } from "@/components/SearchProgress";
-import { acceptFeedback, type EvidenceSnippet, type SearchResponse } from "@/lib/api";
-import { versionTagFromDataset } from "@/lib/version";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/EmptyState';
+import { SearchProgress } from '@/components/SearchProgress';
+import {
+  acceptFeedback,
+  type EvidenceSnippet,
+  type SearchResponse,
+} from '@/lib/api';
+import { versionTagFromDataset } from '@/lib/version';
+import { resolveMarkdown } from '@/lib/markdown';
+import { cn } from '@/lib/utils';
 
 /** D-07: at most 3 evidence snippets shown, even if the backend ever sends more. */
 const EVIDENCE_DISPLAY_LIMIT = 3;
 
 /** Shared card padding token (UI-SPEC spacing scale `lg` = 24px). */
-const CARD_SPACING = "[--card-spacing:1.5rem]";
+const CARD_SPACING = '[--card-spacing:1.5rem]';
 
-type HealthState = "stable" | "aging" | "drifting";
+type HealthState = 'stable' | 'aging' | 'drifting';
 
 interface VersionTagBadgeProps {
   dataset: string | null;
@@ -41,18 +52,18 @@ interface VersionTagBadgeProps {
 // reliably; the data-health-state hooks below still drive border/text color.
 // Drifting (🔴) additionally throbs via .animate-drift-pulse (DESIGN-SYSTEM).
 const DRIFT_GLOW: Record<HealthState, string> = {
-  stable: "glow-drift-stable",
-  aging: "glow-drift-aging",
-  drifting: "glow-drift-drifting animate-drift-pulse",
+  stable: '',
+  aging: '',
+  drifting: '',
 };
 
 function VersionTagBadge({ dataset, healthState }: VersionTagBadgeProps) {
   return (
     <Badge
       variant="outline"
-      data-health-state={healthState ?? "neutral"}
+      data-health-state={healthState ?? 'neutral'}
       className={cn(
-        "shrink-0 font-mono text-xs font-normal text-muted-foreground transition-shadow data-[health-state=aging]:border-drift-aging data-[health-state=aging]:text-drift-aging data-[health-state=drifting]:border-drift-drifting data-[health-state=drifting]:text-drift-drifting data-[health-state=stable]:border-drift-stable data-[health-state=stable]:text-drift-stable",
+        'shrink-0 font-mono text-xs font-normal text-muted-foreground transition-shadow data-[health-state=aging]:border-drift-aging data-[health-state=aging]:text-drift-aging data-[health-state=drifting]:border-drift-drifting data-[health-state=drifting]:text-drift-drifting data-[health-state=stable]:border-drift-stable data-[health-state=stable]:text-drift-stable',
         healthState ? DRIFT_GLOW[healthState] : undefined,
       )}
     >
@@ -69,8 +80,8 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
       open={open}
       onOpenChange={setOpen}
       className={cn(
-        "glass rounded-xl border-foreground/10 transition-all duration-200 hover:border-foreground/25 hover:shadow-lg",
-        open && "glow-soft",
+        'bg-card ring-1 ring-foreground/10 rounded-xl border-foreground/10 transition-all duration-200 hover:border-foreground/25 hover:shadow-lg',
+        open && '',
       )}
     >
       <div className="flex items-start justify-between gap-2 p-3">
@@ -81,33 +92,37 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
             </p>
           ) : null}
           <p className="font-sans text-base text-muted-foreground">
-            {snippet.excerpt}
+            {resolveMarkdown(snippet.excerpt)}
           </p>
         </div>
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            aria-label={open ? "Collapse full evidence" : "Expand full evidence"}
+            aria-label={
+              open ? 'Collapse full evidence' : 'Expand full evidence'
+            }
             aria-expanded={open}
-            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             <ChevronDown
-              className={`size-4 transition-transform duration-200 ${open ? "rotate-180 text-accent-indigo" : ""}`}
+              className={`size-4 transition-transform duration-200 ${open ? 'rotate-180 text-accent-indigo' : ''}`}
             />
           </button>
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent className="border-t border-foreground/10 px-3 pt-3 pb-3">
-        <p className="font-sans text-base text-foreground">{snippet.full_text}</p>
+        <p className="font-sans text-base whitespace-pre-line text-foreground">
+          {resolveMarkdown(snippet.full_text)}
+        </p>
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-type SearchResponseOk = Extract<SearchResponse, { status: "ok" }>;
+type SearchResponseOk = Extract<SearchResponse, { status: 'ok' }>;
 
 /** D-24 short human message for a failed Accept call. */
-const ACCEPT_ERROR_FALLBACK = "Could not save feedback. Please try again.";
+const ACCEPT_ERROR_FALLBACK = 'Could not save feedback. Please try again.';
 
 /**
  * Accept Fix / Dismiss controls (D-10/D-11/D-12/D-13) — apply to the whole
@@ -148,7 +163,7 @@ function AcceptDismissControls({
     });
     setIsAccepting(false);
 
-    if (result.status === "reinforced") {
+    if (result.status === 'reinforced') {
       setAccepted(true);
       onReSearch?.();
     } else {
@@ -162,7 +177,7 @@ function AcceptDismissControls({
         {accepted ? (
           <span
             aria-live="polite"
-            className="glass glow-drift-stable inline-flex items-center gap-1.5 rounded-full border-drift-stable/40 px-3 py-1.5 font-sans text-sm font-semibold text-drift-stable animate-rise-in"
+            className="bg-card ring-1 ring-foreground/10 inline-flex items-center gap-1.5 rounded-full border-drift-stable/40 px-3 py-1.5 font-sans text-sm font-semibold text-drift-stable"
           >
             <Check className="size-4" aria-hidden="true" />
             Reinforced ✓
@@ -189,7 +204,9 @@ function AcceptDismissControls({
         ) : null}
       </div>
       {error ? (
-        <p className="font-sans text-sm font-semibold text-destructive">{error}</p>
+        <p className="font-sans text-sm font-semibold text-destructive">
+          {error}
+        </p>
       ) : null}
     </div>
   );
@@ -215,7 +232,7 @@ function ReinforcementBadge({
   return (
     <Badge
       variant="outline"
-      className="glow-drift-stable shrink-0 border-drift-stable/40 font-mono text-xs font-normal text-drift-stable"
+      className="shrink-0 border-drift-stable/40 font-mono text-xs font-normal text-drift-stable"
     >
       {label}
     </Badge>
@@ -241,14 +258,14 @@ function DiagnosisCardOk({
   if (dismissed) return null;
 
   return (
-    <Card className={`${CARD_SPACING} gap-6 glow-primary animate-rise-in`}>
+    <Card className={`${CARD_SPACING} gap-6`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="flex-1 space-y-1.5">
-          <p className="text-gradient font-mono text-[11px] font-medium tracking-[0.2em] uppercase">
+          <p className="text-foreground font-mono text-[11px] font-medium tracking-[0.2em] uppercase">
             Root cause
           </p>
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-tight text-foreground">
-            {response.root_cause}
+            {resolveMarkdown(response.root_cause)}
           </h2>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -259,7 +276,7 @@ function DiagnosisCardOk({
           {response.confidence != null ? (
             <Badge
               variant="outline"
-              className="glow-soft shrink-0 border-accent-indigo/40 font-mono text-xs font-normal text-accent-indigo"
+              className="shrink-0 border-accent-indigo/40 font-mono text-xs font-normal text-accent-indigo"
             >
               {Math.round(response.confidence * 100)}% confidence
             </Badge>
@@ -276,7 +293,7 @@ function DiagnosisCardOk({
         {evidence.length > 0 ? (
           evidence.map((snippet, index) => (
             <EvidenceItem
-              key={`${snippet.source ?? "evidence"}-${index}`}
+              key={`${snippet.source ?? 'evidence'}-${index}`}
               snippet={snippet}
             />
           ))
@@ -316,9 +333,9 @@ export function DiagnosisCard({
   onReSearch?: () => void;
   reinforcedFrom?: number | null;
 }) {
-  if (response.status === "error") {
+  if (response.status === 'error') {
     return (
-      <Card className={`${CARD_SPACING} border-destructive/30 animate-rise-in`}>
+      <Card className={`${CARD_SPACING} border-destructive/30`}>
         <CardContent>
           <p className="font-sans text-sm font-semibold text-destructive">
             {response.message}
@@ -328,13 +345,15 @@ export function DiagnosisCard({
     );
   }
 
-  if (response.status === "no_results") {
+  if (response.status === 'no_results') {
     return (
-      <Card className={`${CARD_SPACING} animate-rise-in`}>
+      <Card className={`${CARD_SPACING}`}>
         <CardContent>
-          <p className="font-sans text-base text-muted-foreground">
-            No prior incidents found for this query
-          </p>
+          <EmptyState
+            icon={SearchX}
+            title="No prior incidents found for this query"
+            hint="Try different words, or grow the memory by importing GitHub issues or uploading tickets."
+          />
         </CardContent>
       </Card>
     );
@@ -360,7 +379,7 @@ export function DiagnosisCard({
  */
 export function DiagnosisCardSkeleton() {
   return (
-    <Card className={`${CARD_SPACING} gap-6 glow-soft animate-rise-in`}>
+    <Card className={`${CARD_SPACING} gap-6`}>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <Skeleton className="h-8 w-3/4" />
         <Skeleton className="h-5 w-14 rounded-full" />

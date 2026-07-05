@@ -139,6 +139,7 @@ from backend.datasets import (  # noqa: E402
     WORKAROUNDS_V1_9,
     workarounds_dataset,
 )
+from backend.events import record_event  # noqa: E402
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -261,6 +262,11 @@ async def _ingest_one(text: str, filename: str, dataset_name: str) -> None:
     try:
         await cognee.add(text, dataset_name=dataset_name)
         await cognee.cognify(datasets=[dataset_name])
+        record_event(
+            "remember",
+            dataset=dataset_name,
+            detail=f"{filename} cognified into the knowledge graph",
+        )
     except Exception:  # noqa: BLE001 - D-23/D-24
         logger.exception("ingest failed for %s in %s", filename, dataset_name)
 
@@ -361,6 +367,11 @@ async def _load_dataset_docs(dataset_name: str, folder) -> None:
         for doc_path in doc_paths:
             await cognee.add(doc_path.read_text(), dataset_name=dataset_name)
         await cognee.cognify(datasets=[dataset_name])
+        record_event(
+            "remember",
+            dataset=dataset_name,
+            detail=f"{len(doc_paths)} sample doc(s) cognified into the knowledge graph",
+        )
     except Exception:  # noqa: BLE001 - D-23/D-24
         logger.exception(
             "sample load failed for dataset=%s (%d docs)", dataset_name, len(doc_paths)

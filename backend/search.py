@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import INCIDENTS  # noqa: E402
+from backend.events import record_drift_states, record_event  # noqa: E402
 from backend.sessions import new_session_id  # noqa: E402
 
 # NOTE: backend.drift is intentionally NOT imported at module level here.
@@ -323,6 +324,8 @@ async def search(request: SearchRequest):
     # about which dataset is drifting during that transient window.
     all_names = await _all_workaround_dataset_names(all_datasets)
     drift_states = compute_drift_states(all_names)
+    # OPS-01: one drift event per NEWLY 🔴 dataset (diffed inside events.py).
+    record_drift_states(drift_states)
     primary = _pick_primary_result(root_cause_results, drift_states)
     evidence = _flatten_and_truncate(evidence_results, limit=EVIDENCE_LIMIT)
 
@@ -349,6 +352,16 @@ async def search(request: SearchRequest):
     # Best-effort: _confidence_from_results never raises, yielding None on
     # any parse issue rather than failing the search (T-04-12).
     confidence = _confidence_from_results(evidence_results)
+
+    source_dataset = primary.get("dataset_name") if primary else None
+    confidence_note = (
+        f" · {round(confidence * 100)}% confidence" if confidence is not None else ""
+    )
+    record_event(
+        "recall",
+        dataset=source_dataset,
+        detail=f"“{query[:80]}” answered from memory{confidence_note}",
+    )
 
     return {
         "status": "ok",

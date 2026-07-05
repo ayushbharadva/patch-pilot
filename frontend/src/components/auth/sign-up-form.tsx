@@ -207,8 +207,12 @@ export function SignUpForm() {
     try {
       const { error: ssoError } = await signUp.sso({
         strategy,
-        redirectUrl: '/sso-callback',
-        redirectCallbackUrl: '/app',
+        // Where the browser lands once the OAuth flow completes and a session
+        // exists (no extra requirements). Must be an in-app destination.
+        redirectUrl: '/app',
+        // Intermediate handler that finalizes the session / transfers to
+        // sign-in when the account already exists.
+        redirectCallbackUrl: '/sso-callback',
       });
       if (ssoError) {
         setError(
@@ -295,7 +299,7 @@ export function SignUpForm() {
             setError(null);
             setCode('');
           }}
-          className="w-full text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="w-full cursor-pointer text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           ← Back to sign up
         </button>
@@ -394,7 +398,7 @@ export function SignUpForm() {
             <button
               type="button"
               onClick={() => setShowPassword((s) => !s)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-foreground/60 transition-colors hover:text-foreground"
+              className="absolute top-1/2 right-3.5 -translate-y-1/2 cursor-pointer text-foreground/60 transition-colors hover:text-foreground"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >

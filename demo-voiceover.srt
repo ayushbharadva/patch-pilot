@@ -1,0 +1,115 @@
+1
+00:00:00,000 --> 00:00:04,000
+Every engineering team has a memory problem.
+
+2
+00:00:04,000 --> 00:00:10,000
+The fix for last quarter's incident lives in a closed ticket, a Slack thread, or someone's head.
+
+3
+00:00:10,000 --> 00:00:17,000
+And half of that tribal knowledge is stale — the workaround everyone remembers was replaced two releases ago.
+
+4
+00:00:17,000 --> 00:00:21,000
+PatchPilot is incident memory that never goes stale.
+
+5
+00:00:21,000 --> 00:00:27,000
+It's built end-to-end on Cognee's memory lifecycle — remember, recall, improve, forget —
+
+6
+00:00:27,000 --> 00:00:32,000
+and you're about to watch every one of those four verbs work, live.
+
+7
+00:00:32,000 --> 00:00:37,000
+Sign-up and sign-in are real — Clerk auth with email or OAuth.
+
+8
+00:00:37,000 --> 00:00:42,000
+I'll sign in with GitHub — and that choice is about to matter,
+
+9
+00:00:42,000 --> 00:00:48,000
+because PatchPilot treats your repo as a memory source, not just a login.
+
+10
+00:00:48,000 --> 00:00:55,000
+This is remember. My GitHub username came from the sign-in — I pick a repo, hit Sync Now,
+
+11
+00:00:55,000 --> 00:01:03,000
+and its real issues become incident memory — each one through Cognee's add and cognify, into a knowledge graph.
+
+12
+00:01:03,000 --> 00:01:10,000
+And sync is incremental: next click only pulls issues opened since this one. Continuous memory, not a one-time import.
+
+13
+00:01:10,000 --> 00:01:15,000
+Now the on-call moment: users aren't getting password-reset emails.
+
+14
+00:01:15,000 --> 00:01:22,000
+I search — and PatchPilot recalls the incident with a recommendation, a real confidence score,
+
+15
+00:01:22,000 --> 00:01:29,000
+and the exact evidence chunks it's grounded in — graph search fused with chunk-level evidence.
+
+16
+00:01:29,000 --> 00:01:35,000
+Note the answer: run the flush_mail_queue script. That was the right fix… in version 1.8.
+
+17
+00:01:35,000 --> 00:01:43,000
+Then release one-point-nine ships, migrating email to the SendGrid API. I upload the release note —
+
+18
+00:01:43,000 --> 00:01:49,000
+and watch the old workaround. PatchPilot flagged it red — drifting —
+
+19
+00:01:49,000 --> 00:01:54,000
+with a reason generated live from the new release's knowledge graph.
+
+20
+00:01:54,000 --> 00:02:00,000
+In the memory graph, that red cluster is the stale knowledge, isolated in its own dataset.
+
+21
+00:02:00,000 --> 00:02:08,000
+Stale memory doesn't get archived — it gets forgotten. One click, Cognee's surgical forget, that dataset only.
+
+22
+00:02:08,000 --> 00:02:17,000
+Same search, seconds later — the answer has flipped to the current fix. The durable incident history survived untouched.
+
+23
+00:02:17,000 --> 00:02:25,000
+I accept the fix, and improve reinforces it — the next recall ranks it even higher.
+
+24
+00:02:25,000 --> 00:02:31,000
+There's even a conversational layer — same memory, session-aware follow-ups.
+
+25
+00:02:31,000 --> 00:02:38,000
+And the operations feed shows everything you just watched, as lifecycle events:
+
+26
+00:02:38,000 --> 00:02:45,000
+remembered, recalled, drift caught, forgotten, reinforced. The memory is alive — you can see it think.
+
+27
+00:02:45,000 --> 00:02:52,000
+Remember, recall, improve, forget — every lifecycle verb load-bearing, self-hosted on the open-source stack:
+
+28
+00:02:52,000 --> 00:02:57,000
+Kuzu, LanceDB, SQLite. The whole loop runs in twenty seconds.
+
+29
+00:02:57,000 --> 00:03:00,000
+PatchPilot — every bug remembers its history.

@@ -46,6 +46,26 @@ _REASON_TIMEOUT_SECONDS = 10
 # a blank reason.
 _FALLBACK_REASON = "A newer release supersedes this workaround."
 
+# Live-testing the 1-doc SendGrid corpus (Jul 5): GRAPH_COMPLETION against a
+# tiny single-doc dataset sometimes returns a clarification request ("Please
+# provide the specific release details ...") instead of an answer — showing
+# that as the 🔴 drift caption would be an on-camera embarrassment. These
+# markers extend search.py's ungrounded-answer detection with the
+# clarification-request phrasings observed live; any hit degrades to the
+# deterministic fallback.
+_UNGROUNDED_REASON_MARKERS = (
+    "please provide",
+    "please share",
+    "please specify",
+    "could you provide",
+    "can you provide",
+    "i need more",
+    "more information",
+    "more details",
+    "which release",
+    "what release",
+)
+
 # Pattern 4 / B-02 -- module-level, single-worker-safe cache (per
 # .claude/CLAUDE.md's --workers 1 constraint). Keyed on (drifting_name,
 # current_highest_name) so a cached reason is reused only while the exact
@@ -129,6 +149,16 @@ async def generate_drift_reason(newest_dataset_name: str) -> str:
         # ["sentence"] rather than a bare string) renders the Python list
         # repr ("['sentence']") instead of the clean sentence text.
         text = " ".join(_result_text(r.get("search_result")) for r in results).strip()
+        # Reuse search.py's no-grounding detection, plus the
+        # clarification-request markers above — a generic or "please
+        # provide…" reply must never render as the drift caption.
+        from backend.search import _is_ungrounded_answer
+
+        normalized = text.lower()
+        if _is_ungrounded_answer(text) or any(
+            marker in normalized for marker in _UNGROUNDED_REASON_MARKERS
+        ):
+            return _FALLBACK_REASON
         return text or _FALLBACK_REASON
     except Exception:  # noqa: BLE001 - D-24: never leak raw exception text
         logger.exception("drift reason generation failed for dataset=%s", newest_dataset_name)

@@ -18,6 +18,7 @@ from fastapi import APIRouter  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
+from backend.events import record_event  # noqa: E402
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -71,6 +72,11 @@ async def accept_feedback(request: AcceptRequest):
             # Library default is 0.1 — explicit 1.0 makes one Accept fully
             # set the normalized score in a single call (RESEARCH §2).
             feedback_alpha=1.0,
+        )
+        record_event(
+            "improve",
+            dataset=request.source_dataset,
+            detail="Fix accepted — memory reinforced via improve(feedback_alpha=1.0)",
         )
         return {"status": "reinforced"}
     except Exception:  # noqa: BLE001 - D-24: never leak raw exception text

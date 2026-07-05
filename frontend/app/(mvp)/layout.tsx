@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
-import { AuroraBackground } from '@/components/AuroraBackground';
+import { AnimatedFavicon } from '@landing/components/layouts/animated-favicon';
+import { ThemeProvider } from '@landing/components/layouts/theme-provider';
 import { Providers } from '@/lib/providers';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -38,24 +39,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Neural-dark by default (260703-vga): `dark` is hardcoded so the elevated
-    // dark theme renders with zero JS/hydration dependency AND every component's
-    // `dark:` utility variants stay active. suppressHydrationWarning guards the
-    // <html> attribute set from any client theming that may run later.
+    // Theme is managed by next-themes (attribute="class", defaultTheme="dark",
+    // enableSystem) — the same provider the marketing site uses — so /app now
+    // supports light AND dark with the landing palette in both.
+    // suppressHydrationWarning: next-themes stamps the class on <html> client-side.
     <html
       lang="en"
-      className={`dark ${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="relative min-h-full flex flex-col font-sans">
-        <ClerkProvider>
-          {/* Global aurora/particle atmosphere — fixed, behind all content,
-              pointer-events-none. Mounted once here so it persists across the
-              search/graph views. */}
-          <AuroraBackground />
-          <Providers>{children}</Providers>
-          <Toaster />
-        </ClerkProvider>
+        <AnimatedFavicon />
+        <ThemeProvider>
+          <ClerkProvider>
+            <Providers>{children}</Providers>
+            <Toaster />
+          </ClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

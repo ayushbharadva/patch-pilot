@@ -23,32 +23,32 @@ export function AuroraBackground() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 50% -10%, color-mix(in oklch, var(--accent-violet) 16%, transparent) 0%, transparent 55%), radial-gradient(90% 70% at 100% 100%, color-mix(in oklch, var(--accent-cyan) 12%, transparent) 0%, transparent 50%), radial-gradient(90% 80% at 0% 100%, color-mix(in oklch, var(--accent-indigo) 14%, transparent) 0%, transparent 55%)",
+            'radial-gradient(120% 90% at 50% -10%, color-mix(in oklch, var(--accent-violet) 16%, transparent) 0%, transparent 55%), radial-gradient(90% 70% at 100% 100%, color-mix(in oklch, var(--accent-cyan) 12%, transparent) 0%, transparent 50%), radial-gradient(90% 80% at 0% 100%, color-mix(in oklch, var(--accent-indigo) 14%, transparent) 0%, transparent 55%)',
         }}
       />
 
       {/* Aurora blobs — large, heavily blurred, slowly drifting. */}
       <div
-        className="animate-aurora absolute -top-40 -left-32 size-[42rem] rounded-full opacity-60 blur-[120px]"
+        className="animate-pulse absolute -top-40 -left-32 size-[42rem] rounded-full opacity-60 blur-[120px]"
         style={{
           background:
-            "radial-gradient(circle at 30% 30%, color-mix(in oklch, var(--accent-indigo) 70%, transparent), transparent 70%)",
+            'radial-gradient(circle at 30% 30%, color-mix(in oklch, var(--accent-indigo) 70%, transparent), transparent 70%)',
         }}
       />
       <div
-        className="animate-aurora absolute top-1/4 -right-40 size-[38rem] rounded-full opacity-50 blur-[130px]"
+        className="animate-pulse absolute top-1/4 -right-40 size-[38rem] rounded-full opacity-50 blur-[130px]"
         style={{
-          animationDelay: "-7s",
+          animationDelay: '-7s',
           background:
-            "radial-gradient(circle at 60% 40%, color-mix(in oklch, var(--accent-violet) 65%, transparent), transparent 70%)",
+            'radial-gradient(circle at 60% 40%, color-mix(in oklch, var(--accent-violet) 65%, transparent), transparent 70%)',
         }}
       />
       <div
-        className="animate-aurora absolute -bottom-48 left-1/3 size-[40rem] rounded-full opacity-40 blur-[140px]"
+        className="animate-pulse absolute -bottom-48 left-1/3 size-[40rem] rounded-full opacity-40 blur-[140px]"
         style={{
-          animationDelay: "-14s",
+          animationDelay: '-14s',
           background:
-            "radial-gradient(circle at 50% 50%, color-mix(in oklch, var(--accent-cyan) 55%, transparent), transparent 70%)",
+            'radial-gradient(circle at 50% 50%, color-mix(in oklch, var(--accent-cyan) 55%, transparent), transparent 70%)',
         }}
       />
 
@@ -59,7 +59,10 @@ export function AuroraBackground() {
         viewBox="0 0 1200 800"
         fill="none"
       >
-        <g stroke="color-mix(in oklch, var(--accent-indigo) 55%, transparent)" strokeWidth="0.6">
+        <g
+          stroke="color-mix(in oklch, var(--accent-indigo) 55%, transparent)"
+          strokeWidth="0.6"
+        >
           <line x1="140" y1="120" x2="320" y2="230" />
           <line x1="320" y1="230" x2="230" y2="430" />
           <line x1="320" y1="230" x2="540" y2="180" />
@@ -71,7 +74,10 @@ export function AuroraBackground() {
           <line x1="980" y1="220" x2="1060" y2="440" />
           <line x1="700" y1="540" x2="900" y2="660" />
         </g>
-        <g className="animate-float" fill="color-mix(in oklch, var(--foreground) 70%, transparent)">
+        <g
+          className="animate-pulse"
+          fill="color-mix(in oklch, var(--foreground) 70%, transparent)"
+        >
           <circle cx="140" cy="120" r="2.5" />
           <circle cx="320" cy="230" r="3" />
           <circle cx="540" cy="180" r="2" />

@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import INCIDENTS  # noqa: E402
+from backend.events import record_event  # noqa: E402
 from backend.search import _WORKAROUNDS_VERSION_RE  # noqa: E402
 
 router = APIRouter()
@@ -84,6 +85,11 @@ async def forget_dataset(request: ForgetRequest):
         for key in [k for k in _reason_cache if k[0] == request.dataset]:
             del _reason_cache[key]
 
+        record_event(
+            "forget",
+            dataset=request.dataset,
+            detail="Stale workaround surgically removed via forget(dataset=…)",
+        )
         return {"status": "forgotten", "dataset": request.dataset}
     except Exception:  # noqa: BLE001 - D-24: never leak raw exception text
         logger.exception("forget failed for dataset=%s", request.dataset)

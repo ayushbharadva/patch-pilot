@@ -51,7 +51,7 @@ from cognee import SearchType  # noqa: E402
 
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bugs)
 
-SEED_FILE = _REPO_ROOT / "seed" / "incidents" / "stripe-double-charge-incident.md"
+SEED_FILE = _REPO_ROOT / "seed" / "incidents" / "forgot-password-incident.md"
 
 FIXTURE_TEXT = (
     "Widget dashboard freezes when a user uploads a CSV larger than 10MB. "
@@ -131,7 +131,7 @@ async def test_uploadfile_add_no_temp_file():
 
         # A follow-up search must complete without raising.
         results = await cognee.search(
-            query_text="customers double-charged",
+            query_text="forgot password emails not sending",
             query_type=SearchType.GRAPH_COMPLETION,
             datasets=[dataset_name],
         )
@@ -157,13 +157,13 @@ async def test_search_latency(capsys):
 
         start = time.perf_counter()
         await cognee.search(
-            query_text="customers double-charged",
+            query_text="forgot password emails not sending",
             query_type=SearchType.GRAPH_COMPLETION,
             datasets=[dataset_name],
             feedback_influence=0.5,
         )
         await cognee.search(
-            query_text="customers double-charged",
+            query_text="forgot password emails not sending",
             query_type=SearchType.CHUNKS,
             datasets=[dataset_name],
             top_k=5,

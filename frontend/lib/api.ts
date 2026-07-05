@@ -143,6 +143,104 @@ export async function uploadFiles({
   }
 }
 
+/** One repo row from GET /github/repos (GIT-02 repo picker). */
+export interface GithubRepo {
+  full_name: string;
+  description: string;
+  open_issues: number;
+  pushed_at: string | null;
+}
+
+export type GithubReposResponse =
+  | { status: "ok"; repos: GithubRepo[] }
+  | { status: "error"; message: string };
+
+/**
+ * GET `${API_BASE}/github/repos?username=...` (GIT-02) -- lists a user's
+ * public repos for the in-app picker. Network/parse failures normalize to
+ * the `error` variant (D-24), same convention as every other call here.
+ */
+export async function getGithubRepos(username: string): Promise<GithubReposResponse> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/github/repos?username=${encodeURIComponent(username)}`,
+    );
+    if (!res.ok) {
+      return { status: "error", message: "Couldn't load repositories. Please try again." };
+    }
+    return (await res.json()) as GithubReposResponse;
+  } catch {
+    return { status: "error", message: "Couldn't load repositories. Please try again." };
+  }
+}
+
+/**
+ * POST {url} to `${API_BASE}/ingest/github` (GIT-01) -- fetches GitHub
+ * issue(s) server-side and ingests them as tickets. The response reuses
+ * IngestResponse exactly (same {status, dataset, files} accepted shape as
+ * POST /ingest), so callers share the status-polling + row-rendering path.
+ */
+export async function ingestGithub(url: string): Promise<IngestResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/ingest/github`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Couldn't fetch from GitHub. Please try again.",
+      };
+    }
+
+    return (await res.json()) as IngestResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Couldn't fetch from GitHub. Please try again.",
+    };
+  }
+}
+
+/** Discriminated union matching backend/github_ingest.py's POST /github/sync
+ * response exactly (GIT-03): accepted (new issues queued), up_to_date
+ * (nothing new since the last sync watermark), or error. */
+export type GithubSyncResponse =
+  | { status: "accepted"; dataset: string; files: string[]; new_count: number }
+  | { status: "up_to_date"; message: string; new_count: 0 }
+  | { status: "error"; message: string };
+
+/**
+ * POST {url} to `${API_BASE}/github/sync` (GIT-03 "Sync Now") -- incremental
+ * issue sync: only issues created since the last sync are fetched and
+ * ingested. First sync of a repo behaves like the one-time import.
+ */
+export async function syncGithub(url: string): Promise<GithubSyncResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/github/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Couldn't sync from GitHub. Please try again.",
+      };
+    }
+
+    return (await res.json()) as GithubSyncResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Couldn't sync from GitHub. Please try again.",
+    };
+  }
+}
+
 /**
  * GET `${API_BASE}/ingest/status?dataset=...` (D-05/D-22 polling). Network
  * failures resolve to "processing" rather than throwing, so a transient
@@ -344,6 +442,81 @@ export async function resetMemory(): Promise<ResetResponse> {
   }
 }
 
+/**
+ * Ops-feed wrappers mirroring backend/events.py's `GET /events` contract
+ * (OPS-01) — the live Memory Operations feed + analytics tiles.
+ */
+
+/** Lifecycle event kinds — must match backend/events.py's EVENT_KINDS. */
+export type OpsEventKind =
+  | "remember"
+  | "recall"
+  | "improve"
+  | "forget"
+  | "drift"
+  | "reset";
+
+/** One recorded lifecycle event (OPS-01). */
+export interface OpsEvent {
+  seq: number;
+  ts: string;
+  kind: OpsEventKind;
+  dataset: string | null;
+  detail: string;
+}
+
+export interface OpsEventsResponse {
+  status: "ok";
+  events: OpsEvent[];
+  latest_seq: number;
+  stats: Record<OpsEventKind, number>;
+}
+
+/**
+ * GET `${API_BASE}/events?after=N` (OPS-01). Throws on !ok (same shape as
+ * listDatasets) so useQuery surfaces the error state; the feed component
+ * renders its own quiet error branch.
+ */
+export async function getOpsEvents(after = 0): Promise<OpsEventsResponse> {
+  const res = await fetch(`${API_BASE}/events?after=${after}`);
+  if (!res.ok) {
+    throw new Error("Could not load memory operations.");
+  }
+  return (await res.json()) as OpsEventsResponse;
+}
+
+/**
+ * Repo Q&A wrapper mirroring backend/qa.py's `POST /qa` contract (QA-01):
+ * conversational recall over incident memory + synced GitHub issues, with a
+ * per-conversation session id so follow-ups see earlier turns.
+ */
+export type QaResponse =
+  | { status: "ok"; answer: string; session_id: string }
+  | { status: "no_answer"; message: string }
+  | { status: "error"; message: string };
+
+export async function askRepo({
+  question,
+  sessionId,
+}: {
+  question: string;
+  sessionId: string | null;
+}): Promise<QaResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/qa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, session_id: sessionId }),
+    });
+    if (!res.ok) {
+      return { status: "error", message: "Could not answer that. Please try again." };
+    }
+    return (await res.json()) as QaResponse;
+  } catch {
+    return { status: "error", message: "Could not answer that. Please try again." };
+  }
+}
+
 /** One dataset-list row (D-15): `{name}` mono + doc count, plus its
  * DRIFT-01/02/03 health state and (drifting rows only) a generated reason. */
 export interface DatasetInfo {
@@ -373,11 +546,14 @@ export async function listDatasets(): Promise<DatasetInfo[]> {
  * chunk text ever crosses the wire.
  */
 
-/** One graph node — id/label/group only (backend trims everything else). */
+/** One graph node — id/label/group + owning dataset and its drift state
+ * (GRAPH-02; backend trims everything else). */
 export interface GraphNode {
   id: string;
   label: string;
   group: string;
+  dataset: string;
+  drift_state: DriftState;
 }
 
 /** One graph link — source/target/label only. */

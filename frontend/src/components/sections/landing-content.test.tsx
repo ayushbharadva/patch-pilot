@@ -1,6 +1,12 @@
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// FinalCta calls Clerk's useUser(); these are content-quality tests, not
+// auth tests, so stub the hook rather than mounting a real ClerkProvider.
+vi.mock("@clerk/nextjs", () => ({
+	useUser: () => ({ isSignedIn: false, user: null, isLoaded: true }),
+}));
+
 import { DiagnosisPreview } from "@landing/components/sections/diagnosis-preview";
 import { DriftPreview } from "@landing/components/sections/drift-preview";
 import { FinalCta } from "@landing/components/sections/final-cta";

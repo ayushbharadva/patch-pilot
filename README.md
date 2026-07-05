@@ -1,23 +1,36 @@
 # PatchPilot
 
+**Engineering memory that never goes stale.**
+
 *Every bug remembers its history.*
 
-PatchPilot is a living incident-memory system for small SaaS and engineering teams. It ingests tickets, chats, changelogs, and past fixes into [Cognee](https://github.com/topoteretes/cognee), recalls prior incidents with root-cause recommendations backed by evidence, reinforces fixes engineers confirm, and — when a release ships — detects which old workarounds have gone stale (**Memory Drift**) and forgets them.
+PatchPilot is a living incident-memory system for engineering teams, built end-to-end on [Cognee](https://github.com/topoteretes/cognee)'s memory lifecycle. It **remembers** your incidents — imported straight from your GitHub repo's issues or uploaded as tickets, chats, and changelogs — **recalls** prior incidents with evidence-backed root-cause recommendations, **improves** by reinforcing the fixes engineers confirm, and — when a release ships — detects which old workarounds have gone stale (**Memory Drift**) and **forgets** them. It never recommends a fix the latest version already replaced.
 
 **Target users:** small SaaS / engineering teams whose incident knowledge is scattered across GitHub, Slack, tickets, and people's heads.
 
-> Built for **The Hangover Part AI: Where's My Context?** hackathon (WeMakeDevs × Cognee, Jun 29 – Jul 5, 2026). Not a monetized product.
+> Built for **The Hangover Part AI: Where's My Context?** hackathon (WeMakeDevs × Cognee, Jun 29 – Jul 5, 2026). Not a monetized product. *(Unrelated to the academic `ucsb-mlsec/PatchPilot` patching framework — name coincidence.)*
+
+## The Cognee Memory Lifecycle, End to End
+
+Every leg of Cognee's **Remember → Recall → Improve → Forget** lifecycle is load-bearing here — remove any one and the product stops working. The app's header tracks live counters for all four operations as you use it.
+
+| Lifecycle leg | What PatchPilot does | Cognee calls |
+|---|---|---|
+| **Remember** | Incrementally **Sync Now** GitHub issues from your own repo (picked in-app, no URL pasting; only issues opened since the last sync) or upload tickets/chats/changelogs; each release gets its own dataset | `cognee.add(...)` + `cognee.cognify(datasets=[...])` per-dataset |
+| **Recall** | Evidence-grounded diagnosis: root cause + the exact prior-incident chunks that back it; plus **Ask your repo** — conversational Q&A where follow-ups share one Cognee session | `cognee.search(GRAPH_COMPLETION)` fused with `cognee.search(CHUNKS)`; session-threaded `search(..., session_id=...)` |
+| **Improve** | "Accept fix" reinforces the answer's source dataset; confidence visibly rises | `add_feedback(session_id, qa_id)` + `cognee.improve(dataset, feedback_alpha=1.0)` |
+| **Forget** | Memory Drift flags superseded workarounds 🔴 with a live LLM-generated reason; one click surgically removes just that dataset | `cognee.forget(dataset="workarounds_v{N}")` |
 
 ## Core Value
 
 The visible loop that makes PatchPilot obviously impossible without Cognee's full memory lifecycle:
 
-1. **Search** a bug (`"customers double-charged"`) → recall returns the incident **and** the old workaround, with evidence.
-2. **Upload** a release note that supersedes the workaround → Memory Drift flags it 🔴 (drifting), with a live, Cognee-generated reason string.
+1. **Search** a bug (`"forgot password email not sending"`) → recall returns the incident **and** the old workaround (run the `flush_mail_queue` script), with evidence.
+2. **Upload** the v1.9 release note (SendGrid migration) that supersedes the workaround → Memory Drift flags it 🔴 (drifting), with a live, Cognee-generated reason string.
 3. **Forget** the drifting workaround → it's surgically removed via `forget(dataset=...)`; the durable incident record is untouched.
-4. **Re-search** the same query → recall now returns only the new, correct fix.
+4. **Re-search** the same query → the answer **flips** to the new, correct fix ("use the SendGrid API") — and the 🔴 cluster disappears from the 3D memory graph.
 
-The whole loop runs visibly in **under 120 seconds** (measured locally at ~23.6s — see [Demo-loop timing](#features-built-and-working) below), driven end-to-end by Cognee's `add` → `cognify` → `search` → `improve` → `forget` lifecycle — not a search index with a UI bolted on.
+The whole loop runs visibly in **under 120 seconds** (measured locally at **19.7s** — see [Demo-loop timing](#features-built-and-working) below), driven end-to-end by the lifecycle above — not a search index with a UI bolted on.
 
 ## Project Status
 
@@ -36,17 +49,20 @@ Source: `.planning/STATE.md` progress block (`percent: 100`, `completed_phases: 
 
 Every feature below is live and maps to a completed requirement in `.planning/REQUIREMENTS.md`:
 
+- **GitHub incremental sync** (`GIT-01`, `GIT-02`, `GIT-03`) — sign in with GitHub (Clerk OAuth), and PatchPilot auto-detects your username, lists your repositories in-app, and **Sync Now** pulls a picked repo's real issues (title, body, labels, comments) as incident memory. Sync is incremental: a per-repo watermark + ingested-issue-number set (persisted inside the memory root, so demo Reset resets it in lockstep) means each sync fetches only issues opened since the last one — continuous memory, not a one-time import. Server-side SSRF guard: the client never supplies a URL; owner/repo components are allowlist-validated and requests are always built against the fixed `api.github.com` host.
+- **Live Memory Operations feed + analytics** (`OPS-01`) — every lifecycle action the backend performs (`remember`, `recall`, `improve`, `forget`, plus drift catches and resets) is recorded and streamed to a live feed on the Activity page with per-verb analytics tiles — you can watch the memory think in real time.
+- **Ask your repo** (`QA-01`) — conversational Q&A over the same live memory (synced GitHub issues included). One Cognee session id is threaded through the conversation, so follow-up questions ("and how do we work around it *today*?") resolve against earlier turns — session memory as the lifecycle's conversational face.
 - **Multi-source ingest** (`INGEST-01`, `INGEST-02`, `INGEST-03`) — upload ticket/chat/changelog files or load bundled sample datasets ("Load Sample"); content is ingested via Cognee `add()` + `cognify()` in a background task. Durable incidents and per-release workarounds live in separate datasets (`incidents` vs `workarounds_v{N}`) so forgetting can be surgical.
 - **Evidence-grounded diagnosis card** (`RECALL-01`, `RECALL-02`, `RECALL-03`) — search a bug and get a root-cause recommendation via `search(GRAPH_COMPLETION)`, fused with the exact prior-incident evidence via `search(CHUNKS)`, rendered as one card.
 - **Confidence badge** (`STRETCH-01`) — a real `[0, 1]` confidence score derived from the CHUNKS retriever's own similarity score (best result across all queried datasets), shown directly on the diagnosis card. Best-effort: a malformed score degrades to `confidence: null`, never fails `/search`.
 - **Release ingestion** (`RELEASE-01`) — upload a release note and it's stored as a versioned `workarounds_v{N}` dataset, visible in the dataset list.
 - **Memory Drift detection** (`DRIFT-01`, `DRIFT-02`, `DRIFT-03`) — every memory carries a health badge (🟢 Stable / 🟡 Aging / 🔴 Drifting); a 🔴 badge ships with a live, human-readable, Cognee-generated reason string (e.g. "Release v1.9 patches the component this workaround targets").
 - **Surgical Forget with proof** (`FORGET-01`, `FORGET-02`) — a guarded `POST /forget` removes a dataset via `forget(dataset="workarounds_v{N}")`; the durable `incidents` dataset and the current highest-version release can never be forgotten this way. The frontend's two-step inline confirm triggers an automatic re-search, making the before/after flip visible end-to-end.
-- **Memory Graph view** (`GRAPH-01` / `STRETCH-04`) — a 3D force-directed graph (`react-force-graph-3d`) rendering the real, aggregated Cognee knowledge graph, with click-to-explore node detail. `GET /graph` strips all chunk text server-side before anything crosses to the browser — only `{id, label, group}` nodes and `{source, target, label}` links are exposed.
+- **Memory Graph view** (`GRAPH-01`, `GRAPH-02` / `STRETCH-04`) — a 3D force-directed graph (`react-force-graph-3d`) rendering the real, aggregated Cognee knowledge graph, with click-to-explore node detail. Nodes are **colored by their dataset's drift state** (🟢 stable / 🔴 drifting / cyan durable incidents) with a legend — forgetting a drifting dataset visibly removes its red cluster. `GET /graph` strips all chunk text server-side before anything crosses to the browser — only `{id, label, group, dataset, drift_state}` nodes and `{source, target, label}` links are exposed.
 - **Memory Health dashboard** (`STRETCH-02`) — a live tally of 🟢/🟡/🔴 dataset health, sharing the same `/datasets` query cache as the dataset list.
 - **Incident Timeline** (`STRETCH-03`) — a chronological view of incidents and releases.
 - **One-click Demo Reset** (`DEMO-01`) — a confirm modal drives a tar snapshot restore (`scripts/snapshot_memory.py`) that instantly restores the pre-demo dataset state — zero additional LLM cost, no `prune()` + reseed needed.
-- **Demo-loop timing** (`DEMO-03`) — `scripts/time_demo_loop.py` is an HTTP-only harness (no `cognee` import) that drives `/reset → search → ingest release → drift check → forget → re-search → /graph` over real HTTP and asserts the timed portion stays under the 120s budget. Latest live measurement: **23.6s total**, well under budget.
+- **Demo-loop timing** (`DEMO-03`) — `scripts/time_demo_loop.py` is an HTTP-only harness (no `cognee` import) that drives `/reset → search → ingest the real v1.9 release note → drift check → forget → re-search → /graph` over real HTTP — the literal Core Value arc with a true answer flip — and asserts the timed portion stays under the 120s budget. Latest live measurement: **19.7s total**, well under budget.
 - **Persistence** (`PLAT-01`, `PLAT-02`) — `GET /health/cognee` proves a full add → cognify → search round-trip in under 30s; memory survives a server restart (file-based Kuzu/LanceDB/SQLite storage, not an ephemeral filesystem).
 
 ## Known Caveats / Honest Limitations
@@ -84,6 +100,8 @@ Next.js (App Router)  --HTTP-->  FastAPI  -->  Cognee (self-hosted: graph + vect
 
 Memory persists to `.patchpilot_memory/` at the repo root (gitignored) so it survives process restarts. CORS is locked to a single allowed origin: `http://localhost:3000`.
 
+**Self-hosted by design, Cloud-ready by architecture** — this submission targets the open-source track and runs Cognee fully self-hosted (Kuzu + LanceDB + SQLite, all file-based, zero extra infra). Because every operation is already dataset-scoped, the same code ports to Cognee Cloud by swapping the backend configuration.
+
 **Endpoint reference** (`backend/*.py`):
 
 | Concern | Method | Path | Module |
@@ -98,6 +116,8 @@ Memory persists to `.patchpilot_memory/` at the repo root (gitignored) so it sur
 | Forget | `POST` | `/forget` | `forget.py` |
 | Reset | `POST` | `/reset` | `reset.py` |
 | Graph | `GET` | `/graph` | `graph.py` |
+| GitHub repo list | `GET` | `/github/repos` | `github_ingest.py` |
+| GitHub issue import | `POST` | `/ingest/github` | `github_ingest.py` |
 
 ## How to Run
 
@@ -152,10 +172,12 @@ Opens on `http://localhost:3000` — the only origin the backend's CORS policy a
 
 ## Seed Corpus
 
-`seed/` is the human-authored source of truth for the demo memory (11 Markdown documents across 3 folders — `seed/README.md`'s own count of "8" predates the Phase 4 corpus enrichment and is stale). Three datasets: `incidents` (5 docs, durable, survives every forget), `workarounds_v1_8` (3 docs, the old fix, gets forgotten), `workarounds_v1_9` (3 docs, the new fix, survives forget). Canonical demo query: **`"customers double-charged"`**.
+`seed/` is the human-authored source of truth for the demo memory (11 Markdown documents across 3 folders). Three datasets: `incidents` (5 docs, durable, survives every forget), `workarounds_v1_8` (3 docs, the old fix, gets forgotten), `workarounds_v1_9` (3 docs, the new fix, survives forget). Canonical demo query: **`"customers double-charged"`**.
 
 ## License & Disclosure
 
-No `LICENSE` file exists in this repository — all rights reserved by default (no open-source license has been declared).
+Licensed under the [MIT License](LICENSE).
 
-This is a hackathon submission (WeMakeDevs × Cognee, "The Hangover Part AI: Where's My Context?"). AI-assistant usage was used throughout development and is disclosed per the hackathon's house rules.
+**AI-assistant disclosure** (per the hackathon's house rules): this project was built with substantial AI assistance throughout — **Claude Code** (Anthropic; Claude Fable 5 / Sonnet / Opus models) for planning, implementation, review, and documentation (including the submission-day features: the live Memory Operations feed, incremental GitHub Sync Now, Ask-your-repo Q&A, dataset validation, the deployment plan, and this demo script/voiceover), and **Kiro** for early frontend spec drafts. All architecture decisions, verification, and the final submission were human-reviewed.
+
+This is a hackathon submission (WeMakeDevs × Cognee, "The Hangover Part AI: Where's My Context?").

@@ -1,23 +1,17 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
-  /* Locked typefaces (02-UI-SPEC.md "Typography"): Space Grotesk for
-     display/headings, Inter for body/UI (also the default --font-sans),
-     IBM Plex Mono for technical strings (version tags, dataset names,
-     inline query text). Weights are strictly 400/600. */
   --font-sans: var(--font-inter);
   --font-body: var(--font-inter);
   --font-display: var(--font-space-grotesk);
   --font-heading: var(--font-space-grotesk);
   --font-mono: var(--font-ibm-plex-mono);
-
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -47,6 +41,25 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-drift-stable: var(--drift-stable);
+  --color-drift-stable-foreground: var(--drift-stable-foreground);
+  --color-drift-aging: var(--drift-aging);
+  --color-drift-aging-foreground: var(--drift-aging-foreground);
+  --color-drift-drifting: var(--drift-drifting);
+  --color-drift-drifting-foreground: var(--drift-drifting-foreground);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-glow: var(--glow);
+  --color-glow-cyan: var(--glow-cyan);
+  --color-glow-violet: var(--glow-violet);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-violet: var(--accent-violet);
+  --color-gradient-start: var(--gradient-start);
+  --color-gradient-mid: var(--gradient-mid);
+  --color-gradient-end: var(--gradient-end);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -54,301 +67,176 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-
-  /* Neural-dark brand accent ramp (260703-vga redesign) — indigo -> violet
-     -> cyan. Registered here so Tailwind v4 generates text-accent-indigo /
-     bg-accent-violet / border-accent-cyan etc. for the fan-out agents. */
-  --color-accent-indigo: var(--accent-indigo);
-  --color-accent-violet: var(--accent-violet);
-  --color-accent-cyan: var(--accent-cyan);
-
-  /* Drift-badge palette (03-UI-SPEC.md) -- registers the :root values below so
-     Tailwind v4 generates bg-drift-, text-drift-, and border-drift- utilities. */
-  --color-drift-stable: var(--color-drift-stable);
-  --color-drift-aging: var(--color-drift-aging);
-  --color-drift-drifting: var(--color-drift-drifting);
 }
 
 /* ============================================================================
-   NEURAL MEMORY dark theme — token values ported verbatim from the landing
-   page's dark palette (src/globals.css `.dark` block, the second/winning
-   declaration) so /app and the marketing site read as one product.
-
-   The app is dark-by-default: <html class="dark"> is hardcoded in layout.tsx
-   AND the palette lives directly on :root, so the look is guaranteed with
-   zero JS/hydration dependency, while the `dark` class keeps every
-   component's `dark:` utility variants active.
-
-   Deep slate-blue canvas; cyan primary; cyan->blue->violet accent ramp
-   matching the landing's gradient-start/mid/end. Redefining these existing
-   token *values* (names unchanged) instantly re-skins every component that
-   uses bg-background, bg-card, text-foreground, border-border, bg-primary,
-   the drift-* utilities, etc. — no per-component edit required.
+   VERBATIM TOKEN VALUES — copied from src/globals.css (the landing/auth
+   source of truth). /app and the marketing site now share ONE palette in
+   both light and dark. No divergent "neural-dark" overrides.
    ========================================================================== */
 :root {
-  color-scheme: dark;
-
-  --background: oklch(0.17 0.018 255); /* deep slate-blue (landing dark bg) */
-  --foreground: oklch(0.95 0.006 220);
-  --card: oklch(0.21 0.02 255); /* elevated surface (solid fallback; .glass overrides the visual) */
-  --card-foreground: oklch(0.95 0.006 220);
-  --popover: oklch(0.21 0.02 255); /* opaque enough for dropdowns/selects to stay readable */
-  --popover-foreground: oklch(0.95 0.006 220);
-  --primary: oklch(0.74 0.12 192); /* electric cyan — CTAs, focus, active chip (landing CTA color) */
-  --primary-foreground: oklch(0.16 0.03 220);
-  --secondary: oklch(0.27 0.02 255);
-  --secondary-foreground: oklch(0.95 0.006 220);
-  --muted: oklch(0.26 0.018 255);
-  --muted-foreground: oklch(0.72 0.015 220); /* readable muted on dark */
-  --accent: oklch(0.31 0.04 200); /* neutral hover state (distinct from brand accent ramp) */
-  --accent-foreground: oklch(0.95 0.02 195);
-  --destructive: oklch(0.63 0.19 20);
-  --border: oklch(0.31 0.02 255 / 60%); /* hairline (glass uses foreground-mix directly) */
-  --input: oklch(0.31 0.02 255 / 50%);
-  --ring: oklch(0.74 0.12 192); /* cyan focus ring, visible on dark glass */
-  --chart-1: oklch(0.74 0.12 192);
-  --chart-2: oklch(0.66 0.13 230);
-  --chart-3: oklch(0.66 0.16 290);
-  --chart-4: oklch(0.72 0.15 155);
-  --chart-5: oklch(0.8 0.14 80);
+  /* Neural Memory — Light Mode (clean, indigo-tinted neutrals) */
+  --background: oklch(0.985 0.005 275);
+  --foreground: oklch(0.22 0.025 275);
+  --card: oklch(1 0.002 275);
+  --card-foreground: oklch(0.22 0.025 275);
+  --popover: oklch(1 0.002 275);
+  --popover-foreground: oklch(0.22 0.025 275);
+  --primary: oklch(0.55 0.18 230);
+  --primary-foreground: oklch(0.99 0.01 230);
+  --secondary: oklch(0.96 0.012 275);
+  --secondary-foreground: oklch(0.28 0.03 275);
+  --muted: oklch(0.96 0.012 275);
+  --muted-foreground: oklch(0.5 0.02 275);
+  --accent: oklch(0.94 0.025 280);
+  --accent-foreground: oklch(0.3 0.04 280);
+  --destructive: oklch(0.58 0.2 20);
+  --border: oklch(0.9 0.012 275);
+  --input: oklch(0.9 0.012 275);
+  --ring: oklch(0.55 0.18 230);
+  --chart-1: oklch(0.55 0.18 230);
+  --chart-2: oklch(0.6 0.16 280);
+  --chart-3: oklch(0.62 0.15 195);
+  --chart-4: oklch(0.6 0.14 155);
+  --chart-5: oklch(0.74 0.15 75);
   --radius: 0.75rem;
-
-  --sidebar: oklch(0.19 0.019 255);
-  --sidebar-foreground: oklch(0.95 0.006 220);
-  --sidebar-primary: oklch(0.74 0.12 192);
-  --sidebar-primary-foreground: oklch(0.16 0.03 220);
-  --sidebar-accent: oklch(0.31 0.04 200);
-  --sidebar-accent-foreground: oklch(0.95 0.02 195);
-  --sidebar-border: oklch(0.31 0.02 255 / 60%);
-  --sidebar-ring: oklch(0.74 0.12 192);
-
-  /* Brand accent ramp + master gradient (reused by .text-gradient /
-     .border-gradient). Variable names kept (components reference them);
-     values now map onto the landing ramp: indigo slot -> landing blue,
-     violet slot -> landing violet, cyan slot -> landing primary cyan. */
-  --accent-indigo: oklch(0.66 0.13 230);
-  --accent-violet: oklch(0.66 0.16 290);
-  --accent-cyan: oklch(0.74 0.12 192);
-  --gradient-brand: linear-gradient(
-    135deg,
-    oklch(0.72 0.13 192) 0%,
-    oklch(0.6 0.13 225) 50%,
-    oklch(0.52 0.15 290) 100%
-  ); /* identical stops/angle to the landing's dark .text-gradient */
-
-  /* Drift palette — landing dark drift tokens (names unchanged so
-     DatasetList/DiagnosisCard keep working). */
-  --color-drift-stable: oklch(0.72 0.15 155);
-  --color-drift-aging: oklch(0.8 0.14 80);
-  --color-drift-drifting: oklch(0.68 0.19 15);
+  --drift-stable: oklch(0.6 0.14 155);
+  --drift-stable-foreground: oklch(0.98 0.02 155);
+  --drift-aging: oklch(0.75 0.15 75);
+  --drift-aging-foreground: oklch(0.26 0.05 75);
+  --drift-drifting: oklch(0.58 0.2 15);
+  --drift-drifting-foreground: oklch(0.98 0.02 15);
+  --surface-elevated: oklch(1 0.002 275);
+  --surface-sunken: oklch(0.97 0.008 275);
+  --surface-1: oklch(0.99 0.004 275);
+  --surface-2: oklch(0.97 0.008 275);
+  --surface-3: oklch(0.95 0.012 275);
+  --glow: oklch(0.55 0.18 230 / 25%);
+  --glow-cyan: oklch(0.7 0.15 195 / 25%);
+  --glow-violet: oklch(0.55 0.2 285 / 25%);
+  --accent-cyan: oklch(0.7 0.15 195);
+  --accent-violet: oklch(0.55 0.2 285);
+  --gradient-start: oklch(0.6 0.17 230);
+  --gradient-mid: oklch(0.58 0.18 260);
+  --gradient-end: oklch(0.55 0.2 290);
+  --sidebar: oklch(0.98 0.006 275);
+  --sidebar-foreground: oklch(0.22 0.025 275);
+  --sidebar-primary: oklch(0.55 0.18 230);
+  --sidebar-primary-foreground: oklch(0.99 0.01 230);
+  --sidebar-accent: oklch(0.94 0.025 280);
+  --sidebar-accent-foreground: oklch(0.3 0.04 280);
+  --sidebar-border: oklch(0.9 0.012 275);
+  --sidebar-ring: oklch(0.55 0.18 230);
 }
 
-/* Kept for robustness: <html> always carries `.dark`, so re-declare the same
-   tokens here — identical to :root — in case anything toggles the class. */
 .dark {
-  --background: oklch(0.17 0.018 255);
-  --foreground: oklch(0.95 0.006 220);
-  --card: oklch(0.21 0.02 255);
-  --card-foreground: oklch(0.95 0.006 220);
-  --popover: oklch(0.21 0.02 255);
-  --popover-foreground: oklch(0.95 0.006 220);
-  --primary: oklch(0.74 0.12 192);
-  --primary-foreground: oklch(0.16 0.03 220);
-  --secondary: oklch(0.27 0.02 255);
-  --secondary-foreground: oklch(0.95 0.006 220);
-  --muted: oklch(0.26 0.018 255);
-  --muted-foreground: oklch(0.72 0.015 220);
-  --accent: oklch(0.31 0.04 200);
-  --accent-foreground: oklch(0.95 0.02 195);
-  --destructive: oklch(0.63 0.19 20);
-  --border: oklch(0.31 0.02 255 / 60%);
-  --input: oklch(0.31 0.02 255 / 50%);
-  --ring: oklch(0.74 0.12 192);
-  --chart-1: oklch(0.74 0.12 192);
-  --chart-2: oklch(0.66 0.13 230);
-  --chart-3: oklch(0.66 0.16 290);
+  /* Neural Memory — Dark Mode (deep indigo/violet base, electric cyan accents) */
+  --background: oklch(0.15 0.025 275);
+  --foreground: oklch(0.96 0.008 270);
+  --card: oklch(0.19 0.028 275);
+  --card-foreground: oklch(0.96 0.008 270);
+  --popover: oklch(0.19 0.028 275);
+  --popover-foreground: oklch(0.96 0.008 270);
+  --primary: oklch(0.78 0.15 195);
+  --primary-foreground: oklch(0.15 0.03 230);
+  --secondary: oklch(0.25 0.025 275);
+  --secondary-foreground: oklch(0.96 0.008 270);
+  --muted: oklch(0.24 0.022 275);
+  --muted-foreground: oklch(0.72 0.018 270);
+  --accent: oklch(0.3 0.05 280);
+  --accent-foreground: oklch(0.92 0.02 195);
+  --destructive: oklch(0.65 0.2 20);
+  --border: oklch(0.3 0.025 275 / 55%);
+  --input: oklch(0.3 0.025 275 / 50%);
+  --ring: oklch(0.78 0.15 195);
+  --chart-1: oklch(0.78 0.15 195);
+  --chart-2: oklch(0.68 0.16 280);
+  --chart-3: oklch(0.7 0.14 230);
   --chart-4: oklch(0.72 0.15 155);
   --chart-5: oklch(0.8 0.14 80);
-  --sidebar: oklch(0.19 0.019 255);
-  --sidebar-foreground: oklch(0.95 0.006 220);
-  --sidebar-primary: oklch(0.74 0.12 192);
-  --sidebar-primary-foreground: oklch(0.16 0.03 220);
-  --sidebar-accent: oklch(0.31 0.04 200);
-  --sidebar-accent-foreground: oklch(0.95 0.02 195);
-  --sidebar-border: oklch(0.31 0.02 255 / 60%);
-  --sidebar-ring: oklch(0.74 0.12 192);
-  --color-drift-stable: oklch(0.72 0.15 155);
-  --color-drift-aging: oklch(0.8 0.14 80);
-  --color-drift-drifting: oklch(0.68 0.19 15);
+  --drift-stable: oklch(0.72 0.15 155);
+  --drift-stable-foreground: oklch(0.16 0.03 155);
+  --drift-aging: oklch(0.8 0.14 80);
+  --drift-aging-foreground: oklch(0.18 0.04 80);
+  --drift-drifting: oklch(0.68 0.19 15);
+  --drift-drifting-foreground: oklch(0.98 0.01 15);
+  --surface-elevated: oklch(0.22 0.03 275);
+  --surface-sunken: oklch(0.12 0.02 275);
+  --surface-1: oklch(0.17 0.025 275);
+  --surface-2: oklch(0.2 0.028 275);
+  --surface-3: oklch(0.23 0.03 275);
+  --glow: oklch(0.78 0.15 195 / 40%);
+  --glow-cyan: oklch(0.78 0.15 195 / 35%);
+  --glow-violet: oklch(0.6 0.2 285 / 35%);
+  --accent-cyan: oklch(0.78 0.15 195);
+  --accent-violet: oklch(0.65 0.2 285);
+  --gradient-start: oklch(0.72 0.15 195);
+  --gradient-mid: oklch(0.62 0.18 250);
+  --gradient-end: oklch(0.55 0.2 290);
+  --sidebar: oklch(0.17 0.025 275);
+  --sidebar-foreground: oklch(0.96 0.008 270);
+  --sidebar-primary: oklch(0.78 0.15 195);
+  --sidebar-primary-foreground: oklch(0.15 0.03 230);
+  --sidebar-accent: oklch(0.3 0.05 280);
+  --sidebar-accent-foreground: oklch(0.92 0.02 195);
+  --sidebar-border: oklch(0.3 0.025 275 / 55%);
+  --sidebar-ring: oklch(0.78 0.15 195);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
     @apply font-sans;
+    color-scheme: light dark;
   }
-  /* Themed scrollbar so even the chrome reads neural-dark. */
-  * {
-    scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent) transparent;
+
+  .dark html,
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 /* ============================================================================
-   Shared visual primitives (260703-vga). Documented in frontend/DESIGN-SYSTEM.md.
-   Plain classes (not Tailwind color utilities) so tailwind-merge passes them
-   through untouched and components can compose them via cn().
+   Custom scrollbar — thin, themed, matches the landing's design language.
+   Uses the primary token for the thumb so it adapts to light/dark mode.
+   MUST live outside @layer — Tailwind v4 strips ::-webkit-scrollbar pseudo-
+   element rules when they're inside a layer.
    ========================================================================== */
-@layer utilities {
-  /* Luminous frosted-glass surface — the default card/panel treatment. */
-  .glass {
-    background: linear-gradient(
-      160deg,
-      color-mix(in oklch, var(--foreground) 7%, transparent),
-      color-mix(in oklch, var(--foreground) 2%, transparent)
-    );
-    backdrop-filter: blur(18px) saturate(150%);
-    -webkit-backdrop-filter: blur(18px) saturate(150%);
-    border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
-    box-shadow:
-      inset 0 1px 0 0 color-mix(in oklch, var(--foreground) 10%, transparent),
-      0 24px 60px -28px rgba(0, 0, 0, 0.85);
-  }
-
-  /* More opaque glass for popovers/dropdowns/menus where legibility matters. */
-  .glass-strong {
-    background: linear-gradient(
-      160deg,
-      color-mix(in oklch, var(--popover) 94%, var(--foreground) 6%),
-      var(--popover)
-    );
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid color-mix(in oklch, var(--foreground) 12%, transparent);
-    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9);
-  }
-
-  /* Brand gradient text (headlines, brand marks). Pair with a font-display class. */
-  .text-gradient {
-    background: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  /* Gradient hairline border around a card-colored fill (the "border-gradient" trick). */
-  .border-gradient {
-    border: 1px solid transparent;
-    background-image:
-      linear-gradient(var(--card), var(--card)),
-      var(--gradient-brand);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-  }
-
-  /* Glows. glow-primary = brand indigo/violet halo; drift glows match badge state. */
-  .glow-primary {
-    box-shadow:
-      0 0 24px -6px color-mix(in oklch, var(--accent-indigo) 60%, transparent),
-      0 0 64px -24px color-mix(in oklch, var(--accent-violet) 55%, transparent);
-  }
-  .glow-soft {
-    box-shadow: 0 0 48px -18px color-mix(in oklch, var(--accent-indigo) 45%, transparent);
-  }
-  .glow-drift-stable {
-    box-shadow: 0 0 18px -4px color-mix(in oklch, var(--color-drift-stable) 65%, transparent);
-  }
-  .glow-drift-aging {
-    box-shadow: 0 0 18px -4px color-mix(in oklch, var(--color-drift-aging) 65%, transparent);
-  }
-  .glow-drift-drifting {
-    box-shadow: 0 0 22px -3px color-mix(in oklch, var(--color-drift-drifting) 75%, transparent);
-  }
-
-  /* Motion utilities. All disabled under prefers-reduced-motion (see below). */
-  .animate-rise-in {
-    animation: rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  .animate-drift-pulse {
-    animation: drift-pulse 2s ease-in-out infinite;
-  }
-  .animate-aurora {
-    animation: aurora-drift 22s ease-in-out infinite alternate;
-  }
-  .animate-float {
-    animation: particle-float 9s ease-in-out infinite;
-  }
-  .animate-shimmer {
-    background: linear-gradient(
-      100deg,
-      transparent 20%,
-      color-mix(in oklch, var(--foreground) 8%, transparent) 50%,
-      transparent 80%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.6s linear infinite;
-  }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent)
+    transparent;
 }
 
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-@keyframes drift-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 12px -4px color-mix(in oklch, var(--color-drift-drifting) 60%, transparent);
-  }
-  50% {
-    box-shadow: 0 0 28px -2px color-mix(in oklch, var(--color-drift-drifting) 95%, transparent);
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@keyframes aurora-drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  100% {
-    transform: translate3d(5%, -4%, 0) scale(1.18);
-  }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--primary) 35%, transparent);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-@keyframes particle-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-14px);
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 55%, transparent);
+  background-clip: padding-box;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-rise-in,
-  .animate-drift-pulse,
-  .animate-aurora,
-  .animate-float,
-  .animate-shimmer {
-    animation: none !important;
-  }
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

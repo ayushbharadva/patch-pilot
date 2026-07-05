@@ -1,34 +1,53 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Database, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { type DatasetInfo, type DriftState, forgetDataset, listDatasets } from "@/lib/api";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import {
+  type DatasetInfo,
+  type DriftState,
+  forgetDataset,
+  listDatasets,
+} from '@/lib/api';
 
 /**
  * Shared React Query key -- exported so UploadPanel can invalidate this
  * query after a successful upload/release/sample-load, keeping the list
  * live without prop-drilling a refetch callback through page.tsx.
  */
-export const DATASETS_QUERY_KEY = ["datasets"] as const;
+export const DATASETS_QUERY_KEY = ['datasets'] as const;
 
 /** Drift-state -> dot color + text label + glow (03-UI-SPEC.md Copywriting
  * Contract). Color is never the only signal -- every dot pairs with the
  * literal text label. */
-const DRIFT_BADGE: Record<DriftState, { dot: string; glow: string; label: string }> = {
-  stable: { dot: "bg-drift-stable", glow: "glow-drift-stable", label: "🟢 Stable" },
-  aging: { dot: "bg-drift-aging", glow: "glow-drift-aging", label: "🟡 Aging" },
-  drifting: { dot: "bg-drift-drifting", glow: "glow-drift-drifting", label: "🔴 Drifting" },
+const DRIFT_BADGE: Record<
+  DriftState,
+  { dot: string; glow: string; label: string }
+> = {
+  stable: {
+    dot: 'bg-drift-stable',
+    glow: '',
+    label: '🟢 Stable',
+  },
+  aging: { dot: 'bg-drift-aging', glow: '', label: '🟡 Aging' },
+  drifting: {
+    dot: 'bg-drift-drifting',
+    glow: '',
+    label: '🔴 Drifting',
+  },
 };
 
 /** D-24 short human message for a failed Forget call -- must match
  * backend/forget.py's `_MSG_ERROR` exactly. */
-const FORGET_ERROR_FALLBACK = "Could not forget dataset. Please try again.";
+const FORGET_ERROR_FALLBACK = 'Could not forget dataset. Please try again.';
 
 /**
  * Forget button + two-step inline confirm (FORGET-01/02, UI-SPEC
@@ -55,9 +74,12 @@ function ForgetButton({
     const result = await forgetDataset({ dataset: datasetName });
     setIsForgetting(false);
 
-    if (result.status === "forgotten") {
+    if (result.status === 'forgotten') {
       await queryClient.invalidateQueries({ queryKey: DATASETS_QUERY_KEY });
-      toast.success("Forgotten — updating results…");
+      // GRAPH-02: the forgotten dataset's nodes are gone — refetch the 3D
+      // graph so its red (drifting) cluster visibly disappears.
+      await queryClient.invalidateQueries({ queryKey: ['graph'] });
+      toast.success('Forgotten — updating results…');
       onForgotten?.();
     } else {
       setError(result.message || FORGET_ERROR_FALLBACK);
@@ -105,7 +127,9 @@ function ForgetButton({
         )}
       </div>
       {error ? (
-        <p className="font-sans text-sm font-semibold text-destructive">{error}</p>
+        <p className="font-sans text-sm font-semibold text-destructive">
+          {error}
+        </p>
       ) : null}
     </div>
   );
@@ -119,32 +143,35 @@ function DatasetRow({
   onForgotten?: () => void;
 }) {
   const badge = DRIFT_BADGE[dataset.drift_state];
-  const isDrifting = dataset.drift_state === "drifting";
+  const isDrifting = dataset.drift_state === 'drifting';
 
   return (
     <div
       className={cn(
-        "glass flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5 transition-colors",
-        isDrifting && "border-drift-drifting/40",
+        'bg-card ring-1 ring-foreground/10 flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5 transition-colors',
+        isDrifting && 'border-drift-drifting/40',
       )}
     >
       <div className="flex flex-wrap items-center gap-2.5">
         <span
           className={cn(
-            "size-2.5 shrink-0 rounded-full",
+            'size-2.5 shrink-0 rounded-full',
             badge.dot,
             badge.glow,
-            isDrifting && "animate-drift-pulse",
+            isDrifting && 'animate-pulse',
           )}
           aria-hidden="true"
         />
         <span className="font-mono text-sm font-medium text-foreground">
-          {dataset.name} <span className="text-muted-foreground">· {dataset.doc_count} docs</span>
+          {dataset.name}{' '}
+          <span className="text-muted-foreground">
+            · {dataset.doc_count} docs
+          </span>
         </span>
         <span
           className={cn(
-            "font-sans text-sm font-semibold",
-            isDrifting ? "text-drift-drifting" : "text-foreground",
+            'font-sans text-sm font-semibold',
+            isDrifting ? 'text-drift-drifting' : 'text-foreground',
           )}
         >
           {badge.label}
@@ -179,25 +206,42 @@ export function DatasetList({ onForgotten }: { onForgotten?: () => void }) {
   });
 
   return (
-    <Card className="glow-soft gap-4 p-6">
+    <Card className="gap-4 p-6">
       <CardHeader className="p-0">
-        <h2 className="font-display text-xl font-semibold text-gradient">Datasets</h2>
+        <h2 className="font-display text-xl font-semibold text-foreground">
+          Datasets
+        </h2>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 p-0">
         {isLoading ? (
-          <p className="font-sans text-sm text-muted-foreground">Loading datasets…</p>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-card ring-1 ring-foreground/10 flex items-center gap-2.5 rounded-xl border border-border/60 px-3.5 py-2.5"
+              >
+                <Skeleton className="size-2.5 shrink-0 rounded-full" />
+                <Skeleton className="h-4 flex-1 max-w-48" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </div>
         ) : isError ? (
-          <p className="font-sans text-sm font-semibold text-destructive">
-            Could not load datasets. Please try again.
-          </p>
+          <ErrorState message="Could not load datasets. Please try again." />
         ) : data && data.length > 0 ? (
           data.map((dataset) => (
-            <DatasetRow key={dataset.name} dataset={dataset} onForgotten={onForgotten} />
+            <DatasetRow
+              key={dataset.name}
+              dataset={dataset}
+              onForgotten={onForgotten}
+            />
           ))
         ) : (
-          <p className="font-sans text-sm text-muted-foreground">
-            No datasets yet. Upload files or load sample data to get started.
-          </p>
+          <EmptyState
+            icon={Database}
+            title="No datasets yet"
+            hint="Upload files, import GitHub issues, or load sample data to get started."
+          />
         )}
       </CardContent>
     </Card>
