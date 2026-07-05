@@ -204,6 +204,43 @@ export async function ingestGithub(url: string): Promise<IngestResponse> {
   }
 }
 
+/** Discriminated union matching backend/github_ingest.py's POST /github/sync
+ * response exactly (GIT-03): accepted (new issues queued), up_to_date
+ * (nothing new since the last sync watermark), or error. */
+export type GithubSyncResponse =
+  | { status: "accepted"; dataset: string; files: string[]; new_count: number }
+  | { status: "up_to_date"; message: string; new_count: 0 }
+  | { status: "error"; message: string };
+
+/**
+ * POST {url} to `${API_BASE}/github/sync` (GIT-03 "Sync Now") -- incremental
+ * issue sync: only issues created since the last sync are fetched and
+ * ingested. First sync of a repo behaves like the one-time import.
+ */
+export async function syncGithub(url: string): Promise<GithubSyncResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/github/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: "Couldn't sync from GitHub. Please try again.",
+      };
+    }
+
+    return (await res.json()) as GithubSyncResponse;
+  } catch {
+    return {
+      status: "error",
+      message: "Couldn't sync from GitHub. Please try again.",
+    };
+  }
+}
+
 /**
  * GET `${API_BASE}/ingest/status?dataset=...` (D-05/D-22 polling). Network
  * failures resolve to "processing" rather than throwing, so a transient

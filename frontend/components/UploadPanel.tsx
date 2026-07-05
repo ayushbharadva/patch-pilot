@@ -19,9 +19,9 @@ import { DATASETS_QUERY_KEY } from "@/components/DatasetList";
 import { FileStatusRow, type FileStatus } from "@/components/FileStatusRow";
 import {
   getGithubRepos,
-  ingestGithub,
   loadSampleData,
   pollIngestStatus,
+  syncGithub,
   uploadFiles,
   type ContentType,
 } from "@/lib/api";
@@ -260,8 +260,10 @@ export function UploadPanel() {
 
     setIsImportingGithub(true);
     // Backend accepts owner/repo shorthand -- the picker submits exactly
-    // that, so no URL is ever pasted or transmitted (GIT-02).
-    const response = await ingestGithub(repoFullName.trim());
+    // that, so no URL is ever pasted or transmitted (GIT-02). Sync is
+    // incremental (GIT-03): the first sync imports, every later sync pulls
+    // only issues created since the last one.
+    const response = await syncGithub(repoFullName.trim());
     setIsImportingGithub(false);
 
     if (response.status === "error") {
@@ -269,7 +271,14 @@ export function UploadPanel() {
       return;
     }
 
-    toast.success(UPLOAD_ACCEPTED_TOAST);
+    if (response.status === "up_to_date") {
+      toast.info(response.message);
+      return;
+    }
+
+    toast.success(
+      `Synced ${response.new_count} new issue${response.new_count === 1 ? "" : "s"} — processing…`,
+    );
     recordLifecycleEvent("remember");
     // The backend fetched the issues synchronously, so each returned
     // filename is already queued -- rows start at "processing" directly
@@ -419,7 +428,7 @@ export function UploadPanel() {
                 disabled={isImportingGithub || !selectedRepo}
                 className="font-sans text-sm font-semibold"
               >
-                {isImportingGithub ? "Importing…" : "Import Issues"}
+                {isImportingGithub ? "Syncing…" : "Sync Now"}
               </Button>
             </div>
           ) : null}
@@ -432,7 +441,8 @@ export function UploadPanel() {
             {clerkGithubUsername
               ? "Username detected from your GitHub sign-in. "
               : "Sign in with GitHub to auto-detect your username. "}
-            Imports up to 10 issues as tickets into incidents.
+            Sync is incremental — only issues opened since your last sync are
+            imported (up to 10 per sync) as tickets into incidents.
           </p>
         </div>
 
