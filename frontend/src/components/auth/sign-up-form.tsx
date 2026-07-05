@@ -207,8 +207,12 @@ export function SignUpForm() {
     try {
       const { error: ssoError } = await signUp.sso({
         strategy,
-        redirectUrl: '/sso-callback',
-        redirectCallbackUrl: '/app',
+        // Where the browser lands once the OAuth flow completes and a session
+        // exists (no extra requirements). Must be an in-app destination.
+        redirectUrl: '/app',
+        // Intermediate handler that finalizes the session / transfers to
+        // sign-in when the account already exists.
+        redirectCallbackUrl: '/sso-callback',
       });
       if (ssoError) {
         setError(
