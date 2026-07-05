@@ -207,12 +207,12 @@ export function SignUpForm() {
     try {
       const { error: ssoError } = await signUp.sso({
         strategy,
-        // See sign-in-form.tsx's handleOAuth for why these are not swapped:
-        // redirectCallbackUrl is the in-app page that finishes the OAuth
-        // handshake (AuthenticateWithRedirectCallback); redirectUrl is the
-        // final destination after the session is established.
-        redirectCallbackUrl: '/sso-callback',
+        // Where the browser lands once the OAuth flow completes and a session
+        // exists (no extra requirements). Must be an in-app destination.
         redirectUrl: '/app',
+        // Intermediate handler that finalizes the session / transfers to
+        // sign-in when the account already exists.
+        redirectCallbackUrl: '/sso-callback',
       });
       if (ssoError) {
         setError(
