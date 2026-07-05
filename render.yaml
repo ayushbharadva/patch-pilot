@@ -28,7 +28,7 @@ services:
       - key: EMBEDDING_DIMENSIONS
         value: "1024"
       - key: CORS_ORIGINS
-        value: http://localhost:3000
+        value: http://localhost:3000,https://patchpilotapp.vercel.app
       - key: LLM_API_KEY
         sync: false
       - key: SNAPSHOT_URL
