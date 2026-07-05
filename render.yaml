@@ -1,0 +1,33 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Connect repo → New Blueprint → select this file.
+# After deploy, set secret env vars in the Render dashboard:
+#   LLM_API_KEY, SNAPSHOT_URL (GitHub release asset URL)
+
+services:
+  - type: web
+    name: patchpilot-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash scripts/render_start.sh
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: LLM_PROVIDER
+        value: mistral
+      - key: LLM_MODEL
+        value: mistral/mistral-small-latest
+      - key: EMBEDDING_PROVIDER
+        value: mistral
+      - key: EMBEDDING_MODEL
+        value: mistral/mistral-embed
+      - key: EMBEDDING_DIMENSIONS
+        value: "1024"
+      - key: CORS_ORIGINS
+        value: http://localhost:3000
+      - key: LLM_API_KEY
+        sync: false
+      - key: SNAPSHOT_URL
+        sync: false
