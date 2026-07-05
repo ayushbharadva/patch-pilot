@@ -13,6 +13,8 @@ services:
     startCommand: bash scripts/render_start.sh
     healthCheckPath: /health
     envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
       - key: PYTHON_VERSION
         value: "3.12.0"
       - key: LLM_PROVIDER
