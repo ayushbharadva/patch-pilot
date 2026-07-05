@@ -26,6 +26,7 @@ import logging  # noqa: E402
 import os  # noqa: E402
 import sys  # noqa: E402
 import uuid  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -53,7 +54,23 @@ from backend.qa import router as qa_router  # noqa: E402
 from backend.reset import router as reset_router  # noqa: E402
 from backend.search import router as search_router  # noqa: E402
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Cognee's schema/table creation (Alembic relational migrations + the
+    # graph/vector revision chain) only auto-runs from Cognee's OWN bundled
+    # FastAPI server (cognee/api/client.py) or the first remember()/cognify()
+    # call in an SDK process -- neither applies here, since this is our own
+    # FastAPI app calling the library directly. Without this, a genuinely
+    # fresh SQLite file (e.g. a Render disk with no snapshot restored) has
+    # directories but no tables, and even a read-only call like
+    # list_datasets() -> get_default_user() raises DatabaseNotCreatedError.
+    # Idempotent and cheap after the first run (guarded by
+    # cognee.modules.migrations.startup's per-process flag).
+    await cognee.run_migrations()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 # Explicit origin allowlist — never a wildcard (T-02-01). Local dev by default;
 # set CORS_ORIGINS on Render (comma-separated) to include your Vercel URL.
