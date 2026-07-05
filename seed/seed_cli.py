@@ -59,10 +59,9 @@ DATASET_FOLDERS = {
     WORKAROUNDS_V1_9: SEED_ROOT / "workarounds_v1_9",
 }
 
-# Canonical demo query (seed/README.md B-02) — present only in the Stripe
-# arc's docs, absent from both decoy incidents.
-FLIP_QUERY = "What is the fix for customers being double-charged?"
-INCIDENTS_QUERY = "customers double-charged"
+# Canonical demo query (seed/README.md B-02)
+FLIP_QUERY = "What is the fix for forgot password emails not sending?"
+INCIDENTS_QUERY = "forgot password email"
 
 
 async def seed() -> None:
@@ -142,7 +141,7 @@ async def flip() -> bool:
     # non-emptiness -- a non-empty but generic/off-topic/hallucinated
     # answer would otherwise pass this isolation check by mistake.
     incidents_survived = (
-        "double-charged" in incidents_answer.lower() or "stripe" in incidents_answer.lower()
+        "password" in incidents_answer.lower() or "email" in incidents_answer.lower() or "mail worker" in incidents_answer.lower()
     )
     if incidents_survived:
         print("INCIDENTS SURVIVED")
