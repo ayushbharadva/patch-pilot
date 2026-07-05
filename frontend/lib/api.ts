@@ -405,6 +405,49 @@ export async function resetMemory(): Promise<ResetResponse> {
   }
 }
 
+/**
+ * Ops-feed wrappers mirroring backend/events.py's `GET /events` contract
+ * (OPS-01) — the live Memory Operations feed + analytics tiles.
+ */
+
+/** Lifecycle event kinds — must match backend/events.py's EVENT_KINDS. */
+export type OpsEventKind =
+  | "remember"
+  | "recall"
+  | "improve"
+  | "forget"
+  | "drift"
+  | "reset";
+
+/** One recorded lifecycle event (OPS-01). */
+export interface OpsEvent {
+  seq: number;
+  ts: string;
+  kind: OpsEventKind;
+  dataset: string | null;
+  detail: string;
+}
+
+export interface OpsEventsResponse {
+  status: "ok";
+  events: OpsEvent[];
+  latest_seq: number;
+  stats: Record<OpsEventKind, number>;
+}
+
+/**
+ * GET `${API_BASE}/events?after=N` (OPS-01). Throws on !ok (same shape as
+ * listDatasets) so useQuery surfaces the error state; the feed component
+ * renders its own quiet error branch.
+ */
+export async function getOpsEvents(after = 0): Promise<OpsEventsResponse> {
+  const res = await fetch(`${API_BASE}/events?after=${after}`);
+  if (!res.ok) {
+    throw new Error("Could not load memory operations.");
+  }
+  return (await res.json()) as OpsEventsResponse;
+}
+
 /** One dataset-list row (D-15): `{name}` mono + doc count, plus its
  * DRIFT-01/02/03 health state and (drifting rows only) a generated reason. */
 export interface DatasetInfo {

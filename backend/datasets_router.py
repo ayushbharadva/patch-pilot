@@ -18,6 +18,7 @@ from fastapi import APIRouter  # noqa: E402
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import CANARY, HEALTHCHECK  # noqa: E402
 from backend.drift import compute_drift_states, get_or_generate_reason, highest_live_version  # noqa: E402
+from backend.events import record_drift_states  # noqa: E402
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -52,6 +53,9 @@ async def list_datasets():
     display_datasets = [ds for ds in all_datasets if _is_display_dataset(ds.name)]
     names = [ds.name for ds in display_datasets]
     drift_states = compute_drift_states(names)
+    # OPS-01: one drift event per NEWLY 🔴 dataset (diffed inside events.py) —
+    # /datasets usually classifies a fresh release upload before /search does.
+    record_drift_states(drift_states)
     # WR-02: reuse compute_drift_states's own notion of "highest" via the
     # shared sibling helper rather than re-deriving it independently -- see
     # backend/drift.py's highest_live_version docstring.

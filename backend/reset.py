@@ -95,6 +95,12 @@ async def reset_memory():
         from scripts import snapshot_memory
 
         snapshot_memory.restore()
+
+        # OPS-01: wipe the ops feed too, so it narrates the restored
+        # snapshot's timeline rather than pre-reset history.
+        from backend.events import clear_events
+
+        clear_events()
         return {"status": "reset"}
     except (Exception, SystemExit):  # noqa: BLE001 - D-24: never leak raw exception
         # text. snapshot_memory.restore() now raises FileNotFoundError (a normal

@@ -42,6 +42,7 @@ from fastapi.responses import JSONResponse  # noqa: E402
 from backend import cognee_patches  # noqa: F401,E402  (fixes cognee 1.2.2 MistralAdapter bug)
 from backend.datasets import HEALTHCHECK  # noqa: E402
 from backend.datasets_router import router as datasets_router  # noqa: E402
+from backend.events import router as events_router  # noqa: E402
 from backend.feedback import router as feedback_router  # noqa: E402
 from backend.forget import router as forget_router  # noqa: E402
 from backend.github_ingest import router as github_ingest_router  # noqa: E402
@@ -121,3 +122,4 @@ app.include_router(datasets_router)
 app.include_router(forget_router)
 app.include_router(reset_router)
 app.include_router(graph_router)
+app.include_router(events_router)
