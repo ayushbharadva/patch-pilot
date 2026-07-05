@@ -125,8 +125,14 @@ export function SignInForm() {
     try {
       const { error: ssoError } = await signIn.sso({
         strategy,
-        redirectUrl: '/sso-callback',
-        redirectCallbackUrl: '/app',
+        // Per Clerk's docs (custom OAuth flow guide): redirectCallbackUrl is
+        // the page that handles the redirect back from the identity
+        // provider (must render <AuthenticateWithRedirectCallback/>);
+        // redirectUrl is the final in-app destination once the session is
+        // established. These were swapped, which made Clerk fall back to
+        // its own hosted Account Portal instead of completing in our app.
+        redirectCallbackUrl: '/sso-callback',
+        redirectUrl: '/app',
       });
       if (ssoError) {
         setError(

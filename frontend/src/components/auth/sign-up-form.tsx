@@ -207,8 +207,12 @@ export function SignUpForm() {
     try {
       const { error: ssoError } = await signUp.sso({
         strategy,
-        redirectUrl: '/sso-callback',
-        redirectCallbackUrl: '/app',
+        // See sign-in-form.tsx's handleOAuth for why these are not swapped:
+        // redirectCallbackUrl is the in-app page that finishes the OAuth
+        // handshake (AuthenticateWithRedirectCallback); redirectUrl is the
+        // final destination after the session is established.
+        redirectCallbackUrl: '/sso-callback',
+        redirectUrl: '/app',
       });
       if (ssoError) {
         setError(
