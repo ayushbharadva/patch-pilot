@@ -1,15 +1,17 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
-import { useTheme } from "next-themes";
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
+import { useTheme } from 'next-themes';
 
-import { Share2 } from "lucide-react";
+import { Share2 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { EmptyState } from "@/components/EmptyState";
-import { getMemoryGraph, type GraphNode } from "@/lib/api";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getMemoryGraph, type GraphNode } from '@/lib/api';
 
 /**
  * GRAPH-02: node color now MEANS something — it encodes the drift state of
@@ -32,35 +34,35 @@ interface GraphPalette {
 
 const DARK_PALETTE: GraphPalette = {
   drift: {
-    stable: "#43c07a", // drift-stable — oklch(0.72 0.15 155)
-    aging: "#edb345", // drift-aging — oklch(0.8 0.14 80)
-    drifting: "#e9555a", // drift-drifting — oklch(0.68 0.19 15)
+    stable: '#43c07a', // drift-stable — oklch(0.72 0.15 155)
+    aging: '#edb345', // drift-aging — oklch(0.8 0.14 80)
+    drifting: '#e9555a', // drift-drifting — oklch(0.68 0.19 15)
   },
-  incidents: "#28c2be", // accent-cyan — oklch(0.74 0.12 192)
-  fallback: "#927eec", // accent-violet — oklch(0.66 0.16 290)
-  background: "rgba(10, 16, 23, 0.55)",
-  link: "rgba(146, 126, 236, 0.55)",
-  particle: "#28c2be",
+  incidents: '#28c2be', // accent-cyan — oklch(0.74 0.12 192)
+  fallback: '#927eec', // accent-violet — oklch(0.66 0.16 290)
+  background: 'rgba(10, 16, 23, 0.55)',
+  link: 'rgba(146, 126, 236, 0.55)',
+  particle: '#28c2be',
 };
 
 const LIGHT_PALETTE: GraphPalette = {
   drift: {
-    stable: "#109659", // drift-stable — oklch(0.6 0.14 155)
-    aging: "#cf9b1d", // drift-aging — oklch(0.75 0.15 75)
-    drifting: "#cc3944", // drift-drifting — oklch(0.58 0.2 15)
+    stable: '#109659', // drift-stable — oklch(0.6 0.14 155)
+    aging: '#cf9b1d', // drift-aging — oklch(0.75 0.15 75)
+    drifting: '#cc3944', // drift-drifting — oklch(0.58 0.2 15)
   },
-  incidents: "#0e8fa5", // accent-cyan — oklch(0.56 0.12 195)
-  fallback: "#6e57da", // accent-violet — oklch(0.55 0.16 285)
-  background: "rgba(246, 249, 252, 0.92)",
-  link: "rgba(110, 87, 218, 0.4)",
-  particle: "#0e8fa5",
+  incidents: '#0e8fa5', // accent-cyan — oklch(0.56 0.12 195)
+  fallback: '#6e57da', // accent-violet — oklch(0.55 0.16 285)
+  background: 'rgba(246, 249, 252, 0.92)',
+  link: 'rgba(110, 87, 218, 0.4)',
+  particle: '#0e8fa5',
 };
 
 function nodeColorFor(
   palette: GraphPalette,
-  node: Pick<GraphNode, "dataset" | "drift_state">,
+  node: Pick<GraphNode, 'dataset' | 'drift_state'>,
 ): string {
-  if (node.dataset === "incidents") return palette.incidents;
+  if (node.dataset === 'incidents') return palette.incidents;
   return palette.drift[node.drift_state] ?? palette.fallback;
 }
 
@@ -68,10 +70,10 @@ function nodeColorFor(
  * the sole signal — a11y). */
 function legendFor(palette: GraphPalette) {
   return [
-    { label: "Incidents (durable)", color: palette.incidents },
-    { label: "🟢 Stable", color: palette.drift.stable },
-    { label: "🟡 Aging", color: palette.drift.aging },
-    { label: "🔴 Drifting", color: palette.drift.drifting },
+    { label: 'Incidents (durable)', color: palette.incidents },
+    { label: '🟢 Stable', color: palette.drift.stable },
+    { label: '🟡 Aging', color: palette.drift.aging },
+    { label: '🔴 Drifting', color: palette.drift.drifting },
   ] as const;
 }
 
@@ -99,17 +101,19 @@ const ForceGraph3D = dynamic(
   // module-eval time and throw `AFRAME is not defined` in a plain web app.
   // react-force-graph-3d wraps only 3d-force-graph (→ three) and default-exports
   // the ForceGraph3D component.
-  () => import("react-force-graph-3d").then((mod) => mod.default),
+  () => import('react-force-graph-3d').then((mod) => mod.default),
   {
     ssr: false,
     loading: () => (
-      <p className="font-sans text-sm text-muted-foreground">Loading 3D graph…</p>
+      <p className="font-sans text-sm text-muted-foreground">
+        Loading 3D graph…
+      </p>
     ),
   },
 );
 
 /** Shared react-query key for the memory graph fetch. */
-export const GRAPH_QUERY_KEY = ["graph"] as const;
+export const GRAPH_QUERY_KEY = ['graph'] as const;
 
 /** Fixed viewport height for the 3D canvas — keeps the graph contained in
  * the page flow (rather than filling the whole window) and labels readable
@@ -126,7 +130,7 @@ export function MemoryGraphView() {
   // the resolved next-themes value. Defaults to dark pre-hydration — matches
   // defaultTheme="dark".
   const { resolvedTheme } = useTheme();
-  const palette = resolvedTheme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const palette = resolvedTheme === 'light' ? LIGHT_PALETTE : DARK_PALETTE;
   const legend = legendFor(palette);
 
   // STRETCH-04 click-to-explore: the last node the operator clicked.
@@ -141,7 +145,9 @@ export function MemoryGraphView() {
     }
     const nodes = data.nodes.slice(0, MAX_RENDERED_NODES);
     const kept = new Set(nodes.map((n) => n.id));
-    const links = data.links.filter((l) => kept.has(l.source) && kept.has(l.target));
+    const links = data.links.filter(
+      (l) => kept.has(l.source) && kept.has(l.target),
+    );
     return { nodes, links, total: data.nodes.length };
   }, [data]);
 
@@ -167,9 +173,9 @@ export function MemoryGraphView() {
   }, []);
 
   return (
-    <Card className="glow-soft animate-rise-in gap-4 border-border/60 p-6">
+    <Card className="gap-4 border-border/60 p-6">
       <CardHeader className="p-0">
-        <h2 className="font-display text-2xl font-semibold text-gradient sm:text-3xl">
+        <h2 className="font-display text-2xl font-semibold text-foreground sm:text-3xl">
           Memory Graph
         </h2>
         <p className="font-sans text-sm text-muted-foreground">
@@ -179,13 +185,26 @@ export function MemoryGraphView() {
       </CardHeader>
       <CardContent className="flex flex-col gap-3 p-0">
         {isLoading ? (
-          <p className="font-sans text-sm text-muted-foreground">
-            Loading memory graph…
-          </p>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-28" />
+              ))}
+            </div>
+            <div
+              className="relative overflow-hidden rounded-2xl border border-accent-indigo/25"
+              style={{ height: GRAPH_HEIGHT }}
+            >
+              <div className="flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <Skeleton className="size-12 rounded-full" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </div>
+            </div>
+          </div>
         ) : isError ? (
-          <p className="font-sans text-sm font-semibold text-destructive">
-            Could not load memory graph. Please try again.
-          </p>
+          <ErrorState message="Could not load memory graph. Please try again." />
         ) : renderData && renderData.nodes.length > 0 ? (
           <>
             <div
@@ -208,7 +227,7 @@ export function MemoryGraphView() {
             </div>
             <div
               ref={setContainer}
-              className="glow-primary relative overflow-hidden rounded-2xl border border-accent-indigo/25 bg-background/60"
+              className="relative overflow-hidden rounded-2xl border border-accent-indigo/25 bg-background/60"
               style={{ height: GRAPH_HEIGHT }}
             >
               {width > 0 ? (
@@ -233,18 +252,18 @@ export function MemoryGraphView() {
                       id?: string | number;
                     };
                     setSelected({
-                      id: String(n.id ?? ""),
-                      label: String(n.label ?? n.id ?? ""),
-                      group: String(n.group ?? "unknown"),
-                      dataset: String(n.dataset ?? ""),
-                      drift_state: n.drift_state ?? "stable",
+                      id: String(n.id ?? ''),
+                      label: String(n.label ?? n.id ?? ''),
+                      group: String(n.group ?? 'unknown'),
+                      dataset: String(n.dataset ?? ''),
+                      drift_state: n.drift_state ?? 'stable',
                     });
                   }}
                 />
               ) : null}
             </div>
             {selected ? (
-              <div className="glass animate-rise-in flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5">
+              <div className="bg-card ring-1 ring-foreground/10 flex flex-col gap-1 rounded-xl border border-border/60 px-3.5 py-2.5">
                 <div className="flex items-center gap-2">
                   <span
                     className="size-2.5 shrink-0 rounded-full"
@@ -256,7 +275,7 @@ export function MemoryGraphView() {
                   </span>
                 </div>
                 <span className="font-mono text-xs text-muted-foreground">
-                  {selected.group} · {selected.dataset || "unknown dataset"} ·{" "}
+                  {selected.group} · {selected.dataset || 'unknown dataset'} ·{' '}
                   {selected.drift_state}
                 </span>
               </div>
