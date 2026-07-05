@@ -16,8 +16,8 @@ Every leg of Cognee's **Remember → Recall → Improve → Forget** lifecycle i
 
 | Lifecycle leg | What PatchPilot does | Cognee calls |
 |---|---|---|
-| **Remember** | Import GitHub issues from your own repo (picked in-app, no URL pasting) or upload tickets/chats/changelogs; each release gets its own dataset | `cognee.add(...)` + `cognee.cognify(datasets=[...])` per-dataset |
-| **Recall** | Evidence-grounded diagnosis: root cause + the exact prior-incident chunks that back it | `cognee.search(GRAPH_COMPLETION)` fused with `cognee.search(CHUNKS)` |
+| **Remember** | Incrementally **Sync Now** GitHub issues from your own repo (picked in-app, no URL pasting; only issues opened since the last sync) or upload tickets/chats/changelogs; each release gets its own dataset | `cognee.add(...)` + `cognee.cognify(datasets=[...])` per-dataset |
+| **Recall** | Evidence-grounded diagnosis: root cause + the exact prior-incident chunks that back it; plus **Ask your repo** — conversational Q&A where follow-ups share one Cognee session | `cognee.search(GRAPH_COMPLETION)` fused with `cognee.search(CHUNKS)`; session-threaded `search(..., session_id=...)` |
 | **Improve** | "Accept fix" reinforces the answer's source dataset; confidence visibly rises | `add_feedback(session_id, qa_id)` + `cognee.improve(dataset, feedback_alpha=1.0)` |
 | **Forget** | Memory Drift flags superseded workarounds 🔴 with a live LLM-generated reason; one click surgically removes just that dataset | `cognee.forget(dataset="workarounds_v{N}")` |
 
@@ -25,12 +25,12 @@ Every leg of Cognee's **Remember → Recall → Improve → Forget** lifecycle i
 
 The visible loop that makes PatchPilot obviously impossible without Cognee's full memory lifecycle:
 
-1. **Search** a bug (`"customers double-charged"`) → recall returns the incident **and** the old workaround, with evidence.
-2. **Upload** a release note that supersedes the workaround → Memory Drift flags it 🔴 (drifting), with a live, Cognee-generated reason string.
+1. **Search** a bug (`"forgot password email not sending"`) → recall returns the incident **and** the old workaround (run the `flush_mail_queue` script), with evidence.
+2. **Upload** the v1.9 release note (SendGrid migration) that supersedes the workaround → Memory Drift flags it 🔴 (drifting), with a live, Cognee-generated reason string.
 3. **Forget** the drifting workaround → it's surgically removed via `forget(dataset=...)`; the durable incident record is untouched.
-4. **Re-search** the same query → recall now returns only the new, correct fix — and the 🔴 cluster disappears from the 3D memory graph.
+4. **Re-search** the same query → the answer **flips** to the new, correct fix ("use the SendGrid API") — and the 🔴 cluster disappears from the 3D memory graph.
 
-The whole loop runs visibly in **under 120 seconds** (measured locally at ~23.6s — see [Demo-loop timing](#features-built-and-working) below), driven end-to-end by the lifecycle above — not a search index with a UI bolted on.
+The whole loop runs visibly in **under 120 seconds** (measured locally at **19.7s** — see [Demo-loop timing](#features-built-and-working) below), driven end-to-end by the lifecycle above — not a search index with a UI bolted on.
 
 ## Project Status
 
@@ -49,7 +49,9 @@ Source: `.planning/STATE.md` progress block (`percent: 100`, `completed_phases: 
 
 Every feature below is live and maps to a completed requirement in `.planning/REQUIREMENTS.md`:
 
-- **GitHub repo import** (`GIT-01`, `GIT-02`) — sign in with GitHub (Clerk OAuth), and PatchPilot auto-detects your username, lists your repositories in-app, and imports a picked repo's real issues (title, body, labels, comments) as incident memory — no URL pasting, no manual export. Server-side SSRF guard: the client never supplies a URL; owner/repo components are allowlist-validated and requests are always built against the fixed `api.github.com` host.
+- **GitHub incremental sync** (`GIT-01`, `GIT-02`, `GIT-03`) — sign in with GitHub (Clerk OAuth), and PatchPilot auto-detects your username, lists your repositories in-app, and **Sync Now** pulls a picked repo's real issues (title, body, labels, comments) as incident memory. Sync is incremental: a per-repo watermark + ingested-issue-number set (persisted inside the memory root, so demo Reset resets it in lockstep) means each sync fetches only issues opened since the last one — continuous memory, not a one-time import. Server-side SSRF guard: the client never supplies a URL; owner/repo components are allowlist-validated and requests are always built against the fixed `api.github.com` host.
+- **Live Memory Operations feed + analytics** (`OPS-01`) — every lifecycle action the backend performs (`remember`, `recall`, `improve`, `forget`, plus drift catches and resets) is recorded and streamed to a live feed on the Activity page with per-verb analytics tiles — you can watch the memory think in real time.
+- **Ask your repo** (`QA-01`) — conversational Q&A over the same live memory (synced GitHub issues included). One Cognee session id is threaded through the conversation, so follow-up questions ("and how do we work around it *today*?") resolve against earlier turns — session memory as the lifecycle's conversational face.
 - **Multi-source ingest** (`INGEST-01`, `INGEST-02`, `INGEST-03`) — upload ticket/chat/changelog files or load bundled sample datasets ("Load Sample"); content is ingested via Cognee `add()` + `cognify()` in a background task. Durable incidents and per-release workarounds live in separate datasets (`incidents` vs `workarounds_v{N}`) so forgetting can be surgical.
 - **Evidence-grounded diagnosis card** (`RECALL-01`, `RECALL-02`, `RECALL-03`) — search a bug and get a root-cause recommendation via `search(GRAPH_COMPLETION)`, fused with the exact prior-incident evidence via `search(CHUNKS)`, rendered as one card.
 - **Confidence badge** (`STRETCH-01`) — a real `[0, 1]` confidence score derived from the CHUNKS retriever's own similarity score (best result across all queried datasets), shown directly on the diagnosis card. Best-effort: a malformed score degrades to `confidence: null`, never fails `/search`.
@@ -60,7 +62,7 @@ Every feature below is live and maps to a completed requirement in `.planning/RE
 - **Memory Health dashboard** (`STRETCH-02`) — a live tally of 🟢/🟡/🔴 dataset health, sharing the same `/datasets` query cache as the dataset list.
 - **Incident Timeline** (`STRETCH-03`) — a chronological view of incidents and releases.
 - **One-click Demo Reset** (`DEMO-01`) — a confirm modal drives a tar snapshot restore (`scripts/snapshot_memory.py`) that instantly restores the pre-demo dataset state — zero additional LLM cost, no `prune()` + reseed needed.
-- **Demo-loop timing** (`DEMO-03`) — `scripts/time_demo_loop.py` is an HTTP-only harness (no `cognee` import) that drives `/reset → search → ingest release → drift check → forget → re-search → /graph` over real HTTP and asserts the timed portion stays under the 120s budget. Latest live measurement: **23.6s total**, well under budget.
+- **Demo-loop timing** (`DEMO-03`) — `scripts/time_demo_loop.py` is an HTTP-only harness (no `cognee` import) that drives `/reset → search → ingest the real v1.9 release note → drift check → forget → re-search → /graph` over real HTTP — the literal Core Value arc with a true answer flip — and asserts the timed portion stays under the 120s budget. Latest live measurement: **19.7s total**, well under budget.
 - **Persistence** (`PLAT-01`, `PLAT-02`) — `GET /health/cognee` proves a full add → cognify → search round-trip in under 30s; memory survives a server restart (file-based Kuzu/LanceDB/SQLite storage, not an ephemeral filesystem).
 
 ## Known Caveats / Honest Limitations
@@ -176,6 +178,6 @@ Opens on `http://localhost:3000` — the only origin the backend's CORS policy a
 
 Licensed under the [MIT License](LICENSE).
 
-**AI-assistant disclosure** (per the hackathon's house rules): this project was built with substantial AI assistance throughout — **Claude Code** (Anthropic; Claude Fable 5 / Sonnet / Opus models) for planning, implementation, review, and documentation, and **Kiro** for early frontend spec drafts. All architecture decisions, verification, and the final submission were human-reviewed.
+**AI-assistant disclosure** (per the hackathon's house rules): this project was built with substantial AI assistance throughout — **Claude Code** (Anthropic; Claude Fable 5 / Sonnet / Opus models) for planning, implementation, review, and documentation (including the submission-day features: the live Memory Operations feed, incremental GitHub Sync Now, Ask-your-repo Q&A, dataset validation, the deployment plan, and this demo script/voiceover), and **Kiro** for early frontend spec drafts. All architecture decisions, verification, and the final submission were human-reviewed.
 
 This is a hackathon submission (WeMakeDevs × Cognee, "The Hangover Part AI: Where's My Context?").
