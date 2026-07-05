@@ -1,7 +1,7 @@
 # Render Blueprint — https://render.com/docs/blueprint-spec
 # Connect repo → New Blueprint → select this file.
-# After deploy, set secret env vars in the Render dashboard:
-#   LLM_API_KEY, SNAPSHOT_URL (GitHub release asset URL)
+# After deploy, set the one remaining secret env var in the Render dashboard:
+#   LLM_API_KEY
 
 services:
   - type: web
@@ -32,4 +32,4 @@ services:
       - key: LLM_API_KEY
         sync: false
       - key: SNAPSHOT_URL
-        sync: false
+        value: https://github.com/ayushbharadva/patch-pilot/releases/download/memory-snapshot-v1/patchpilot_memory.snapshot.tar
