@@ -1,0 +1,12 @@
+cognee==1.2.2
+fastapi==0.138.2
+uvicorn[standard]>=0.49
+python-dotenv==1.0.1
+python-multipart>=0.0.32
+httpx>=0.28  # GitHub issue ingest (already a cognee transitive dep; pinned here because backend imports it directly)
+mistralai==1.12.4
+mistral-common==1.11.5
+
+# Test infrastructure (Phase 2 — Wave-0 smoke tests + unit tests)
+pytest>=9.1
+pytest-asyncio>=1.4
