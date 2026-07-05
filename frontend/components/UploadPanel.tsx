@@ -3,6 +3,7 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@clerk/nextjs';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DATASETS_QUERY_KEY } from '@/components/DatasetList';
+import { cn } from '@/lib/utils';
 import { FileStatusRow, type FileStatus } from '@/components/FileStatusRow';
 import {
   getGithubRepos,
@@ -119,6 +121,21 @@ export function UploadPanel() {
   const repos = reposQuery.data?.status === 'ok' ? reposQuery.data.repos : [];
   const reposError =
     reposQuery.data?.status === 'error' ? reposQuery.data.message : null;
+
+  // Re-clicking "Load repos" for the same owner used to be a silent no-op --
+  // react-query's staleTime kept the cached result and enabled/queryKey
+  // didn't change, so nothing visibly refetched. Force a refetch when the
+  // owner is unchanged; otherwise flipping repoOwner triggers the query.
+  function handleLoadRepos() {
+    const owner = githubUsername.trim();
+    if (!owner) return;
+    setSelectedRepo('');
+    if (owner === repoOwner) {
+      void reposQuery.refetch();
+    } else {
+      setRepoOwner(owner);
+    }
+  }
 
   // D-05/D-22: poll every "processing" row's dataset until it flips to
   // ready/failed. Cognee reports status per dataset, not per file, so every
@@ -389,8 +406,7 @@ export function UploadPanel() {
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
-                  setSelectedRepo('');
-                  setRepoOwner(githubUsername.trim());
+                  handleLoadRepos();
                 }
               }}
               placeholder="GitHub username"
@@ -400,13 +416,14 @@ export function UploadPanel() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => {
-                setSelectedRepo('');
-                setRepoOwner(githubUsername.trim());
-              }}
+              onClick={handleLoadRepos}
               disabled={!githubUsername.trim() || reposQuery.isFetching}
-              className="font-sans text-sm font-semibold"
+              className="gap-1.5 font-sans text-sm font-semibold"
             >
+              <RefreshCw
+                aria-hidden="true"
+                className={cn('size-4', reposQuery.isFetching && 'animate-spin')}
+              />
               {reposQuery.isFetching ? 'Loading…' : 'Load repos'}
             </Button>
           </div>

@@ -103,7 +103,7 @@ export function SearchBar({
         type="button"
         onClick={handleChipClick}
         disabled={mutation.isPending}
-        className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/45 bg-muted px-4 py-1.5 font-mono text-sm text-muted-foreground transition-all hover:border-primary hover:text-foreground focus-visible:border-ring focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+        className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-full border border-primary/45 bg-muted px-4 py-1.5 font-mono text-sm text-muted-foreground transition-all hover:border-primary hover:text-foreground focus-visible:border-ring focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={`Search example query: ${EXAMPLE_QUERY}`}
       >
         <Search aria-hidden="true" className="size-3.5 text-primary" />

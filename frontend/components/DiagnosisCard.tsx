@@ -25,6 +25,7 @@ import {
   type SearchResponse,
 } from '@/lib/api';
 import { versionTagFromDataset } from '@/lib/version';
+import { resolveMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 
 /** D-07: at most 3 evidence snippets shown, even if the backend ever sends more. */
@@ -91,7 +92,7 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
             </p>
           ) : null}
           <p className="font-sans text-base text-muted-foreground">
-            {snippet.excerpt}
+            {resolveMarkdown(snippet.excerpt)}
           </p>
         </div>
         <CollapsibleTrigger asChild>
@@ -101,7 +102,7 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
               open ? 'Collapse full evidence' : 'Expand full evidence'
             }
             aria-expanded={open}
-            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             <ChevronDown
               className={`size-4 transition-transform duration-200 ${open ? 'rotate-180 text-accent-indigo' : ''}`}
@@ -110,8 +111,8 @@ function EvidenceItem({ snippet }: { snippet: EvidenceSnippet }) {
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent className="border-t border-foreground/10 px-3 pt-3 pb-3">
-        <p className="font-sans text-base text-foreground">
-          {snippet.full_text}
+        <p className="font-sans text-base whitespace-pre-line text-foreground">
+          {resolveMarkdown(snippet.full_text)}
         </p>
       </CollapsibleContent>
     </Collapsible>
@@ -264,7 +265,7 @@ function DiagnosisCardOk({
             Root cause
           </p>
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-tight text-foreground">
-            {response.root_cause}
+            {resolveMarkdown(response.root_cause)}
           </h2>
         </div>
         <div className="flex shrink-0 items-center gap-2">

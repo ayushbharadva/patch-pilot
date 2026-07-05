@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
+import { resolveMarkdown } from "@/lib/markdown";
 import { askRepo } from "@/lib/api";
 
 interface Turn {
@@ -52,7 +53,7 @@ export function AskRepo() {
     setIsAsking(false);
     if (res.status === "ok") {
       sessionRef.current = res.session_id;
-      pushTurn("memory", res.answer);
+      pushTurn("memory", resolveMarkdown(res.answer));
     } else {
       pushTurn("memory", res.message, false);
     }
@@ -87,7 +88,7 @@ export function AskRepo() {
                   key={s}
                   type="button"
                   onClick={() => void submit(s)}
-                  className="glass rounded-full border border-border/60 px-3 py-1.5 font-sans text-xs text-muted-foreground transition-colors hover:border-accent-violet/40 hover:text-foreground"
+                  className="glass cursor-pointer rounded-full border border-border/60 px-3 py-1.5 font-sans text-xs text-muted-foreground transition-colors hover:border-accent-violet/40 hover:text-foreground"
                 >
                   {s}
                 </button>
@@ -100,7 +101,7 @@ export function AskRepo() {
               <li
                 key={turn.id}
                 className={cn(
-                  "glass max-w-[85%] rounded-xl border px-3.5 py-2.5 font-sans text-sm",
+                  "glass max-w-[85%] rounded-xl border px-3.5 py-2.5 font-sans text-sm whitespace-pre-line",
                   turn.role === "user"
                     ? "self-end border-accent-indigo/40 text-foreground"
                     : "self-start border-border/60",
@@ -128,7 +129,7 @@ export function AskRepo() {
           <Button
             type="submit"
             disabled={isAsking || !question.trim()}
-            className="font-sans text-sm font-semibold"
+            className="h-10 font-sans text-sm font-semibold"
           >
             <Send className="size-4" aria-hidden="true" />
             Ask

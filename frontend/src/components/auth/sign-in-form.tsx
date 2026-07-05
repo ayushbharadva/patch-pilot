@@ -249,7 +249,7 @@ export function SignInForm() {
             <button
               type="button"
               onClick={() => setShowPassword((s) => !s)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-foreground/60 transition-colors hover:text-foreground"
+              className="absolute top-1/2 right-3.5 -translate-y-1/2 cursor-pointer text-foreground/60 transition-colors hover:text-foreground"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >

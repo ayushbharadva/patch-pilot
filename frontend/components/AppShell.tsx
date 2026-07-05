@@ -16,11 +16,9 @@ import {
 import { Wordmark } from '@landing/components/layouts/wordmark';
 import { LifecycleStrip } from '@/components/LifecycleStrip';
 import { PageTitle } from '@/components/PageTitle';
-import { ResetButton } from '@/components/ResetButton';
 import { SidebarUserCard } from '@/components/SidebarUserCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { useSearchSession } from '@/lib/search-session';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -79,7 +77,6 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { resetSession } = useSearchSession();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Close the drawer on route change (covers back/forward, not just link
@@ -119,7 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             type="button"
             aria-label="Close navigation"
             onClick={() => setDrawerOpen(false)}
-            className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+            className="absolute inset-0 cursor-pointer bg-background/60 backdrop-blur-sm"
           />
           <div
             role="dialog"
@@ -171,7 +168,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-1.5 justify-self-end">
             <ThemeToggle />
-            <ResetButton onReset={resetSession} />
           </div>
         </header>
 

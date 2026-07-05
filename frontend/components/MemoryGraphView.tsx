@@ -71,9 +71,9 @@ function nodeColorFor(
 function legendFor(palette: GraphPalette) {
   return [
     { label: 'Incidents (durable)', color: palette.incidents },
-    { label: '🟢 Stable', color: palette.drift.stable },
-    { label: '🟡 Aging', color: palette.drift.aging },
-    { label: '🔴 Drifting', color: palette.drift.drifting },
+    { label: 'Stable', color: palette.drift.stable },
+    { label: 'Aging', color: palette.drift.aging },
+    { label: 'Drifting', color: palette.drift.drifting },
   ] as const;
 }
 
