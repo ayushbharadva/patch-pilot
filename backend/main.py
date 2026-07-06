@@ -67,7 +67,35 @@ async def lifespan(_app: FastAPI):
     # Idempotent and cheap after the first run (guarded by
     # cognee.modules.migrations.startup's per-process flag).
     await cognee.run_migrations()
+    await _warm_cognee()
     yield
+
+
+async def _warm_cognee() -> None:
+    """Open Cognee's storage engines before the first real request.
+
+    On the deployed 0.1-CPU instance, the first search after boot pays the
+    whole cold-start bill (LanceDB open, embedding/LLM client imports,
+    dataset resolution) inside a request — the event loop starves for long
+    enough that Render's health checks fail and the instance gets restarted
+    mid-request (observed live Jul 6: the first /search after every boot
+    502'd and bounced the service). Running one cheap CHUNKS probe during
+    lifespan startup moves that bill to before Render routes any traffic.
+    Best-effort: an empty memory or a failed probe must never block boot.
+    """
+    try:
+        datasets = await cognee.datasets.list_datasets()
+        if not datasets:
+            return
+        await cognee.search(
+            query_text="warmup",
+            query_type=SearchType.CHUNKS,
+            datasets=[datasets[0].name],
+            top_k=1,
+        )
+        logger.info("cognee warmup complete (probed dataset %s)", datasets[0].name)
+    except Exception:  # noqa: BLE001 - warmup is an optimization, never a boot gate
+        logger.warning("cognee warmup failed; first search will run cold", exc_info=True)
 
 
 app = FastAPI(lifespan=lifespan)
