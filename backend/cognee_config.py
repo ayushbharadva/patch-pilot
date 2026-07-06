@@ -72,6 +72,16 @@ _ensure_writable_root("DATA_ROOT_DIRECTORY", MEMORY_ROOT / "data")
 # and DATA_ROOT_DIRECTORY. Graph (Kuzu) and vector (LanceDB) configs resolve
 # to the same "databases" subfolder, so this one mkdir covers all three.
 (Path(os.environ["SYSTEM_ROOT_DIRECTORY"]) / "databases").mkdir(parents=True, exist_ok=True)
+# Cognee defaults Kuzu's buffer pool to 32GB (DEFAULT_KUZU_BUFFER_POOL_SIZE
+# in cognee/.../graph/ladybug/adapter.py) — harmless on a dev machine, fatal
+# on Render's 512MB free instance, where a cognify-time allocation spike gets
+# the process OOM-killed mid-ingest (Jul 6 incident: every request, including
+# /health, returned proxy 502s and the ephemeral disk wiped on restart).
+# 128MB (a power of 2, as Kuzu requires) is ample for demo-scale graphs; a
+# single Kuzu thread avoids parallel-scan memory spikes on the shared 0.1-CPU
+# instance. Both remain env-overridable for beefier deployments.
+os.environ.setdefault("KUZU_BUFFER_POOL_SIZE", str(1 << 27))
+os.environ.setdefault("KUZU_NUM_THREADS", "1")
 # Override Cognee's current default (openai/gpt-5-mini) to stay within the
 # $10 budget cap. .env may still override this via LLM_MODEL if a different
 # provider (e.g. the Gemini free-tier fallback) is configured.
