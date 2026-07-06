@@ -112,6 +112,22 @@ _schedule() -- the background task receives only plain (filename, text)
 tuples, never an UploadFile. A decode failure is caught and logged as an
 ingest failure (D-23/D-24), never raised to the client.
 
+NINTH DEVIATION (found live on Render, Jul 6 — the production 502 incident):
+the deployed free-tier instance (512MB RAM / 0.1 CPU) died and restarted
+mid-ingest when a GitHub sync scheduled ~9 issues through _ingest_all's
+original one-cognify-PER-FILE loop — every request (including /health)
+returned Render-proxy 502s until the instance came back, and the ephemeral
+disk wiped all memory. Two changes contain this: (a) _ingest_all now add()s
+every item in the batch first and then calls cognify() exactly ONCE per
+dataset (the same batching _load_dataset_docs already proved for
+/sample/load — a 10-issue sync now runs 1 cognify, not 10); (b) a global
+_INGEST_LOCK serializes every cognify-bound pipeline across REQUESTS, not
+just within one request — concurrent cognify() calls are already known to
+stall in this environment (FIFTH DEVIATION) and roughly double peak memory,
+which is exactly what a 512MB box cannot absorb. See also
+backend/cognee_config.py's KUZU_BUFFER_POOL_SIZE cap, the other half of
+this incident's fix.
+
 Import order follows the config-before-import keystone (see
 backend/cognee_config.py's module docstring): backend.cognee_config, then
 cognee, then backend.cognee_patches, before anything else touches Cognee.
@@ -248,38 +264,45 @@ def _file_size_bytes(file: UploadFile) -> int:
     return size
 
 
-async def _ingest_one(text: str, filename: str, dataset_name: str) -> None:
-    """add() + cognify() one item's text into its routed dataset.
-
-    `text` is always a plain str -- see this module's docstring (SIXTH
-    DEVIATION) for why the whole UploadFile/BinaryData path is avoided
-    entirely, in favor of decoding upload bytes to text upfront and reusing
-    the proven str/TextData path (matching seed/seed_cli.py's seed() and
-    /sample/load). Failures are logged and NOT re-raised: they surface to
-    the client only via /ingest/status polling as "failed" (D-23), never as
-    an unhandled 500 (D-24).
-    """
-    try:
-        await cognee.add(text, dataset_name=dataset_name)
-        await cognee.cognify(datasets=[dataset_name])
-        record_event(
-            "remember",
-            dataset=dataset_name,
-            detail=f"{filename} cognified into the knowledge graph",
-        )
-    except Exception:  # noqa: BLE001 - D-23/D-24
-        logger.exception("ingest failed for %s in %s", filename, dataset_name)
+# Global cognify serialization (NINTH DEVIATION): exactly one cognify-bound
+# pipeline may run at a time across ALL requests. Concurrent cognify() calls
+# stall in this environment (FIFTH DEVIATION), and on the 512MB production
+# instance the doubled peak memory gets the process OOM-killed.
+_INGEST_LOCK = asyncio.Lock()
 
 
 async def _ingest_all(items: list[tuple[str, str]], dataset_name: str) -> None:
-    """Background task: process every (filename, text) item in a batch
-    SEQUENTIALLY (FIFTH DEVIATION -- concurrent cognify() calls stall in
-    this environment). `items` must already be resolved to plain text --
-    see this module's docstring (SEVENTH DEVIATION) for why UploadFile
-    bytes must be read in the request handler, before this task is
-    scheduled, not inside the task itself."""
-    for filename, text in items:
-        await _ingest_one(text, filename, dataset_name)
+    """Background task: add() every (filename, text) item in the batch, then
+    cognify() the dataset exactly ONCE (NINTH DEVIATION -- one cognify per
+    file killed the 512MB production instance on a 9-issue GitHub sync; one
+    cognify per BATCH is the same proven shape _load_dataset_docs uses).
+    Items must already be resolved to plain text -- see this module's
+    docstring (SEVENTH DEVIATION) for why UploadFile bytes must be read in
+    the request handler, before this task is scheduled, not inside the task
+    itself. Failures are logged and NOT re-raised: they surface to the
+    client only via /ingest/status polling as "failed" (D-23), never as an
+    unhandled 500 (D-24)."""
+    async with _INGEST_LOCK:
+        added: list[str] = []
+        for filename, text in items:
+            try:
+                await cognee.add(text, dataset_name=dataset_name)
+                added.append(filename)
+            except Exception:  # noqa: BLE001 - D-23/D-24
+                logger.exception("add failed for %s in %s", filename, dataset_name)
+        if not added:
+            return
+        try:
+            await cognee.cognify(datasets=[dataset_name])
+            record_event(
+                "remember",
+                dataset=dataset_name,
+                detail=f"{len(added)} file(s) cognified into the knowledge graph",
+            )
+        except Exception:  # noqa: BLE001 - D-23/D-24
+            logger.exception(
+                "cognify failed for dataset=%s (%d file(s))", dataset_name, len(added)
+            )
 
 
 async def _resolve_dataset_by_name(name: str):
@@ -361,8 +384,15 @@ async def _load_dataset_docs(dataset_name: str, folder) -> None:
     proven seed() pattern (one cognify per dataset, not one per file) so
     /sample/load's total LLM-bound processing time stays within the demo
     budget. See this module's docstring (THIRD DEVIATION) for why
-    per-file cognify was too slow."""
+    per-file cognify was too slow. Holds _INGEST_LOCK (NINTH DEVIATION) so
+    a sample load can never cognify concurrently with an upload or GitHub
+    sync."""
     doc_paths = sorted(folder.glob("*.md"))
+    async with _INGEST_LOCK:
+        await _cognify_folder_docs(dataset_name, doc_paths)
+
+
+async def _cognify_folder_docs(dataset_name: str, doc_paths: list[Path]) -> None:
     try:
         for doc_path in doc_paths:
             await cognee.add(doc_path.read_text(), dataset_name=dataset_name)

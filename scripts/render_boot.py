@@ -24,6 +24,16 @@ MEMORY_ROOT = Path(
     os.environ.get("SYSTEM_ROOT_DIRECTORY", str(REPO_ROOT / ".patchpilot_memory")),
 )
 
+# Canonical public demo snapshot (GitHub release asset). Render dashboard env
+# vars are NOT synced from render.yaml — the same failure class that kept the
+# stale CORS_ORIGINS live — so SNAPSHOT_URL may be unset/stale in prod. With
+# this fallback baked in, every boot on a fresh ephemeral disk (deploys AND
+# crash-restarts) self-heals back to the seeded demo memory.
+DEFAULT_SNAPSHOT_URL = (
+    "https://github.com/ayushbharadva/patch-pilot/releases/download/"
+    "memory-snapshot-v1/patchpilot_memory.snapshot.tar"
+)
+
 
 def memory_is_populated() -> bool:
     return MEMORY_ROOT.exists() and any(MEMORY_ROOT.iterdir())
@@ -40,7 +50,7 @@ def main() -> int:
         print(f"Memory already present at {MEMORY_ROOT} — skipping restore.")
         return 0
 
-    snapshot_url = os.environ.get("SNAPSHOT_URL", "").strip()
+    snapshot_url = os.environ.get("SNAPSHOT_URL", "").strip() or DEFAULT_SNAPSHOT_URL
     if snapshot_url and not SNAPSHOT_PATH.exists():
         try:
             download_snapshot(snapshot_url)
