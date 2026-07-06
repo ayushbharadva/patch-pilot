@@ -27,6 +27,7 @@ Usage:
 import argparse
 import os
 import shutil
+import sqlite3
 import sys
 import tarfile
 from pathlib import Path
@@ -75,7 +76,99 @@ def restore() -> None:
         shutil.rmtree(MEMORY_ROOT)
     with tarfile.open(SNAPSHOT_PATH, "r") as tar:
         tar.extractall(REPO_ROOT, filter="data")
+    _rewrite_absolute_paths()
     print(f"Restored {MEMORY_ROOT} from {SNAPSHOT_PATH}")
+
+
+def _rewrite_absolute_paths() -> None:
+    """Rewrite machine-specific absolute paths inside the restored sqlite DBs.
+
+    Cognee records absolute paths from the machine that CREATED the snapshot
+    (dataset_database.vector_database_url, data.raw_data_location, node
+    properties JSON — e.g. /Users/<dev>/.../.patchpilot_memory/databases/...).
+    Restored onto a different machine those paths are dead: observed live on
+    the HF Space (Jul 6), every search failed with LanceDB "Unable to create
+    lance dataset at /Users/... Permission denied (os error 13)" because the
+    Linux container obediently tried the Mac path. Replace every occurrence
+    of the snapshot's original memory root with THIS machine's MEMORY_ROOT,
+    in every text-typed column of every restored sqlite database. No-op when
+    the snapshot was created on this machine (old root == new root).
+    """
+    # The marker is the memory root's directory name as recorded INSIDE the
+    # snapshot (save() tars with arcname=MEMORY_ROOT.name, which is
+    # .patchpilot_memory everywhere this project runs) — NOT the runtime
+    # root's name, which an env override may have pointed elsewhere.
+    marker = ".patchpilot_memory"
+    for db_path in (MEMORY_ROOT / "databases").glob("*"):
+        if not db_path.is_file() or db_path.name.endswith(("-shm", "-wal")):
+            continue
+        try:
+            con = sqlite3.connect(db_path)
+        except sqlite3.Error:
+            continue
+        try:
+            tables = [
+                r[0]
+                for r in con.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            ]
+            # Discover every distinct stored prefix ending at the marker —
+            # values appear both as plain paths (/Users/.../.patchpilot_memory)
+            # and as URIs (file:///Users/.../.patchpilot_memory), and each
+            # form must be rewritten while keeping its scheme.
+            old_roots: set[str] = set()
+            text_cols: dict[str, list[str]] = {}
+            for table in tables:
+                cols = con.execute(f'PRAGMA table_info("{table}")').fetchall()
+                text_cols[table] = [
+                    c[1]
+                    for c in cols
+                    if any(t in (c[2] or "").upper() for t in ("CHAR", "TEXT", "JSON", "CLOB"))
+                ]
+                for col in text_cols[table]:
+                    for (value,) in con.execute(
+                        f'SELECT "{col}" FROM "{table}" WHERE "{col}" LIKE ?',
+                        (f"%{marker}%",),
+                    ).fetchall():
+                        if isinstance(value, str):
+                            start = 0
+                            while (idx := value.find(marker, start)) != -1:
+                                # Prefix runs from the start of the embedded
+                                # path/URI; for JSON blobs fall back to the
+                                # nearest quote boundary.
+                                boundary = max(
+                                    value.rfind('"', 0, idx), value.rfind(" ", 0, idx)
+                                )
+                                old_roots.add(value[boundary + 1 : idx + len(marker)])
+                                start = idx + len(marker)
+            old_roots.discard(str(MEMORY_ROOT))
+            rewritten = 0
+            # Longest first so URI forms never get half-eaten by their plain
+            # substring form.
+            for old_root in sorted(old_roots, key=len, reverse=True):
+                if "://" in old_root:
+                    new_root = old_root.split("://", 1)[0] + "://" + str(MEMORY_ROOT)
+                else:
+                    new_root = str(MEMORY_ROOT)
+                if old_root == new_root:
+                    continue
+                for table, cols in text_cols.items():
+                    for col in cols:
+                        cur = con.execute(
+                            f'UPDATE "{table}" SET "{col}" = REPLACE("{col}", ?, ?) '
+                            f'WHERE "{col}" LIKE ?',
+                            (old_root, new_root, f"%{old_root}%"),
+                        )
+                        rewritten += cur.rowcount
+                print(f"Path rewrite in {db_path.name}: {old_root} -> {new_root}")
+            con.commit()
+            if rewritten:
+                print(f"Rewrote {rewritten} row(s) in {db_path.name}")
+        except sqlite3.Error as exc:
+            print(f"WARNING: path rewrite skipped for {db_path.name}: {exc}")
+        finally:
+            con.close()
 
 
 def main() -> int:
