@@ -4,6 +4,8 @@
 
 *Every bug remembers its history.*
 
+[![Watch the demo](https://img.youtube.com/vi/DE8SRVF9p_U/maxresdefault.jpg)](https://youtu.be/DE8SRVF9p_U)
+
 PatchPilot is a living incident-memory system for engineering teams, built end-to-end on [Cognee](https://github.com/topoteretes/cognee)'s memory lifecycle. It **remembers** your incidents — imported straight from your GitHub repo's issues or uploaded as tickets, chats, and changelogs — **recalls** prior incidents with evidence-backed root-cause recommendations, **improves** by reinforcing the fixes engineers confirm, and — when a release ships — detects which old workarounds have gone stale (**Memory Drift**) and **forgets** them. It never recommends a fix the latest version already replaced.
 
 **Target users:** small SaaS / engineering teams whose incident knowledge is scattered across GitHub, Slack, tickets, and people's heads.
