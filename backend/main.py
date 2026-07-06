@@ -72,16 +72,28 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Explicit origin allowlist — never a wildcard (T-02-01). Local dev by default;
-# set CORS_ORIGINS on Render (comma-separated) to include your Vercel URL.
-_cors_origins = [
+# Explicit origin allowlist — never a wildcard (T-02-01). The canonical
+# frontend origins are baked in and always allowed: env vars set in the Render
+# dashboard are not synced from render.yaml, so a stale CORS_ORIGINS there
+# must never be able to lock the production frontend out. CORS_ORIGINS
+# (comma-separated) *extends* the list rather than replacing it.
+_BAKED_IN_ORIGINS = [
+    "http://localhost:3000",
+    "https://patchpilotapp.vercel.app",
+]
+_env_origins = [
     origin.strip()
-    for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
+    for origin in os.environ.get("CORS_ORIGINS", "").split(",")
     if origin.strip()
 ]
+_cors_origins = list(dict.fromkeys(_BAKED_IN_ORIGINS + _env_origins))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
+    # Vercel preview deployments of this project only (e.g.
+    # patchpilotapp-git-<branch>-<team>.vercel.app) — scoped to the project
+    # subdomain prefix, not a *.vercel.app wildcard.
+    allow_origin_regex=r"^https://patchpilotapp-[a-z0-9-]+\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
