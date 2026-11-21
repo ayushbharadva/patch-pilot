@@ -5,8 +5,7 @@ Three self-contained, runtime-behavior assertions (never source greps):
 
 (a) Continuation-regression check — proves CACHING=true + AUTO_FEEDBACK=false
     retires the Phase 1 "Got it." bug (see backend/cognee_config.py's
-    docstring and .planning/phases/02-core-recall/02-RESEARCH.md "Feedback
-    API Resolution" §3-§5, Common Pitfalls Pitfall 1).
+    docstring).
 (b) Upload-ingest check — proves the exact object Plan 02's ingest.py will
     hand cognee.add() (a FastAPI/Starlette ``UploadFile``) ingests with no
     temp-file write.

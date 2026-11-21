@@ -115,8 +115,6 @@ os.environ.setdefault("LLM_PROVIDER", "openai")
 # AUTO_FEEDBACK=false disables only the turn-continuation classifier that
 # produced the canned "Got it." acknowledgment in Phase 1 — the "Got it."
 # short-circuit can never fire this way, regardless of how many times the
-# same or a related query runs. See .planning/phases/02-core-recall/
-# 02-RESEARCH.md "Feedback API Resolution" §3-§5 for the full trace through
-# the installed package source.
+# same or a related query runs.
 os.environ.setdefault("CACHING", "true")
 os.environ.setdefault("AUTO_FEEDBACK", "false")

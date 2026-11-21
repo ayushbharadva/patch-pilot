@@ -45,11 +45,9 @@ The whole loop runs visibly in **under 120 seconds** (measured locally at **19.7
 | 3. Drift + Forget | Drift detection with health badges, surgical forget, live before/after proof in the browser | ✅ Done |
 | 4. Demo Loop + Stretch | Loop timing verified, one-click demo reset, memory graph view, all stretch features (confidence badge, health dashboard, incident timeline) | ✅ Done |
 
-Source: `.planning/STATE.md` progress block (`percent: 100`, `completed_phases: 4`, `completed_plans: 16`).
-
 ## Features (Built and Working)
 
-Every feature below is live and maps to a completed requirement in `.planning/REQUIREMENTS.md`:
+Every feature below is live; the IDs in parentheses are the requirements it completes:
 
 - **GitHub incremental sync** (`GIT-01`, `GIT-02`, `GIT-03`) — sign in with GitHub (Clerk OAuth), and PatchPilot auto-detects your username, lists your repositories in-app, and **Sync Now** pulls a picked repo's real issues (title, body, labels, comments) as incident memory. Sync is incremental: a per-repo watermark + ingested-issue-number set (persisted inside the memory root, so demo Reset resets it in lockstep) means each sync fetches only issues opened since the last one — continuous memory, not a one-time import. Server-side SSRF guard: the client never supplies a URL; owner/repo components are allowlist-validated and requests are always built against the fixed `api.github.com` host.
 - **Live Memory Operations feed + analytics** (`OPS-01`) — every lifecycle action the backend performs (`remember`, `recall`, `improve`, `forget`, plus drift catches and resets) is recorded and streamed to a live feed on the Activity page with per-verb analytics tiles — you can watch the memory think in real time.

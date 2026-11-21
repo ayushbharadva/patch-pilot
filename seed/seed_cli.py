@@ -51,8 +51,7 @@ SEED_ROOT = Path(__file__).resolve().parent
 
 # Folder -> dataset mapping, matching seed/README.md exactly. Never merge
 # folders into one dataset — that reintroduces the #1023 cross-dataset leak
-# (see backend/datasets.py and .planning/phases/01-foundation/01-RESEARCH.md
-# Pitfall 3).
+# (see backend/datasets.py).
 DATASET_FOLDERS = {
     INCIDENTS: SEED_ROOT / "incidents",
     WORKAROUNDS_V1_8: SEED_ROOT / "workarounds_v1_8",

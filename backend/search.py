@@ -2,8 +2,7 @@
 (RECALL-01, RECALL-02).
 
 Cognee returns one result per dataset searched, never a single fused answer
-across datasets (.planning/phases/02-core-recall/02-RESEARCH.md "Architecture
-Patterns" Pattern 4) — this module owns that fusion.
+across datasets — this module owns that fusion.
 
 Import order follows the config-before-import keystone (see
 backend/cognee_config.py's module docstring): backend.cognee_config, then
