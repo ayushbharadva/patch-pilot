@@ -1,6 +1,4 @@
-"""Session id minting for Cognee's session/feedback layer (FEEDBACK-01/02,
-.planning/phases/02-core-recall/02-RESEARCH.md "Feedback API Resolution" B-01
-resolution).
+"""Session id minting for Cognee's session/feedback layer (FEEDBACK-01/02).
 
 A fresh session_id must be minted per search call — never reuse Cognee's
 `default_session`, since `select_session_history()` folds prior session Q&A
